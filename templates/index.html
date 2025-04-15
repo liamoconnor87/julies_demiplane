@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Julie's Demiplane</title>
+</head>
+
+<body>
+    {% if debug %}
+        ## {{ debug }} ##
+    {% endif %}
+
+    <h1>Julie's Demiplane</h1>
+
+    <form action="/" method="POST">
+        {{ character_sheet_form | safe }}
+        <button type="submit">Save</button>
+
+
+    </form>
+    <h2>Inventory</h2>
+    {% if inventory %}
+        {% for item in inventory %}
+            <p>{{ item['name'] }} - {{ item['quantity'] }}</p>
+            <p>{{ item['description'] }} <a href="/{{ character_id }}/{{ item['id'] }}/remove">Delete</a></p>
+        {% endfor %}
+    {% else %}
+        <p>No items found.</p>
+    {% endif %}
+</body>
+
+</html>

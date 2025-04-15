@@ -1,0 +1,9 @@
+{% if field_type != "hidden" %}
+    <label for="{{ table }}-{{ field }}">{{ field }}</label>
+{% endif %}
+
+<input type="{{ field_type }}" id="{{ table }}-{{ field }}" name="{{ table }}-{{ field }}" value="{{ field_value }}">
+
+{% if field_type != "hidden" %}
+    <br>
+{% endif %}
