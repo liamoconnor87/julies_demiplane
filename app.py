@@ -43,7 +43,8 @@ def remove_inventory_item(character_id: str, inventory_id: str):
 
 
 if __name__ == '__main__':
-    db.create_db()
+    # Create the database
+    db.go_create_db()
     # Seed the database
     db.go_seed_db()
     # Run the Flask app on port 8888

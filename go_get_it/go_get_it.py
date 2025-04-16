@@ -19,7 +19,7 @@ class Database():
     def go_connect_db(self):
         return sqlite3.connect(self.db_route)
 
-    def create_db(self):
+    def go_create_db(self):
         db = self.go_connect_db()
         cursor = db.cursor()
 
