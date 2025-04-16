@@ -1,20 +1,23 @@
 import sqlite3
 from typing import Optional
-from functions import uuid
-from tables import TABLES
-from seed import SEED
+from functions.functions import uuid
+from go_get_it.seed import SEED
+from go_get_it.tables import TABLES
+from misc.config import DB_ROUTE
+
 
 class Database():
     """
     Does various things to do with the database
     """
     def __init__(self):
+        self.db_route = DB_ROUTE
         self.tables = TABLES
         self.seed = SEED
         pass
 
     def go_connect_db(self):
-        return sqlite3.connect('/app/misc/data/demiplane.db')
+        return sqlite3.connect(self.db_route)
 
     def create_db(self):
         db = self.go_connect_db()
@@ -106,9 +109,7 @@ class Database():
     def go_seed_db(self):
         for table, seed in self.seed.items():
             for data, field in seed.items():
-                seeded_data = self.go_get_one(table, {field:data})
-
-                if not seeded_data:
+                if not self.go_get_one(table, {field:data}):
                     self.go_add_new(table, {"id": uuid(), field:data})
 
 

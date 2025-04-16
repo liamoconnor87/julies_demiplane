@@ -1,7 +1,7 @@
 from flask import Flask, redirect, render_template, request, url_for
 import datetime
-from character_sheet import CharacterSheet
-from go_get_it import Database
+from character_sheet.character_sheet import CharacterSheet
+from go_get_it.go_get_it import Database
 from misc.config import DEBUG, secret_key # type: ignore
 
 app = Flask(__name__)

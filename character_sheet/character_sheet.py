@@ -1,8 +1,8 @@
 from typing import Optional
 from flask import Flask, render_template
-from go_get_it import Database
-from functions import uuid
-from tables import TABLES
+from go_get_it.go_get_it import Database
+from functions.functions import uuid
+from go_get_it.tables import TABLES
 
 app = Flask(__name__)
 ggi = Database()
