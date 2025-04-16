@@ -1,6 +1,8 @@
 import sqlite3
 from typing import Optional
+from functions import uuid
 from tables import TABLES
+from seed import SEED
 
 class Database():
     """
@@ -8,10 +10,11 @@ class Database():
     """
     def __init__(self):
         self.tables = TABLES
+        self.seed = SEED
         pass
 
     def go_connect_db(self):
-        return sqlite3.connect('/app/data/my_database.db')
+        return sqlite3.connect('/app/misc/data/demiplane.db')
 
     def create_db(self):
         db = self.go_connect_db()
@@ -99,3 +102,19 @@ class Database():
 
         db.commit()
         db.close()
+
+    def go_seed_db(self):
+        for table, seed in self.seed.items():
+            for data, field in seed.items():
+                seeded_data = self.go_get_one(table, {field:data})
+
+                if not seeded_data:
+                    self.go_add_new(table, {"id": uuid(), field:data})
+
+
+
+
+
+
+
+

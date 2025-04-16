@@ -37,18 +37,32 @@ class CharacterSheet:
                 "quantity": "number",
             }
 
+        self.character_class_field_type_mapping = {
+                "id": "hidden",
+                "character_id": "hidden",
+                "class_id": "hidden",
+                "level": "number",
+        }
+
     def create_form(self):
         form = []
         # Character
+        form.append("<h3>Character</h3>")
         character = ggi.go_get_one('character', {'id': self.character_id}) if self.character_id else None
         character_form = self._build_form('character', self.character_field_type_mapping, character)
         form.append(character_form)
 
+        #Class
+        form.append("<h3>Classes</h3>")
+        character_class_form = self._build_form('class_to_character', self.character_class_field_type_mapping)
+        form.append(character_class_form)
+
         # Inventory
+        form.append("<h3>Inventory</h3>")
         inventory_form = self._build_form('inventory', self.inventory_field_type_mapping)
         form.append(inventory_form)
 
-        return "<br>".join(form)
+        return "".join(form)
 
     def _build_form(self, table_name: str, field_types: dict, data: Optional[dict] = None, skip_fields: list = []):
         # Build from character table

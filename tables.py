@@ -50,12 +50,12 @@ TABLES = {
     "class": {
         "id": _id,
         "name": _text(),
-        "level": _integer,
     },
     "class_to_character": {
         "id": _id,
         "character_id": _fk,
         "class_id": _integer,
+        "level": _integer,
     },
     "feats_and_traits": {
         "id": _id,
