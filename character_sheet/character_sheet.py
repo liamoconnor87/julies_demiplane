@@ -40,8 +40,60 @@ class CharacterSheet:
         self.character_class_field_type_mapping = {
                 "id": "hidden",
                 "character_id": "hidden",
-                "class_id": "hidden",
+                "class_id": "select",
                 "level": "number",
+        }
+
+        self.feat_and_trait_field_type_mapping = {
+                "id": "hidden",
+                "character_id": "hidden",
+                "name": "text",
+                "description": "text",
+        }
+
+        self.abilities_field_type_mapping = {
+            "strength": {
+                "id": "hidden",
+                "character_id": "hidden",
+                "value": "number",
+                "modifier": "number",
+                "proficient": "checkbox",
+            },
+            "dexterity": {
+                "id": "hidden",
+                "character_id": "hidden",
+                "value": "number",
+                "modifier": "number",
+                "proficient": "checkbox",
+            },
+            "constitution": {
+                "id": "hidden",
+                "character_id": "hidden",
+                "value": "number",
+                "modifier": "number",
+                "proficient": "checkbox",
+            },
+            "intelligence": {
+                "id": "hidden",
+                "character_id": "hidden",
+                "value": "number",
+                "modifier": "number",
+                "proficient": "checkbox",
+            },
+            "wisdom": {
+                "id": "hidden",
+                "character_id": "hidden",
+                "value": "number",
+                "modifier": "number",
+                "proficient": "checkbox",
+            },
+            "charisma": {
+                "id": "hidden",
+                "character_id": "hidden",
+                "value": "number",
+                "modifier": "number",
+                "proficient": "checkbox",
+            },
         }
 
     def create_form(self):
@@ -52,19 +104,43 @@ class CharacterSheet:
         character_form = self._build_form('character', self.character_field_type_mapping, character)
         form.append(character_form)
 
-        #Class
+        # Class
         form.append("<h3>Classes</h3>")
-        character_class_form = self._build_form('class_to_character', self.character_class_field_type_mapping)
+        classes = ggi.go_get_all('class') or []
+        options = []
+        for c in classes:
+            options.append({c['id']: c['name']})
+
+        character_class_form = self._build_form('class_to_character', self.character_class_field_type_mapping, options=options)
         form.append(character_class_form)
+
+        # Feats & Traits
+        form.append("<h3>Feats & Traits</h3>")
+        feats_form = self._build_form('feat_and_trait', self.feat_and_trait_field_type_mapping)
+        form.append(feats_form)
 
         # Inventory
         form.append("<h3>Inventory</h3>")
         inventory_form = self._build_form('inventory', self.inventory_field_type_mapping)
         form.append(inventory_form)
 
+        # Abilities
+        form.append("<h3>Abilities</h3>")
+        for ability in self.abilities_field_type_mapping:
+            form.append(f"<h4>{ability}</h4>")
+            ability_form = self._build_form(ability, self.abilities_field_type_mapping[ability])
+            form.append(ability_form)
+
+
         return "".join(form)
 
-    def _build_form(self, table_name: str, field_types: dict, data: Optional[dict] = None, skip_fields: list = []):
+    def _build_form(
+        self,
+        table_name: str,
+        field_types: dict,
+        data: Optional[dict] = None,
+        skip_fields: list = [],
+        options: Optional[list[dict[str, str]]] = []):
         # Build from character table
             table = TABLES[table_name]
             fields_list = []
@@ -76,11 +152,17 @@ class CharacterSheet:
             field_type_mapping = field_types
 
             fields = []
+            selection = ""
             for field in fields_list:
                 field_value = data[field] if data else ""
                 field_type = field_type_mapping.get(field, "text")
 
-                create_field = render_template('field.html', field=field, field_type=field_type, field_value=field_value, table=table_name)
+                if field_type == "select":
+                    for opt in options or []:
+                        for k, v in opt.items():
+                            selection += f'<option value="{k}">{v}</option>'
+
+                create_field = render_template('field.html', field=field, field_type=field_type, field_value=field_value, table=table_name, options=selection)
                 fields.append(create_field)
 
             return "".join(fields)
@@ -132,6 +214,21 @@ class CharacterSheet:
 
             return character_id
 
+        def _save_class_to_character_values(character_id: str):
+            table_name = 'class_to_character'
+            character_id = character_id
+            class_id = request_form.get(f'{table_name}-class_id')
+            level = request_form.get(f'{table_name}-level')
+
+            class_to_character = {
+                "id": uuid(),
+                "character_id": character_id,
+                "class_id": class_id,
+                "level": level,
+            }
+
+            ggi.go_add_new('class_to_character', class_to_character)
+
         def _save_inventory_values(character_id: str):
             table_name = 'inventory'
             inventory_id = uuid()
@@ -153,8 +250,29 @@ class CharacterSheet:
 
             return inventory_id
 
+        def _save_feat_and_trait_values(character_id: str):
+            table_name = 'feat_and_trait'
+            feat_and_trait_id = uuid()
+            name = request_form.get(f'{table_name}-name')
+            description = request_form.get(f'{table_name}-description')
+
+            # Only trigger save if there is a name
+            if name:
+                feat_and_trait = {
+                    "id": feat_and_trait_id,
+                    "name": name,
+                    "description": description,
+                    "character_id": character_id,
+                }
+
+                ggi.go_add_new('feat_and_trait', feat_and_trait)
+
+            return feat_and_trait_id
+
         character_id = _save_character_values()
+        _save_class_to_character_values(character_id)
         _save_inventory_values(character_id)
+        _save_feat_and_trait_values(character_id)
         return character_id
 
 
