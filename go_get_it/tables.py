@@ -54,7 +54,7 @@ TABLES = {
     "class_to_character": {
         "id": _id,
         "character_id": _fk,
-        "class_id": _integer,
+        "class_id": _fk,
         "level": _integer,
     },
     "feat_and_trait": {

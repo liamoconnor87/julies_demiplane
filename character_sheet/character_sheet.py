@@ -220,14 +220,15 @@ class CharacterSheet:
             class_id = request_form.get(f'{table_name}-class_id')
             level = request_form.get(f'{table_name}-level')
 
-            class_to_character = {
-                "id": uuid(),
-                "character_id": character_id,
-                "class_id": class_id,
-                "level": level,
-            }
+            if level:
+                class_to_character = {
+                    "id": uuid(),
+                    "character_id": character_id,
+                    "class_id": class_id,
+                    "level": level,
+                }
 
-            ggi.go_add_new('class_to_character', class_to_character)
+                ggi.go_add_new('class_to_character', class_to_character)
 
         def _save_inventory_values(character_id: str):
             table_name = 'inventory'
@@ -248,7 +249,6 @@ class CharacterSheet:
 
                 ggi.go_add_new('inventory', inventory)
 
-            return inventory_id
 
         def _save_feat_and_trait_values(character_id: str):
             table_name = 'feat_and_trait'
@@ -267,12 +267,43 @@ class CharacterSheet:
 
                 ggi.go_add_new('feat_and_trait', feat_and_trait)
 
-            return feat_and_trait_id
+
+        def _save_ability_values(character_id: str):
+            abilities =[
+                "strength",
+                "dexterity",
+                "constitution",
+                "intelligence",
+                "wisdom",
+                "charisma",
+            ]
+
+            for ability in abilities:
+                value = request_form.get(f'{ability}-value')
+                modifier = request_form.get(f'{ability}-modifier')
+                proficient = 0
+                if request_form.get(f'{ability}-proficient'):
+                    if request_form[f"{ability}-proficient"] == "1":
+                        proficient = 1
+
+                if not value:
+                    continue
+
+                character_ability = {
+                    "id": uuid(),
+                    "character_id": character_id,
+                    "value": value,
+                    "modifier": modifier,
+                    "proficient": int(proficient),
+                }
+
+                ggi.go_add_new(ability, character_ability)
 
         character_id = _save_character_values()
         _save_class_to_character_values(character_id)
         _save_inventory_values(character_id)
         _save_feat_and_trait_values(character_id)
+        _save_ability_values(character_id)
         return character_id
 
 

@@ -12,7 +12,7 @@ debug = None
 
 @app.route('/', methods=['GET', 'POST'])
 def character_sheet():
-    character_id = request.args.get('character_id') or "01964470e166b76ed7f388e92f6faea3" # debug purposes
+    character_id = request.args.get('character_id') or "01964572c6cdff34363c8041dbc0c9b3" # debug purposes
     debug = f"{character_id} - {db.go_get_all('character', count=True)} - {datetime.datetime.now()}"
 
     character_sheet = CharacterSheet(character_id=character_id)
