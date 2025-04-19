@@ -5,7 +5,6 @@
 {% if field_type == "select" %}
     <select id="{{ table }}-{{ field }}" name="{{ table }}-{{ field }}">
         {{ options | safe }}
-        <option value="{{ option }}">{{ option }}</option>
     </select>
 {% else %}
     {% if field_type == "checkbox" %}

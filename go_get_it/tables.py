@@ -10,7 +10,7 @@ def _text(limit: Optional[int] = None):
 
 _integer = "INTEGER"
 _mediumtext = "MEDIUMTEXT"
-_boolean = "INTEGER NOT NULL DEFAULT 0 CHECK (value IN (0, 1))"
+_boolean = "INTEGER NOT NULL DEFAULT 0"
 _fk = "TEXT"
 
 """

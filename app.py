@@ -1,5 +1,4 @@
 from flask import Flask, redirect, render_template, request, url_for
-import datetime
 from character_sheet.character_sheet import CharacterSheet
 from go_get_it.go_get_it import Database
 from misc.config import DEBUG, secret_key # type: ignore
@@ -12,8 +11,8 @@ debug = None
 
 @app.route('/', methods=['GET', 'POST'])
 def character_sheet():
-    character_id = request.args.get('character_id') or "01964572c6cdff34363c8041dbc0c9b3" # debug purposes
-    debug = f"{character_id} - {db.go_get_all('character', count=True)} - {datetime.datetime.now()}"
+    character_id = request.args.get('character_id') or "01964e592722bf14ee3314effeb3ec0b" # debug purposes
+    debug = f"{character_id}"
 
     character_sheet = CharacterSheet(character_id=character_id)
     character_sheet_form = character_sheet.create_form()
