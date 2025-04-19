@@ -1,5 +1,5 @@
 {% if field_type != "hidden" %}
-    <label for="{{ table }}-{{ field }}">{{ field }}</label>
+    <label for="{{ table }}-{{ field }}">{{ field | title | replace("_", " ") }}</label>
 {% endif %}
 
 {% if field_type == "select" %}

@@ -11,7 +11,7 @@ debug = None
 
 @app.route('/', methods=['GET', 'POST'])
 def character_sheet():
-    character_id = request.args.get('character_id') or "01964e592722bf14ee3314effeb3ec0b" # debug purposes
+    character_id = request.args.get('character_id') or "01964ee7cdcc1641bd25fe601c157a58" # debug purposes
     debug = f"{character_id}"
 
     character_sheet = CharacterSheet(character_id=character_id)

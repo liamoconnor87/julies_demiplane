@@ -33,8 +33,7 @@
 
     {% if character_classes %}
         {% for class in character_classes %}
-            <p>Level:{{ class['level'] }}</p>
-            <p>Class:{{ class['name'] }}<a href="/{{ character_id }}/class/{{ class['id'] }}/remove">Delete</a></p>
+            <p>{{ class['name'] | title }}: {{ class['level'] }} <a href="/{{ character_id }}/class/{{ class['id'] }}/remove">Delete</a></p>
         {% endfor %}
     {% else %}
         <p>No classes found.</p>

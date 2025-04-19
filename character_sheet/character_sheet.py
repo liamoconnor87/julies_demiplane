@@ -8,7 +8,7 @@ app = Flask(__name__)
 ggi = Database()
 
 class CharacterSheet:
-    # TODO: Add validation!!
+    # TODO: Add validation
     def __init__(self, character_id: Optional[str] = None):
         self.character_id = character_id
         self.character_field_type_mapping = {
@@ -96,6 +96,75 @@ class CharacterSheet:
             },
         }
 
+        self.skills_field_type_mapping = {
+            "strength_skills": {
+                "id": "hidden",
+                "strength_id": "hidden",
+                "saving_throw": "number",
+                "athletics": "number",
+                "athletics_proficient": "checkbox",
+            },
+            "dexterity_skills": {
+                "id": "hidden",
+                "dexterity_id": "hidden",
+                "saving_throw": "number",
+                "acrobatics": "number",
+                "acrobatics_proficient": "checkbox",
+                "sleight_of_hand": "number",
+                "sleight_of_hand_proficient": "checkbox",
+                "stealth": "number",
+                "stealth_proficient": "checkbox",
+            },
+            "constitution_skills": {
+                "id": "hidden",
+                "constitution_id": "hidden",
+                "saving_throw": "number",
+            },
+            "intelligence_skills": {
+                "id": "hidden",
+                "intelligence_id": "hidden",
+                "saving_throw": "number",
+                "arcana": "number",
+                "arcana_proficient": "checkbox",
+                "history": "number",
+                "history_proficient": "checkbox",
+                "investigation": "number",
+                "investigation_proficient": "checkbox",
+                "nature": "number",
+                "nature_proficient": "checkbox",
+                "religion": "number",
+                "religion_proficient": "checkbox",
+            },
+            "wisdom_skills": {
+                "id": "hidden",
+                "wisdom_id": "hidden",
+                "saving_throw": "number",
+                "animal_handling": "number",
+                "animal_handling_proficient": "checkbox",
+                "insight": "number",
+                "insight_proficient": "checkbox",
+                "medicine": "number",
+                "medicine_proficient": "checkbox",
+                "perception": "number",
+                "perception_proficient": "checkbox",
+                "survival": "number",
+                "survival_proficient": "checkbox",
+            },
+            "charisma_skills": {
+                "id": "hidden",
+                "charisma_id": "hidden",
+                "saving_throw": "number",
+                "deception": "number",
+                "deception_proficient": "checkbox",
+                "intimidation": "number",
+                "intimidation_proficient": "checkbox",
+                "performance": "number",
+                "performance_proficient": "checkbox",
+                "persuasion": "number",
+                "persuasion_proficient": "checkbox",
+            },
+        }
+
         self.ability_to_skill_mapping = {
             "strength": ["athletics"],
             "dexterity": ["acrobatics", "sleight_of_hand", "stealth"],
@@ -152,18 +221,14 @@ class CharacterSheet:
             ability_form = self._build_form(ability, self.abilities_field_type_mapping[ability], existing_ability)
             form.append(ability_form)
 
+            # Skills
+            ability_skills = None
             if existing_ability:
-                skills = ggi.go_get_one(f"{ability}_skills", {f"{ability}_id": existing_ability['id']})
+                ability_skills = ggi.go_get_one(f"{ability}_skills", {f"{ability}_id": existing_ability['id']})
 
-                skill_scores = []
-                if skills:
-                    for k, v in skills.items():
-                        if "id" in k:
-                            continue
-                        skill_scores.append(f"{k}: {v}")
+            skill_form = self._build_form(f"{ability}_skills", self.skills_field_type_mapping[f"{ability}_skills"], ability_skills)
+            form.append(skill_form)
 
-                    if skill_scores:
-                        form.append(", ".join(skill_scores))
 
         return "".join(form)
 
@@ -263,7 +328,6 @@ class CharacterSheet:
 
                 ggi.go_add_new('class_to_character', class_to_character)
 
-
         def _save_inventory_values(character_id: str):
             table_name = 'inventory'
             inventory_id = uuid()
@@ -283,7 +347,6 @@ class CharacterSheet:
 
                 ggi.go_add_new('inventory', inventory)
 
-
         def _save_feat_and_trait_values(character_id: str):
             table_name = 'feat_and_trait'
             feat_and_trait_id = uuid()
@@ -301,9 +364,12 @@ class CharacterSheet:
 
                 ggi.go_add_new('feat_and_trait', feat_and_trait)
 
-
         def _save_ability_values(character_id: str):
             import math
+            character = ggi.go_get_one('character', {'id': character_id})
+            character_proficiency = 0
+            if character:
+                character_proficiency = character.get('proficiency', 0)
 
             abilities =[
                 "strength",
@@ -313,7 +379,7 @@ class CharacterSheet:
                 "wisdom",
                 "charisma",
             ]
-
+            # TODO: rename proficient field (everwhere) to be saving throw proficient
             for ability in abilities:
                 value = request_form.get(f'{ability}-value')
                 if value:
@@ -323,17 +389,17 @@ class CharacterSheet:
                 # Calc the ability modifier
                 modifier = math.floor((value - 10) / 2)
 
-                proficient = 0
+                saving_proficient = 0
                 if request_form.get(f'{ability}-proficient'):
                     if request_form[f"{ability}-proficient"] == "1":
-                        proficient = 1
+                        saving_proficient = 1
 
                 character_ability = {
                     "id": "",
                     "character_id": character_id,
                     "value": value,
                     "modifier": modifier,
-                    "proficient": int(proficient),
+                    "proficient": int(saving_proficient),
                 }
 
                 existing_ability = ggi.go_get_one(ability, {"character_id": character_id})
@@ -351,20 +417,28 @@ class CharacterSheet:
                 skills = ggi.go_get_one(f"{ability}_skills", {f"{ability}_id": ability_id})
 
                 modifier_score = modifier
-                proficient_score = 0
-                if proficient:
-                    character = ggi.go_get_one('character', {'id': character_id})
+                saving_proficient_score = 0
+                if saving_proficient:
                     if character and character.get('proficiency'):
-                        proficient_score += int(character['proficiency'])
+                        saving_proficient_score += character_proficiency
+
 
                 characters_skills = {
                     "id": "",
                     f"{ability}_id": ability_id,
-                    "saving_throw": modifier_score + proficient_score,
+                    "saving_throw": modifier_score + saving_proficient_score,
                 }
 
                 for skill in self.ability_to_skill_mapping.get(ability, []):
-                    characters_skills[skill] = modifier_score
+                    skill_proficient = 0
+                    skill_proficient_score = 0
+                    if request_form.get(f'{ability}_skills-{skill}_proficient'):
+                        if request_form[f"{ability}_skills-{skill}_proficient"] == "1":
+                            skill_proficient_score += character_proficiency
+                            skill_proficient = 1
+
+                    characters_skills[skill] = modifier_score + skill_proficient_score
+                    characters_skills[f"{skill}_proficient"] = int(skill_proficient)
 
                 if skills:
                     skill_id = skills['id']
