@@ -13,21 +13,38 @@
     {% endif %}
 
     <h1>Julie's Demiplane</h1>
+    {% if inventory %}
+        {% for item in inventory %}
+        <p>{{ item['name'] }} - {{ item['quantity'] }}</p>
+        <p>{{ item['description'] }} <a href="/{{ character_id }}/inventory/{{ item['id'] }}/remove">Delete</a></p>
+        {% endfor %}
+    {% else %}
+        <p>No inventory found.</p>
+    {% endif %}
+
+    {% if feats_and_traits %}
+        {% for item in feats_and_traits %}
+        <p>{{ item['name'] }} - {{ item['quantity'] }}</p>
+        <p>{{ item['description'] }} <a href="/{{ character_id }}/feat-and-trait/{{ item['id'] }}/remove">Delete</a></p>
+        {% endfor %}
+    {% else %}
+        <p>None found.</p>
+    {% endif %}
+
+    {% if character_classes %}
+        {% for class in character_classes %}
+            <p>{{ class['name'] | title }}: {{ class['level'] }} <a href="/{{ character_id }}/class/{{ class['id'] }}/remove">Delete</a></p>
+        {% endfor %}
+    {% else %}
+        <p>No classes found.</p>
+    {% endif %}
 
     <form action="/" method="POST">
         {{ character_sheet_form | safe }}
+        <br>
         <button type="submit">Save</button>
-
-
     </form>
-    {% if inventory %}
-        {% for item in inventory %}
-            <p>{{ item['name'] }} - {{ item['quantity'] }}</p>
-            <p>{{ item['description'] }} <a href="/{{ character_id }}/{{ item['id'] }}/remove">Delete</a></p>
-        {% endfor %}
-    {% else %}
-        <p>No items found.</p>
-    {% endif %}
+
 </body>
 
 </html>

@@ -10,7 +10,7 @@ def _text(limit: Optional[int] = None):
 
 _integer = "INTEGER"
 _mediumtext = "MEDIUMTEXT"
-_boolean = "INTEGER NOT NULL DEFAULT 0 CHECK (value IN (0, 1))"
+_boolean = "INTEGER NOT NULL DEFAULT 0"
 _fk = "TEXT"
 
 """
@@ -54,10 +54,10 @@ TABLES = {
     "class_to_character": {
         "id": _id,
         "character_id": _fk,
-        "class_id": _integer,
+        "class_id": _fk,
         "level": _integer,
     },
-    "feats_and_traits": {
+    "feat_and_trait": {
         "id": _id,
         "character_id": _fk,
         "name": _text(),
@@ -110,14 +110,18 @@ TABLES = {
         "strength_id": _fk,
         "saving_throw": _integer,
         "athletics": _integer,
+        "athletics_proficient": _boolean,
     },
     "dexterity_skills": {
         "id": _id,
         "dexterity_id": _fk,
         "saving_throw": _integer,
         "acrobatics": _integer,
+        "acrobatics_proficient": _boolean,
         "sleight_of_hand": _integer,
+        "sleight_of_hand_proficient": _boolean,
         "stealth": _integer,
+        "stealth_proficient": _boolean,
     },
     "constitution_skills": {
         "id": _id,
@@ -129,28 +133,42 @@ TABLES = {
         "intelligence_id": _fk,
         "saving_throw": _integer,
         "arcana": _integer,
+        "arcana_proficient": _boolean,
         "history": _integer,
+        "history_proficient": _boolean,
         "investigation": _integer,
+        "investigation_proficient": _boolean,
         "nature": _integer,
+        "nature_proficient": _boolean,
         "religion": _integer,
+        "religion_proficient": _boolean,
     },
     "wisdom_skills": {
         "id": _id,
         "wisdom_id": _fk,
         "saving_throw": _integer,
         "animal_handling": _integer,
+        "animal_handling_proficient": _boolean,
         "insight": _integer,
+        "insight_proficient": _boolean,
         "medicine": _integer,
+        "medicine_proficient": _boolean,
         "perception": _integer,
+        "perception_proficient": _boolean,
         "survival": _integer,
+        "survival_proficient": _boolean,
     },
     "charisma_skills": {
         "id": _id,
         "charisma_id": _fk,
         "saving_throw": _integer,
         "deception": _integer,
+        "deception_proficient": _boolean,
         "intimidation": _integer,
+        "intimidation_proficient": _boolean,
         "performance": _integer,
+        "performance_proficient": _boolean,
         "persuasion": _integer,
+        "persuasion_proficient": _boolean,
     },
 }
