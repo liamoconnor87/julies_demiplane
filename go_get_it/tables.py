@@ -33,12 +33,12 @@ TABLES = {
         "armour_class": _integer,
         "initiative": _integer,
         "speed": _integer,
+        "xp": _integer,
         "proficiency": _integer,
         "health_points": _integer,
         "hit_dice": _text(),
         "passive_wisdom": _integer,
         "temporary_hit_points": _integer,
-        "xp": _integer,
     },
     "inventory": {
         "id": _id,

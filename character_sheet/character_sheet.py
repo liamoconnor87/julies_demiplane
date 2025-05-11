@@ -21,12 +21,12 @@ class CharacterSheet:
                 "armour_class": "number",
                 "initiative": "number",
                 "speed": "number",
+                "xp": "number",
                 "proficiency": "number",
                 "health_points": "number",
                 "hit_dice": "text",
                 "passive_wisdom": "number",
                 "temporary_hit_points": "number",
-                "xp": "number",
             }
 
         self.inventory_field_type_mapping = {
@@ -240,30 +240,30 @@ class CharacterSheet:
         skip_fields: list = [],
         options: Optional[list[dict[str, str]]] = []):
         # Build from character table
-            table = TABLES[table_name]
-            fields_list = []
-            for k in table.keys():
-                if k in skip_fields:
-                    continue
-                fields_list.append(k)
+        table = TABLES[table_name]
+        fields_list = []
+        for k in table.keys():
+            if k in skip_fields:
+                continue
+            fields_list.append(k)
 
-            field_type_mapping = field_types
+        field_type_mapping = field_types
 
-            fields = []
-            selection = ""
-            for field in fields_list:
-                field_value = data[field] if data else ""
-                field_type = field_type_mapping.get(field, "text")
+        fields = []
+        selection = ""
+        for field in fields_list:
+            field_value = data[field] if data else ""
+            field_type = field_type_mapping.get(field, "text")
 
-                if field_type == "select":
-                    for opt in options or []:
-                        for k, v in opt.items():
-                            selection += f'<option value="{k}">{v}</option>'
+            if field_type == "select":
+                for opt in options or []:
+                    for k, v in opt.items():
+                        selection += f'<option value="{k}">{v}</option>'
 
-                create_field = render_template('field.html', field=field, field_type=field_type, field_value=field_value, table=table_name, options=selection)
-                fields.append(create_field)
+            create_field = render_template('field.html', field=field, field_type=field_type, field_value=field_value, table=table_name, options=selection)
+            fields.append(create_field)
 
-            return "".join(fields)
+        return "".join(fields)
 
     def process_form(self, request_form):
         def _save_character_values():
