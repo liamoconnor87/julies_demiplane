@@ -13,15 +13,14 @@
     <link rel="stylesheet" href="/home/liamoc/webdevliam/julies_demiplane/static/css/dnd_sheet.css">
 </head>
 <body>
-    <!-- <h3>Character</h3> -->
     <form action="/" method="POST" class="char-form container">
         <div class="char-form-alignment col">
-
+            <h4>Character</h4>
             <div class="row">
                 <input type="hidden" id="character-id" name="character-id" value="01964ee7cdcc1641bd25fe601c157a58">
                 <div class="char-field-lg field-margins">
                     <input class="char-field-input" type="text" id="character-name" name="character-name" value="Julie">
-                    <label class="char-field-label" for="character-name">Character Name</label>
+                    <label class="char-field-label" for="character-name">Name</label>
                 </div>
 
                 <div class="char-field-square field-margins">
@@ -46,7 +45,8 @@
                 </div>
 
             </div>
-
+            <br>
+            <h4>Class</h4>
             <div class="row">
                 <input type="hidden" id="class_to_character-id" name="class_to_character-id" value="">
                 <input type="hidden" id="class_to_character-character_id" name="class_to_character-character_id" value="">
@@ -103,6 +103,7 @@
 
             </div>
             <br>
+            <h4>Combat</h4>
             <div class="row">
                 <div class="char-field-square field-margins">
                     <label class="char-field-label-square" for="character-armour_class">Armour Class</label>
@@ -131,7 +132,7 @@
 
                 <div class="char-field-m field-margins">
                     <label class="char-field-label-xp" for="character-xp">XP</label>
-                    <input class="char-field-input" type="number" id="character-xp" name="character-xp" value="355000">
+                    <input class="char-field-input-xp" type="number" id="character-xp" name="character-xp" value="355000">
                 </div>
 
             </div>
@@ -223,31 +224,6 @@
         <br>
         <br>
         <br>
-
-        <!-- <input type="hidden" id="strength-id" name="strength-id" value="01964ee89914e58a7f909e07cc937b93">
-        <input type="hidden" id="strength-character_id" name="strength-character_id"
-            value="01964ee7cdcc1641bd25fe601c157a58">
-        <label for="strength-value">Value</label>
-        <input type="number" id="strength-value" name="strength-value" value="8">
-        <br>
-        <label for="strength-modifier">Modifier</label>
-        <input type="number" id="strength-modifier" name="strength-modifier" value="-1">
-        <br>
-        <label for="strength-proficient">Proficient</label>
-        <input type="checkbox" id="strength-proficient" name="strength-proficient" value="1" checked="">
-        <br>
-        <input type="hidden" id="strength_skills-id" name="strength_skills-id" value="01964ee8991956b31c9e4ed27895b17d">
-        <input type="hidden" id="strength_skills-strength_id" name="strength_skills-strength_id"
-            value="01964ee89914e58a7f909e07cc937b93">
-        <label for="strength_skills-saving_throw">Saving throw</label>
-        <input type="number" id="strength_skills-saving_throw" name="strength_skills-saving_throw" value="1">
-        <br>
-        <label for="strength_skills-athletics">Athletics</label>
-        <input type="number" id="strength_skills-athletics" name="strength_skills-athletics" value="1">
-        <br>
-        <label for="strength_skills-athletics_proficient">Athletics proficient</label>
-        <input type="checkbox" id="strength_skills-athletics_proficient" name="strength_skills-athletics_proficient"
-            value="1" checked=""> -->
         <br>
         <h4>dexterity</h4>
         <input type="hidden" id="dexterity-id" name="dexterity-id" value="01964ee8991d7fb56770a7044f515b7f">

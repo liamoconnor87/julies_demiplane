@@ -101,7 +101,7 @@ input[type="number"] {
     opacity: .7;
 }
 
-.char-field-input, .char-field-input-square-lg, .char-field-input-square-lg-wtoggle, .char-field-input-square, .char-field-label, .char-field-label-square, .char-field-btn, .char-field-label-xp {
+.char-field-input, .char-field-input-square-lg, .char-field-input-square-lg-wtoggle, .char-field-input-square, .char-field-label, .char-field-label-square, .char-field-btn, .char-field-label-xp, .char-field-input-xp {
     width: inherit !important;
     all: unset;
     box-sizing: border-box;
@@ -112,6 +112,13 @@ input[type="number"] {
 .char-field-input {
     font-size: 1.7rem;
     padding-top: .9rem;
+}
+
+.char-field-input-xp {
+    text-align: center;
+    padding-left: 0;
+    font-size: 2.3rem;
+    padding-top: .6rem;
 }
 
 .char-field-input-square, .char-field-input-square-lg, .char-field-input-square-lg-wtoggle {
