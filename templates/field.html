@@ -1,21 +1,42 @@
-{% if field_type != "hidden" %}
-    <label for="{{ table }}-{{ field }}">{{ field | title | replace("_", " ") }}</label>
-{% endif %}
+{% if field_type in ("hidden", "checkbox") %}
+    <input
+    class="{{ input_styles }}"
+    type="{{ field_type }}"
+    id="{{ table_name }}-{{ field }}"
+    name="{{ table_name }}-{{ field }}"
+    value="{{ value }}"
+    {% if field_type=="checkbox" and field_value == 1 %} checked {% endif %}
+    {% if disabled %} disabled {% endif %}>
 
-{% if field_type == "select" %}
-    <select id="{{ table }}-{{ field }}" name="{{ table }}-{{ field }}">
-        {{ options | safe }}
-    </select>
 {% else %}
-    {% if field_type == "checkbox" %}
-        {% set value = 1 %}
-    {% else %}
-        {% set value = field_value %}
-    {% endif %}
 
-    <input type="{{ field_type }}" id="{{ table }}-{{ field }}" name="{{ table }}-{{ field }}" value="{{ value }}" {%
-        if field_type=="checkbox" and field_value == 1 %}checked{% endif %}>
-{% endif %}
-{% if field_type != "hidden" %}
-    <br>
+    <div class="{{ field_container_styles }}">
+        {% if field_type != "hidden" %}
+            <label class="{{ label_styles }}" for="{{ table_name }}-{{ field }}">{{ field_name }}</label>
+        {% endif %}
+
+        {% if field_type == "select" %}
+            <select id="{{ table_name }}-{{ field }}" name="{{ table_name }}-{{ field }}">
+                {{ options | safe }}
+            </select>
+        {% else %}
+            {% if field_type == "checkbox" %}
+                {% set value = 1 %}
+            {% else %}
+                {% set value = field_value %}
+            {% endif %}
+
+            <input
+            class="{{ input_styles }}"
+            type="{{ field_type }}"
+            id="{{ table_name }}-{{ field }}"
+            name="{{ table_name }}-{{ field }}"
+            value="{{ value }}"
+            {% if field_type=="checkbox" and field_value == 1 %} checked {% endif %}
+            {% if disabled %} disabled {% endif %}>
+        {% endif %}
+        {% if field_type != "hidden" %}
+            <br>
+        {% endif %}
+    </div>
 {% endif %}

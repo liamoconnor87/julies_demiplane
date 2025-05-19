@@ -29,8 +29,8 @@ def character_sheet():
                 'level': char_class['level']
             })
 
-    inventory = db.go_get_all('inventory', {'character_id': character_id})
-    feats_and_traits = db.go_get_all('feat_and_trait', {'character_id': character_id})
+    # inventory = db.go_get_all('inventory', {'character_id': character_id})
+    # feats_and_traits = db.go_get_all('feat_and_trait', {'character_id': character_id})
 
     if request.method == 'POST':
         character_id = character_sheet.process_form(request.form)
@@ -41,9 +41,9 @@ def character_sheet():
         character_id=character_id,
         character_sheet_form=character_sheet_form,
         debug=debug,
-        character_classes=character_classes,
-        inventory=inventory,
-        feats_and_traits=feats_and_traits
+        # character_classes=character_classes,
+        # inventory=inventory,
+        # feats_and_traits=feats_and_traits
         )
 
 @app.route("/<character_id>/inventory/<inventory_id>/remove")

@@ -21,12 +21,14 @@ class CharacterSheet:
                 "armour_class": "number",
                 "initiative": "number",
                 "speed": "number",
-                "xp": "number",
                 "proficiency": "number",
+                "passive_wisdom": "number",
+                "xp": "number",
                 "health_points": "number",
                 "hit_dice": "text",
-                "passive_wisdom": "number",
                 "temporary_hit_points": "number",
+                # Non table fields
+                "current_health_points": "number",
             }
 
         self.inventory_field_type_mapping = {
@@ -174,10 +176,395 @@ class CharacterSheet:
             "charisma": ["deception", "intimidation", "performance", "persuasion"],
         }
 
+        """
+        {
+            table_name: {
+                field_name: {
+                    field_container_styles: str,
+                    input_styles: str,
+                    label_styles: str,
+                },
+                field_name: {
+                    field_container_styles: str,
+                    input_styles: str,
+                    label_styles: str,
+                }
+            }
+        }
+        """
+        self.field_styles = {
+            "character": {
+                "name": {
+                    "field_container_styles": "char-field field-margins",
+                    "input_styles": "char-field-input",
+                    "label_styles": "char-field-label",
+                },
+                "level": {
+                    "field_container_styles": "char-field-square field-margins",
+                    "input_styles": "char-field-input-square",
+                    "label_styles": "char-field-label-square",
+                    "disabled": "disabled",
+                },
+                "race": {
+                    "field_container_styles": "char-field field-margins",
+                    "input_styles": "char-field-input",
+                    "label_styles": "char-field-label",
+                },
+                "background": {
+                    "field_container_styles": "char-field field-margins",
+                    "input_styles": "char-field-input",
+                    "label_styles": "char-field-label",
+                },
+                "alignment": {
+                    "field_container_styles": "char-field field-margins",
+                    "input_styles": "char-field-input",
+                    "label_styles": "char-field-label",
+                },
+                "armour_class": {
+                    "field_container_styles": "char-field-square field-margins",
+                    "input_styles": "char-field-input-square",
+                    "label_styles": "char-field-label-square",
+                },
+                "initiative": {
+                    "field_container_styles": "char-field-square field-margins",
+                    "input_styles": "char-field-input-square",
+                    "label_styles": "char-field-label-square",
+                },
+                "speed": {
+                    "field_container_styles": "char-field-square field-margins",
+                    "input_styles": "char-field-input-square",
+                    "label_styles": "char-field-label-square",
+                },
+                "xp": {
+                    "field_name": "XP",
+                    "field_container_styles": "char-field-m field-margins",
+                    "input_styles": "char-field-input-xp",
+                    "label_styles": "char-field-label-xp",
+                },
+                "proficiency": {
+                    "field_container_styles": "char-field-square field-margins",
+                    "input_styles": "char-field-input-square",
+                    "label_styles": "char-field-label-square",
+                },
+                "passive_wisdom": {
+                    "field_container_styles": "char-field-sm field-margins",
+                    "input_styles": "char-field-input-square",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "health_points": {
+                    "field_container_styles": "char-field-square-lg field-margins",
+                    "input_styles": "char-field-input-square-lg",
+                    "label_styles": "char-field-label-square",
+                },
+                "hit_dice": {
+                    "field_container_styles": "char-field-sm-col field-margins",
+                    "input_styles": "char-field-input-square hd-tweaks",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "temporary_hit_points": {
+                    "field_name": "Temp HP",
+                    "field_container_styles": "char-field-sm-col field-margins",
+                    "input_styles": "char-field-input-square hd-tweaks",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "current_health_points": {
+                    "field_container_styles": "char-field-square-lg field-margins",
+                    "input_styles": "char-field-input-square-lg",
+                    "label_styles": "char-field-label-square",
+                    "disabled": "disabled",
+                }
+            },
+            "strength": {
+                "value": {
+                    "field_name": "Strength",
+                    "field_container_styles": "char-field-square-lg field-margins",
+                    "input_styles": "char-field-input-square-lg",
+                    "label_styles": "char-field-label-square",
+                },
+                "modifier": {
+                    "field_container_styles": "char-field-sm-col field-margins",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "proficient": {
+                    "input_styles": "display-none",
+                }
+            },
+            "dexterity": {
+                "value": {
+                    "field_name": "Dexterity",
+                    "field_container_styles": "char-field-square-lg field-margins",
+                    "input_styles": "char-field-input-square-lg",
+                    "label_styles": "char-field-label-square",
+                },
+                "modifier": {
+                    "field_container_styles": "char-field-sm-col field-margins",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "proficient": {
+                    "input_styles": "display-none",
+                }
+            },
+            "constitution": {
+                "value": {
+                    "field_name": "Constitution",
+                    "field_container_styles": "char-field-square-lg field-margins",
+                    "input_styles": "char-field-input-square-lg",
+                    "label_styles": "char-field-label-square",
+                },
+                "modifier": {
+                    "field_container_styles": "char-field-sm-col field-margins",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "proficient": {
+                    "input_styles": "display-none",
+                }
+            },
+            "intelligence": {
+                "value": {
+                    "field_name": "Intelligence",
+                    "field_container_styles": "char-field-square-lg field-margins",
+                    "input_styles": "char-field-input-square-lg",
+                    "label_styles": "char-field-label-square",
+                },
+                "modifier": {
+                    "field_container_styles": "char-field-sm-col field-margins",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "proficient": {
+                    "input_styles": "display-none",
+                }
+            },
+            "wisdom": {
+                "value": {
+                    "field_name": "Wisdom",
+                    "field_container_styles": "char-field-square-lg field-margins",
+                    "input_styles": "char-field-input-square-lg",
+                    "label_styles": "char-field-label-square",
+                },
+                "modifier": {
+                    "field_container_styles": "char-field-sm-col field-margins",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "proficient": {
+                    "input_styles": "display-none",
+                }
+            },
+            "charisma": {
+                "value": {
+                    "field_name": "Charisma",
+                    "field_container_styles": "char-field-square-lg field-margins",
+                    "input_styles": "char-field-input-square-lg",
+                    "label_styles": "char-field-label-square",
+                },
+                "modifier": {
+                    "field_container_styles": "char-field-sm-col field-margins",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "proficient": {
+                    "input_styles": "display-none",
+                }
+            },
+            "strength_skills": {
+                "saving_throw": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "athletics": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "athletics_proficient": {
+                    "input_styles": "display-none",
+                }
+            },
+
+            "dexterity_skills": {
+                "saving_throw": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "acrobatics": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "acrobatics_proficient": {
+                    "input_styles": "display-none",
+                },
+                "sleight_of_hand": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "sleight_of_hand_proficient": {
+                    "input_styles": "display-none",
+                },
+                "stealth": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "stealth_proficient": {
+                    "input_styles": "display-none",
+                },
+            },
+
+            "constitution_skills": {
+                "saving_throw": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+            },
+
+            "intelligence_skills": {
+                "saving_throw": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "arcana": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "arcana_proficient": {
+                    "input_styles": "display-none",
+                },
+                "history": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "history_proficient": {
+                    "input_styles": "display-none",
+                },
+                "investigation": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "investigation_proficient": {
+                    "input_styles": "display-none",
+                },
+                "nature": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "nature_proficient": {
+                    "input_styles": "display-none",
+                },
+                "religion": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "religion_proficient": {
+                    "input_styles": "display-none",
+                },
+            },
+
+            "wisdom_skills": {
+                "saving_throw": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "animal_handling": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "animal_handling_proficient": {
+                    "input_styles": "display-none",
+                },
+                "insight": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "insight_proficient": {
+                    "input_styles": "display-none",
+                },
+                "medicine": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "medicine_proficient": {
+                    "input_styles": "display-none",
+                },
+                "perception": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "perception_proficient": {
+                    "input_styles": "display-none",
+                },
+                "survival": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "survival_proficient": {
+                    "input_styles": "display-none",
+                },
+            },
+            "charisma_skills": {
+                "saving_throw": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "deception": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "deception_proficient": {
+                    "input_styles": "display-none",
+                },
+                "intimidation": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "intimidation_proficient": {
+                    "input_styles": "display-none",
+                },
+                "performance": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "performance_proficient": {
+                    "input_styles": "display-none",
+                },
+                "persuasion": {
+                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
+                    "input_styles": "char-field-input-square no-caret",
+                    "label_styles": "char-field-label-square text-center",
+                },
+                "persuasion_proficient": {
+                    "input_styles": "display-none",
+                },
+            }
+        }
+
     def create_form(self):
         form = []
         # Character
-        form.append("<h3>Character</h3>")
         character = ggi.go_get_one('character', {'id': self.character_id}) if self.character_id else None
 
         # Work out characters level
@@ -193,30 +580,19 @@ class CharacterSheet:
         character_form = self._build_form('character', self.character_field_type_mapping, character)
         form.append(character_form)
 
-        # Class
-        form.append("<h3>Classes</h3>")
-        classes = ggi.go_get_all('class') or []
-        class_options = [{"": "Please select a class"}]
-        for c in classes:
-            class_options.append({c['id']: c['name']})
+        # # Class
+        # form.append("<h3>Classes</h3>")
+        # classes = ggi.go_get_all('class') or []
+        # class_options = [{"": "Please select a class"}]
+        # for c in classes:
+        #     class_options.append({c['id']: c['name']})
 
-        character_class_form = self._build_form('class_to_character', self.character_class_field_type_mapping, options=class_options)
-        form.append(character_class_form)
-
-        # Feats & Traits
-        form.append("<h3>Feats & Traits</h3>")
-        feats_form = self._build_form('feat_and_trait', self.feat_and_trait_field_type_mapping)
-        form.append(feats_form)
-
-        # Inventory
-        form.append("<h3>Inventory</h3>")
-        inventory_form = self._build_form('inventory', self.inventory_field_type_mapping)
-        form.append(inventory_form)
+        # character_class_form = self._build_form('class_to_character', self.character_class_field_type_mapping, options=class_options)
+        # form.append(character_class_form)
 
         # Abilities
-        form.append("<h3>Abilities</h3>")
+        form.append("<h3>Abilities & Skills</h3>")
         for ability in self.abilities_field_type_mapping:
-            form.append(f"<h4>{ability}</h4>")
             existing_ability = ggi.go_get_one(ability, {"character_id": self.character_id})
             ability_form = self._build_form(ability, self.abilities_field_type_mapping[ability], existing_ability)
             form.append(ability_form)
@@ -229,6 +605,15 @@ class CharacterSheet:
             skill_form = self._build_form(f"{ability}_skills", self.skills_field_type_mapping[f"{ability}_skills"], ability_skills)
             form.append(skill_form)
 
+        # # Feats & Traits
+        # form.append("<h3>Feats & Traits</h3>")
+        # feats_form = self._build_form('feat_and_trait', self.feat_and_trait_field_type_mapping)
+        # form.append(feats_form)
+
+        # # Inventory
+        # form.append("<h3>Inventory</h3>")
+        # inventory_form = self._build_form('inventory', self.inventory_field_type_mapping)
+        # form.append(inventory_form)
 
         return "".join(form)
 
@@ -239,7 +624,7 @@ class CharacterSheet:
         data: Optional[dict] = None,
         skip_fields: list = [],
         options: Optional[list[dict[str, str]]] = []):
-        # Build from character table
+        # Get the fields from the table
         table = TABLES[table_name]
         fields_list = []
         for k in table.keys():
@@ -247,22 +632,195 @@ class CharacterSheet:
                 continue
             fields_list.append(k)
 
+        # Add some custom fields
+        if table_name == "character":
+            fields_list.append("current_health_points")
+
         field_type_mapping = field_types
 
         fields = []
+
         selection = ""
         for field in fields_list:
-            field_value = data[field] if data else ""
+            field_template = "field.html"
+            field_name = field.replace("_", " ").title()
+            field_container_styles = ""
+            input_styles = ""
+            label_styles = ""
+            disabled = ""
+
+            field_value = data.get(field, "") if data else ""
             field_type = field_type_mapping.get(field, "text")
 
+            # NOTE: THIS IS WRONG - DOES NOT SPECIFY WHAT FIELD
             if field_type == "select":
                 for opt in options or []:
                     for k, v in opt.items():
                         selection += f'<option value="{k}">{v}</option>'
 
-            create_field = render_template('field.html', field=field, field_type=field_type, field_value=field_value, table=table_name, options=selection)
+            if table_name == "character":
+                if field in ("id", "armour_class", "health_points"):
+                    if field == "id":
+                        fields.append("<h4>Character</h4>")
+                    if field == "armour_class":
+                        fields.append("<h4>Combat</h4>")
+
+                    fields.append("<div class='row'>")
+
+                if field in ("hit_dice"):
+                    fields.append("<div class='col grp-char-fields'>")
+
+            if table_name == "strength" or table_name == "dexterity" or table_name == "constitution" or table_name == "intelligence" or table_name == "wisdom" or table_name == "charisma":
+                if field == "id":
+                    fields.append("<div class='row'>")
+
+                if field == "modifier":
+                    fields.append("<div class='col grp-char-fields'>")
+
+            if table_name == "strength_skills":
+                if field == "athletics":
+                    fields.append("<div class='col grp-char-fields'>")
+
+            if table_name == "dexterity_skills":
+                if field == "acrobatics":
+                    fields.append("<div class='col grp-char-fields'>")
+                if field == "stealth":
+                    fields.append("<div class='col grp-char-fields'>")
+
+            if table_name == "intelligence_skills":
+                if field == "arcana":
+                    fields.append("<div class='col grp-char-fields'>")
+                if field == "investigation":
+                    fields.append("<div class='col grp-char-fields'>")
+                if field == "religion":
+                    fields.append("<div class='col grp-char-fields'>")
+
+            if table_name == "wisdom_skills":
+                if field == "animal_handling":
+                    fields.append("<div class='col grp-char-fields'>")
+
+                if field == "medicine":
+                    fields.append("<div class='col grp-char-fields'>")
+
+                if field == "survival":
+                    fields.append("<div class='col grp-char-fields'>")
+
+            if table_name == "charisma_skills":
+                if field == "deception":
+                    fields.append("<div class='col grp-char-fields'>")
+
+                if field == "performance":
+                    fields.append("<div class='col grp-char-fields'>")
+
+
+
+            # Get any styles for the field
+            field_styles = self.field_styles.get(table_name, {}).get(field, {})
+            if field_styles:
+                field_name = field_styles.get("field_name", field_name)
+                field_container_styles = field_styles.get("field_container_styles", "")
+                input_styles = field_styles.get("input_styles", "")
+                label_styles = field_styles.get("label_styles", "")
+                disabled = field_styles.get("disabled", "")
+
+            create_field = render_template(
+                field_template,
+                field=field,
+                field_name=field_name,
+                field_type=field_type,
+                field_value=field_value,
+                table_name=table_name,
+                options=selection,
+                disabled=disabled,
+                field_container_styles=field_container_styles,
+                input_styles=input_styles,
+                label_styles=label_styles,
+                )
+
             fields.append(create_field)
 
+            # Close elements
+            if table_name == "character":
+                if field in ("alignment", "xp", "temporary_hit_points", "current_health_points"):
+                    fields.append("</div>")
+
+                    if field in ("alignment", "current_health_points"):
+                        fields.append("<br>")
+
+            if table_name == "strength_skills":
+                if field == "saving_throw":
+                    fields.append("</div>")
+
+                if field == "athletics":
+                    fields.append("</div>")
+                # Close the row on the last field
+                if field == "strength_id":
+                    fields.append("</div><br>")
+
+            if table_name == "dexterity_skills":
+                if field == "saving_throw":
+                    fields.append("</div>")
+
+                if field == "sleight_of_hand":
+                    fields.append("</div>")
+
+                if field == "stealth":
+                    fields.append("</div>")
+                # Close the row on the last field
+                if field == "dexterity_id":
+                    fields.append("</div><br>")
+
+            if table_name == "constitution_skills":
+                if field == "saving_throw":
+                    fields.append("</div>")
+                # Close the row on the last field
+                if field == "constitution_id":
+                    fields.append("</div><br>")
+
+            if table_name == "intelligence_skills":
+                if field == "saving_throw":
+                    fields.append("</div>")
+
+                if field == "history":
+                    fields.append("</div>")
+
+                if field == "nature":
+                    fields.append("</div>")
+
+                if field == "religion":
+                    fields.append("</div>")
+                # Close the row on the last field
+                if field == "intelligence_id":
+                    fields.append("</div><br>")
+
+            if table_name == "wisdom_skills":
+                if field == "saving_throw":
+                    fields.append("</div>")
+
+                if field == "insight":
+                    fields.append("</div>")
+
+                if field == "perception":
+                    fields.append("</div>")
+
+                if field == "survival":
+                    fields.append("</div>")
+                # Close the row on the last field
+                if field == "wisdom_id":
+                    fields.append("</div><br>")
+
+            if table_name == "charisma_skills":
+                if field == "saving_throw":
+                    fields.append("</div>")
+
+                if field == "intimidation":
+                    fields.append("</div>")
+
+                if field == "persuasion":
+                    fields.append("</div>")
+                # Close the row on the last field
+                if field == "charisma_id":
+                    fields.append("</div><br>")
         return "".join(fields)
 
     def process_form(self, request_form):
@@ -386,6 +944,7 @@ class CharacterSheet:
                     value = int(value)
                 else:
                     continue
+
                 # Calc the ability modifier
                 modifier = math.floor((value - 10) / 2)
 

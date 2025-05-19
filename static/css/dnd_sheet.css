@@ -5,6 +5,7 @@
     --secondary-gap: 0.25rem;
     --skill-gap: 1rem;
     --light-dark: white;
+    --go-green: #00ff00
 }
 
 html {
@@ -30,6 +31,10 @@ input[type="number"] {
 
 .pointer {
     cursor: pointer !important;
+}
+
+.display-none {
+    display: none !important;
 }
 
 .field-margins {
@@ -101,6 +106,10 @@ input[type="number"] {
     opacity: .7;
 }
 
+span.char-field-input-square {
+    width: inherit !important;
+}
+
 .char-field-input, .char-field-input-square-lg, .char-field-input-square-lg-wtoggle, .char-field-input-square, .char-field-label, .char-field-label-square, .char-field-btn, .char-field-label-xp, .char-field-input-xp {
     width: inherit !important;
     all: unset;
@@ -159,7 +168,7 @@ input[type="number"] {
     color: var(--light-dark);
     text-decoration: none;
     opacity: .7;
-    font-size: .7rem;
+    font-size: .9rem;
     position: absolute;
     top: 0;
     right: 0;
@@ -178,4 +187,49 @@ input[type="number"] {
 
 .proficient-hl {
     border: 1px solid var(--secondary-color) !important;
+    text-decoration: none;
+}
+
+.proficient-hover {
+    caret-color: transparent;
+}
+
+.proficient-hover:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
+.char-field-dropdown {
+    background-color: rgba(0, 0, 0, 0);
+    color: var(--light-dark);
+    font-size: 1.7rem;
+    padding: .5rem;
+    width: 100%;
+    height: 5rem;
+    box-sizing: border-box;
+    border: none;
+    opacity: .7;
+    cursor: pointer;
+}
+
+.char-field-dropdown > option {
+    background-color: var(--primary-color);
+    color: var(--light-dark);
+    outline: none;
+    border: none;
+    opacity: .7;
+}
+
+.char-field-dropdown:focus, .char-field-dropdown > option:focus, .char-field-dropdown > option:hover {
+    outline: none;
+    border: none;
+    cursor: pointer;
+}
+
+.add-class-btn {
+    cursor: pointer;
+}
+
+.btn-hover-green:hover{
+    color: var(--secondary-color);
 }

@@ -18,41 +18,18 @@
         ## {{ debug }} ##
     {% endif %}
 
-    <h1>Julie's Demiplane</h1>
-    {% if inventory %}
-        {% for item in inventory %}
-        <p>{{ item['name'] }} - {{ item['quantity'] }}</p>
-        <p>{{ item['description'] }} <a href="/{{ character_id }}/inventory/{{ item['id'] }}/remove">Delete</a></p>
-        {% endfor %}
-    {% else %}
-        <p>No inventory found.</p>
-    {% endif %}
-
-    {% if feats_and_traits %}
-        {% for item in feats_and_traits %}
-        <p>{{ item['name'] }} - {{ item['quantity'] }}</p>
-        <p>{{ item['description'] }} <a href="/{{ character_id }}/feat-and-trait/{{ item['id'] }}/remove">Delete</a></p>
-        {% endfor %}
-    {% else %}
-        <p>None found.</p>
-    {% endif %}
-
-    {% if character_classes %}
-        {% for class in character_classes %}
-            <p>{{ class['name'] | title }}: {{ class['level'] }} <a href="/{{ character_id }}/class/{{ class['id'] }}/remove">Delete</a></p>
-        {% endfor %}
-    {% else %}
-        <p>No classes found.</p>
-    {% endif %}
-
-    <form action="/" method="POST">
-        {{ character_sheet_form | safe }}
-        <br>
+    <form class="char-form container" action="/" method="POST">
+        <div class="char-form-alignment col">
+            {{ character_sheet_form | safe }}
+            <br>
+        </div>
         <button type="submit">Save</button>
     </form>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='scripts/dnd_sheet.js') }}"></script>
 </body>
 
 </html>
