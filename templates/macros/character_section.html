@@ -1,0 +1,36 @@
+{% from 'macros/form_helpers.html' import render_field %}
+
+{# Character Information Section #}
+<h4>Character</h4>
+<div>
+    {{ render_field('character', 'id', character_data.fields.id, character_data.field_types.id, character_data.values.get('id', '')) }}
+    {{ render_field('character', 'name', character_data.fields.name, character_data.field_types.name, character_data.values.get('name', '')) }}
+    {{ render_field('character', 'level', character_data.fields.level, character_data.field_types.level, character_data.values.get('level', '')) }}
+    {{ render_field('character', 'race', character_data.fields.race, character_data.field_types.race, character_data.values.get('race', '')) }}
+    {{ render_field('character', 'background', character_data.fields.background, character_data.field_types.background, character_data.values.get('background', '')) }}
+    {{ render_field('character', 'alignment', character_data.fields.alignment, character_data.field_types.alignment, character_data.values.get('alignment', '')) }}
+</div>
+
+<h4>Combat</h4>
+<div>
+    {{ render_field('character', 'armour_class', character_data.fields.armour_class, character_data.field_types.armour_class, character_data.values.get('armour_class', '')) }}
+    {{ render_field('character', 'initiative', character_data.fields.initiative, character_data.field_types.initiative, character_data.values.get('initiative', '')) }}
+    {{ render_field('character', 'speed', character_data.fields.speed, character_data.field_types.speed, character_data.values.get('speed', '')) }}
+</div>
+
+<div class="row">
+    <div>
+        {{ render_field('character', 'hit_dice', character_data.fields.hit_dice, character_data.field_types.hit_dice, character_data.values.get('hit_dice', '')) }}
+        {{ render_field('character', 'temporary_hit_points', character_data.fields.temporary_hit_points, character_data.field_types.temporary_hit_points, character_data.values.get('temporary_hit_points', '')) }}
+    </div>
+    {{ render_field('character', 'health_points', character_data.fields.health_points, character_data.field_types.health_points, character_data.values.get('health_points', '')) }}
+    {{ render_field('character', 'current_health_points', character_data.fields.current_health_points, character_data.field_types.current_health_points, character_data.values.get('current_health_points', '')) }}
+</div>
+<br>
+
+<div class="row">
+    {{ render_field('character', 'proficiency', character_data.fields.proficiency, character_data.field_types.proficiency, character_data.values.get('proficiency', '')) }}
+    {{ render_field('character', 'passive_wisdom', character_data.fields.passive_wisdom, character_data.field_types.passive_wisdom, character_data.values.get('passive_wisdom', '')) }}
+    {{ render_field('character', 'xp', character_data.fields.xp, character_data.field_types.xp, character_data.values.get('xp', '')) }}
+</div>
+<br>

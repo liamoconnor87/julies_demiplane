@@ -563,265 +563,68 @@ class CharacterSheet:
         }
 
     def create_form(self):
-        form = []
-        # Character
-        character = ggi.go_get_one('character', {'id': self.character_id}) if self.character_id else None
+        """
+        Returns structured data for the character sheet instead of HTML strings.
+        This data will be passed to Jinja2 templates for rendering.
+        """
+        # Get character data
+        character = ggi.go_get_one('character', {'id': self.character_id}) if self.character_id else {}
 
-        # Work out characters level
+        # Calculate total character level from base + class levels
         if character:
-            characters_class_levels = ggi.go_get_all('class_to_character', {'character_id': character['id']})
-            character_level = character['level']
+            characters_class_levels = ggi.go_get_all('class_to_character', {'character_id': character.get('id')})
+            character_level = character.get('level', 0)
 
             for char_class in characters_class_levels or []:
-                character_level += char_class['level']
+                character_level += char_class.get('level', 0)
 
             character['level'] = character_level
 
-        character_form = self._build_form('character', self.character_field_type_mapping, character)
-        form.append(character_form)
+        # Get abilities and skills data
+        abilities_data = []
+        for ability_name in self.abilities_field_type_mapping:
+            ability = ggi.go_get_one(ability_name, {"character_id": self.character_id}) or {}
 
-        # # Class
-        # form.append("<h3>Classes</h3>")
-        # classes = ggi.go_get_all('class') or []
-        # class_options = [{"": "Please select a class"}]
-        # for c in classes:
-        #     class_options.append({c['id']: c['name']})
+            # Get skills for this ability
+            skills = {}
+            if ability.get('id'):
+                skills = ggi.go_get_one(f"{ability_name}_skills", {f"{ability_name}_id": ability['id']}) or {}
 
-        # character_class_form = self._build_form('class_to_character', self.character_class_field_type_mapping, options=class_options)
-        # form.append(character_class_form)
+            # Get skill list for this ability
+            skill_list = self.ability_to_skill_mapping.get(ability_name, [])
 
-        # Abilities
-        form.append("<h3>Abilities & Skills</h3>")
-        for ability in self.abilities_field_type_mapping:
-            existing_ability = ggi.go_get_one(ability, {"character_id": self.character_id})
-            ability_form = self._build_form(ability, self.abilities_field_type_mapping[ability], existing_ability)
-            form.append(ability_form)
+            abilities_data.append({
+                'ability_name': ability_name,
+                'ability': ability,
+                'skills': skills,
+                'skill_list': skill_list
+            })
 
-            # Skills
-            ability_skills = None
-            if existing_ability:
-                ability_skills = ggi.go_get_one(f"{ability}_skills", {f"{ability}_id": existing_ability['id']})
+        # Classes
+        all_classes = ggi.go_get_all('class') or []
+        # class_options = all_classes  # Send full class objects with id and name
+        classes = ggi.go_get_all('class_to_character', {'character_id': self.character_id}) or []
 
-            skill_form = self._build_form(f"{ability}_skills", self.skills_field_type_mapping[f"{ability}_skills"], ability_skills)
-            form.append(skill_form)
+        # Match class IDs to class names
+        for char_class in classes:
+            matching_class = next((c for c in all_classes if c['id'] == char_class['class_id']), None)
+            if matching_class:
+                char_class['class_name'] = matching_class['name']
 
-        # # Feats & Traits
-        # form.append("<h3>Feats & Traits</h3>")
-        # feats_form = self._build_form('feat_and_trait', self.feat_and_trait_field_type_mapping)
-        # form.append(feats_form)
+        # Feats & Traits
+        # feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': self.character_id}) or []
 
-        # # Inventory
-        # form.append("<h3>Inventory</h3>")
-        # inventory_form = self._build_form('inventory', self.inventory_field_type_mapping)
-        # form.append(inventory_form)
+        # Inventory
+        # inventory = ggi.go_get_all('inventory', {'character_id': self.character_id}) or []
 
-        return "".join(form)
-
-    def _build_form(
-        self,
-        table_name: str,
-        field_types: dict,
-        data: Optional[dict] = None,
-        skip_fields: list = [],
-        options: Optional[list[dict[str, str]]] = []):
-        # Get the fields from the table
-        table = TABLES[table_name]
-        fields_list = []
-        for k in table.keys():
-            if k in skip_fields:
-                continue
-            fields_list.append(k)
-
-        # Add some custom fields
-        if table_name == "character":
-            fields_list.append("current_health_points")
-
-        field_type_mapping = field_types
-
-        fields = []
-
-        selection = ""
-        for field in fields_list:
-            field_template = "field.html"
-            field_name = field.replace("_", " ").title()
-            field_container_styles = ""
-            input_styles = ""
-            label_styles = ""
-            disabled = ""
-
-            field_value = data.get(field, "") if data else ""
-            field_type = field_type_mapping.get(field, "text")
-
-            # NOTE: THIS IS WRONG - DOES NOT SPECIFY WHAT FIELD
-            if field_type == "select":
-                for opt in options or []:
-                    for k, v in opt.items():
-                        selection += f'<option value="{k}">{v}</option>'
-
-            if table_name == "character":
-                if field in ("id", "armour_class", "health_points"):
-                    if field == "id":
-                        fields.append("<h4>Character</h4>")
-                    if field == "armour_class":
-                        fields.append("<h4>Combat</h4>")
-
-                    fields.append("<div class='row'>")
-
-                if field in ("hit_dice"):
-                    fields.append("<div class='col grp-char-fields'>")
-
-            if table_name == "strength" or table_name == "dexterity" or table_name == "constitution" or table_name == "intelligence" or table_name == "wisdom" or table_name == "charisma":
-                if field == "id":
-                    fields.append("<div class='row'>")
-
-                if field == "modifier":
-                    fields.append("<div class='col grp-char-fields'>")
-
-            if table_name == "strength_skills":
-                if field == "athletics":
-                    fields.append("<div class='col grp-char-fields'>")
-
-            if table_name == "dexterity_skills":
-                if field == "acrobatics":
-                    fields.append("<div class='col grp-char-fields'>")
-                if field == "stealth":
-                    fields.append("<div class='col grp-char-fields'>")
-
-            if table_name == "intelligence_skills":
-                if field == "arcana":
-                    fields.append("<div class='col grp-char-fields'>")
-                if field == "investigation":
-                    fields.append("<div class='col grp-char-fields'>")
-                if field == "religion":
-                    fields.append("<div class='col grp-char-fields'>")
-
-            if table_name == "wisdom_skills":
-                if field == "animal_handling":
-                    fields.append("<div class='col grp-char-fields'>")
-
-                if field == "medicine":
-                    fields.append("<div class='col grp-char-fields'>")
-
-                if field == "survival":
-                    fields.append("<div class='col grp-char-fields'>")
-
-            if table_name == "charisma_skills":
-                if field == "deception":
-                    fields.append("<div class='col grp-char-fields'>")
-
-                if field == "performance":
-                    fields.append("<div class='col grp-char-fields'>")
-
-
-
-            # Get any styles for the field
-            field_styles = self.field_styles.get(table_name, {}).get(field, {})
-            if field_styles:
-                field_name = field_styles.get("field_name", field_name)
-                field_container_styles = field_styles.get("field_container_styles", "")
-                input_styles = field_styles.get("input_styles", "")
-                label_styles = field_styles.get("label_styles", "")
-                disabled = field_styles.get("disabled", "")
-
-            create_field = render_template(
-                field_template,
-                field=field,
-                field_name=field_name,
-                field_type=field_type,
-                field_value=field_value,
-                table_name=table_name,
-                options=selection,
-                disabled=disabled,
-                field_container_styles=field_container_styles,
-                input_styles=input_styles,
-                label_styles=label_styles,
-                )
-
-            fields.append(create_field)
-
-            # Close elements
-            if table_name == "character":
-                if field in ("alignment", "xp", "temporary_hit_points", "current_health_points"):
-                    fields.append("</div>")
-
-                    if field in ("alignment", "current_health_points"):
-                        fields.append("<br>")
-
-            if table_name == "strength_skills":
-                if field == "saving_throw":
-                    fields.append("</div>")
-
-                if field == "athletics":
-                    fields.append("</div>")
-                # Close the row on the last field
-                if field == "strength_id":
-                    fields.append("</div><br>")
-
-            if table_name == "dexterity_skills":
-                if field == "saving_throw":
-                    fields.append("</div>")
-
-                if field == "sleight_of_hand":
-                    fields.append("</div>")
-
-                if field == "stealth":
-                    fields.append("</div>")
-                # Close the row on the last field
-                if field == "dexterity_id":
-                    fields.append("</div><br>")
-
-            if table_name == "constitution_skills":
-                if field == "saving_throw":
-                    fields.append("</div>")
-                # Close the row on the last field
-                if field == "constitution_id":
-                    fields.append("</div><br>")
-
-            if table_name == "intelligence_skills":
-                if field == "saving_throw":
-                    fields.append("</div>")
-
-                if field == "history":
-                    fields.append("</div>")
-
-                if field == "nature":
-                    fields.append("</div>")
-
-                if field == "religion":
-                    fields.append("</div>")
-                # Close the row on the last field
-                if field == "intelligence_id":
-                    fields.append("</div><br>")
-
-            if table_name == "wisdom_skills":
-                if field == "saving_throw":
-                    fields.append("</div>")
-
-                if field == "insight":
-                    fields.append("</div>")
-
-                if field == "perception":
-                    fields.append("</div>")
-
-                if field == "survival":
-                    fields.append("</div>")
-                # Close the row on the last field
-                if field == "wisdom_id":
-                    fields.append("</div><br>")
-
-            if table_name == "charisma_skills":
-                if field == "saving_throw":
-                    fields.append("</div>")
-
-                if field == "intimidation":
-                    fields.append("</div>")
-
-                if field == "persuasion":
-                    fields.append("</div>")
-                # Close the row on the last field
-                if field == "charisma_id":
-                    fields.append("</div><br>")
-        return "".join(fields)
+        return {
+            'character': character,
+            # 'abilities': abilities_data,
+            # 'classes': classes,
+            # 'class_options': class_options,
+            # 'feats_and_traits': feats_and_traits,
+            # 'inventory': inventory
+        }
 
     def process_form(self, request_form):
         def _save_character_values():

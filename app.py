@@ -15,7 +15,7 @@ def character_sheet():
     debug = f"{character_id}"
 
     character_sheet = CharacterSheet(character_id=character_id)
-    character_sheet_form = character_sheet.create_form()
+    character_sheet_data = character_sheet.create_form()
 
     class_to_chararcter = db.go_get_all('class_to_character', {'character_id': character_id}) or []
 
@@ -39,11 +39,13 @@ def character_sheet():
     return render_template(
         'index.html',
         character_id=character_id,
-        character_sheet_form=character_sheet_form,
-        debug=debug,
-        # character_classes=character_classes,
+        character=character_sheet_data['character'],
+        # abilities=character_sheet_data['abilities'],
+        # classes=character_sheet_data['classes'],
+        # class_options=character_sheet_data['class_options'],
+        # feats_and_traits=character_sheet_data['feats_and_traits'],
         # inventory=inventory,
-        # feats_and_traits=feats_and_traits
+        debug=debug
         )
 
 @app.route("/<character_id>/inventory/<inventory_id>/remove")

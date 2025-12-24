@@ -1,0 +1,37 @@
+{# Character Basic Information Component #}
+<h4>Character</h4>
+<div class="row">
+    {# Hidden ID field #}
+    <input type="hidden" id="character-id" name="character-id" value="{{ character.id or '' }}">
+
+    {# Name #}
+    <div>
+        <input type="text" id="character-name" name="character-name" value="{{ character.name or '' }}">
+        <label for="character-name">Name</label>
+    </div>
+
+    {# Level (calculated, disabled) #}
+    <div>
+        <input type="number" id="character-level" name="character-level" value="{{ character.level or '' }}" disabled>
+        <label for="character-level">Level</label>
+    </div>
+
+    {# Race #}
+    <div>
+        <input type="text" id="character-race" name="character-race" value="{{ character.race or '' }}">
+        <label for="character-race">Race</label>
+    </div>
+
+    {# Background #}
+    <div>
+        <input type="text" id="character-background" name="character-background" value="{{ character.background or '' }}">
+        <label for="character-background">Background</label>
+    </div>
+
+    {# Alignment #}
+    <div>
+        <input type="text" id="character-alignment" name="character-alignment" value="{{ character.alignment or '' }}">
+        <label for="character-alignment">Alignment</label>
+    </div>
+</div>
+<br>

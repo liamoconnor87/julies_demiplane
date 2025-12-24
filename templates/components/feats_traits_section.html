@@ -1,0 +1,49 @@
+<div>
+    <div>
+        <h3>Feats & Traits</h3>
+        {% if feats_and_traits %}
+            {% for feat in feats_and_traits %}
+                <div>
+                    <div>
+                        <div>
+                            <label for="feat_and_trait-name-{{ feat.id }}">Name</label>
+                            <input type="text" id="feat_and_trait-name-{{ feat.id }}"
+                                   name="feat_and_trait-name-{{ feat.id }}" value="{{ feat.name }}" readonly>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <label for="feat_and_trait-description-{{ feat.id }}">Description</label>
+                            <input type="text" id="feat_and_trait-description-{{ feat.id }}"
+                                   name="feat_and_trait-description-{{ feat.id }}" value="{{ feat.description }}" readonly>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="button"
+                                onclick="window.location.href='/{{ character_id }}/feat-and-trait/{{ feat.id }}/remove'">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Add New Feat/Trait Form -->
+        <div>
+            <div>
+                <div>
+                    <label for="feat_and_trait-name">New Feat/Trait Name</label>
+                    <input type="text" id="feat_and_trait-name"
+                           name="feat_and_trait-name" placeholder="Enter name">
+                </div>
+            </div>
+            <div>
+                <div>
+                    <label for="feat_and_trait-description">Description</label>
+                    <input type="text" id="feat_and_trait-description"
+                           name="feat_and_trait-description" placeholder="Enter description">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

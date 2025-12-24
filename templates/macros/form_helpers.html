@@ -1,0 +1,40 @@
+{# Macro for rendering a single form field with all styling #}
+{% macro render_field(table_name, field, field_data, field_type, field_value="", disabled="") %}
+    {% set field_name = field_data.get('field_name', field.replace('_', ' ').title()) %}
+    {% set field_container_styles = field_data.get('field_container_styles', '') %}
+    {% set input_styles = field_data.get('input_styles', '') %}
+    {% set label_styles = field_data.get('label_styles', '') %}
+    {% set field_disabled = field_data.get('disabled', disabled) %}
+
+    {% if field_type in ("hidden", "checkbox") %}
+        <input
+        type="{{ field_type }}"
+        id="{{ table_name }}-{{ field }}"
+        name="{{ table_name }}-{{ field }}"
+        value="{{ '1' if field_type == 'checkbox' else field_value }}"
+        {% if field_type=="checkbox" and field_value == 1 %} checked {% endif %}
+        {% if field_disabled %} disabled {% endif %}>
+    {% else %}
+        <div>
+            {% if field_type != "hidden" %}
+                <label for="{{ table_name }}-{{ field }}">{{ field_name }}</label>
+            {% endif %}
+
+            {% if field_type == "select" %}
+                <select id="{{ table_name }}-{{ field }}" name="{{ table_name }}-{{ field }}">
+                    {{ field_data.get('options', '') | safe }}
+                </select>
+            {% else %}
+                <input
+                type="{{ field_type }}"
+                id="{{ table_name }}-{{ field }}"
+                name="{{ table_name }}-{{ field }}"
+                value="{{ field_value }}"
+                {% if field_disabled %} disabled {% endif %}>
+            {% endif %}
+            {% if field_type != "hidden" %}
+                <br>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endmacro %}

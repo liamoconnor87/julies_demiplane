@@ -2,36 +2,46 @@ window.addEventListener("load", () => {
     selectClassField();
 })
 
-const addClassBtn = document.querySelector('.char-field-square-btn.add-class-btn');
-const addClassBtnIcons = addClassBtn.querySelectorAll('i');
-const classOptionsField = document.querySelector('.char-field-m.select-class-field');
-const classLevelField = document.querySelector('.char-field-square.class-level-field');
-const closeClassFieldXBtn = document.querySelector('.char-field-btn-del.close-class-field');
+const addClassBtn = document.getElementById('add-class-btn');
+const closeClassFieldXBtn = document.getElementById('close-class-field-x-btn');
+const closeBtnWrapper = document.getElementById('close-class-btn-wrapper');
+const addClassFieldDropdown = document.getElementById('add-class-field-dropdown');
+const addClassFieldLevel = document.getElementById('add-class-field-level');
+const addClassSubmitBtn = document.getElementById('add-class-submit-btn');
 
 function selectClassField() {
+    // Add null check to prevent errors if elements don't exist
+    if (!addClassBtn || !closeClassFieldXBtn || !addClassFieldDropdown || !addClassFieldLevel || !closeBtnWrapper || !addClassSubmitBtn) {
+        return;
+    }
+
     addClassBtn.addEventListener("click", () => {
-        showHideClassField();
+        // Hide the + button, show close button and input fields
+        addClassBtn.parentElement.style.display = 'none';
+        closeBtnWrapper.style.display = 'block';
+        addClassFieldDropdown.style.display = 'block';
+        addClassFieldLevel.style.display = 'block';
+        addClassSubmitBtn.style.display = 'block';
     });
 
     closeClassFieldXBtn.addEventListener("click", () => {
-        showHideClassField();
+        // Show the + button, hide close button and input fields
+        addClassBtn.parentElement.style.display = 'block';
+        closeBtnWrapper.style.display = 'none';
+        addClassFieldDropdown.style.display = 'none';
+        addClassFieldLevel.style.display = 'none';
+        addClassSubmitBtn.style.display = 'none';
     });
-
 }
 
-function showHideClassField() {
-    // Ensure the fields exist before toggling classes
-    if (classOptionsField && classLevelField) {
-        classOptionsField.classList.toggle("display-none");
-        classLevelField.classList.toggle("display-none");
+// Function to update inventory item quantity
+function updateInventoryItem(itemId) {
+    const qtyInput = document.getElementById('inventory-quantity-' + itemId);
+    const newQuantity = qtyInput.value;
 
-        // Toggle visibility of icons inside the button
-        addClassBtnIcons.forEach(icon => {
-            icon.classList.toggle("display-none");
-        });
-    } else {
-        console.error("Class options or level field not found.");
-    }
+    // You can implement this as a fetch request or form submission
+    // For now, this will trigger the main form save
+    alert('Update inventory quantity to ' + newQuantity + ' - Click Save at the bottom to persist changes');
 }
 
 

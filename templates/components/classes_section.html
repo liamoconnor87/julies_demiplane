@@ -1,0 +1,68 @@
+<h3>Classes</h3>
+<div>
+    {% if classes %}
+        {% for char_class in classes %}
+            {# Existing Class Display #}
+            <div>
+                <input type="text" id="classes-class_name-{{ char_class.id }}"
+                       name="classes-class_name-{{ char_class.id }}" value="{{ char_class.class_name }}" readonly>
+                <label for="classes-class_name-{{ char_class.id }}">Class Name</label>
+                <button type="button"
+                        onclick="window.location.href='/{{ character_id }}/class/{{ char_class.id }}/remove'">
+                    Delete
+                </button>
+            </div>
+
+            <div>
+                <input type="text" id="classes-level-{{ char_class.id }}"
+                       name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" readonly>
+                <label for="classes-level-{{ char_class.id }}">Level</label>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {# Add Class Button - shown by default #}
+    <div>
+        <button type="button" id="add-class-btn">
+            +
+        </button>
+        <label>Add Class</label>
+    </div>
+
+    {# Close Button - hidden by default #}
+    <div id="close-class-btn-wrapper">
+        <button type="button" id="close-class-field-x-btn">
+            ×
+        </button>
+        <label>Close</label>
+    </div>
+
+    {# Class Selection Dropdown - hidden by default #}
+    <div id="add-class-field-dropdown">
+        <select id="class_to_character-class_id" name="class_to_character-class_id">
+            <option value="">-- Select a Class --</option>
+            {% if class_options %}
+                {% for class_option in class_options %}
+                    <option value="{{ class_option.id }}">{{ class_option.name }}</option>
+                {% endfor %}
+            {% endif %}
+        </select>
+        <label for="class_to_character-class_id">Select Class</label>
+    </div>
+
+    {# Level Input - hidden by default #}
+    <div id="add-class-field-level">
+        <input type="text" id="class_to_character-level"
+               name="class_to_character-level" placeholder="1">
+        <label for="class_to_character-level">Level</label>
+    </div>
+
+    {# Submit Button - hidden by default #}
+    <div id="add-class-submit-btn" class="char-field-square field-margins" style="display: none; cursor: pointer;">
+        <button type="submit" style="all: unset; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--secondary-color); cursor: pointer; font-weight: bold;">
+            Add
+        </button>
+        <label class="char-field-label-square">Submit</label>
+    </div>
+</div>
+<br>

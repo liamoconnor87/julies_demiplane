@@ -1,0 +1,23 @@
+{# Single Ability Score Component - Pass: ability_name, ability #}
+<div>
+    {# Hidden fields #}
+    <input type="hidden" id="{{ ability_name }}-id" name="{{ ability_name }}-id" value="{{ ability.id or '' }}">
+    <input type="hidden" id="{{ ability_name }}-character_id" name="{{ ability_name }}-character_id" value="{{ ability.character_id or '' }}">
+
+    {# Ability Value #}
+    <div>
+        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}">
+        <label for="{{ ability_name }}-value">{{ ability_name | title }}</label>
+    </div>
+
+    {# Ability Modifier (calculated) #}
+    <div>
+        <div>
+            <input type="number" id="{{ ability_name }}-modifier" name="{{ ability_name }}-modifier" value="{% if ability.modifier is not none %}{{ ability.modifier }}{% endif %}" readonly>
+            <label for="{{ ability_name }}-modifier">Modifier</label>
+        </div>
+
+        {# Proficiency checkbox (hidden, for saving throw proficiency) #}
+        <input type="checkbox" id="{{ ability_name }}-proficient" name="{{ ability_name }}-proficient" value="1" {% if ability.proficient == 1 %}checked{% endif %}>
+    </div>
+</div>

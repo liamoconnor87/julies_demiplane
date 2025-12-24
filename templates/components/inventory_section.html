@@ -1,0 +1,64 @@
+<div>
+    <div>
+        <h3>Inventory</h3>
+
+        <!-- Add New Inventory Item Form -->
+        <div>
+            <div>
+                <div>
+                    <label for="inventory-name">New Item Name</label>
+                    <input type="text" id="inventory-name"
+                           name="inventory-name" placeholder="Enter item name">
+                </div>
+            </div>
+            <div>
+                <div>
+                    <label for="inventory-description">Description</label>
+                    <input type="text" id="inventory-description"
+                           name="inventory-description" placeholder="Enter description">
+                </div>
+            </div>
+            <div>
+                <div>
+                    <label for="inventory-quantity">Qty</label>
+                    <input type="text" id="inventory-quantity"
+                           name="inventory-quantity" placeholder="1">
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory List -->
+        {% if inventory %}
+            <div>
+                <div>
+                    <h5>Current Inventory</h5>
+                </div>
+            </div>
+            {% for item in inventory %}
+                <div>
+                    <div>
+                        <div>
+                            <label for="inventory-name-{{ item.id }}">Item Name</label>
+                            <input type="text" id="inventory-name-{{ item.id }}"
+                                   name="inventory-name-{{ item.id }}" value="{{ item.name }}" readonly>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <label for="inventory-description-{{ item.id }}">Description</label>
+                            <input type="text" id="inventory-description-{{ item.id }}"
+                                   name="inventory-description-{{ item.id }}" value="{{ item.description }}" readonly>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <label for="inventory-quantity-{{ item.id }}">Qty</label>
+                            <input type="number" id="inventory-quantity-{{ item.id }}"
+                                   name="inventory-quantity-{{ item.id }}" value="{{ item.quantity }}">
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
