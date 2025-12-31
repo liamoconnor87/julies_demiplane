@@ -1,22 +1,13 @@
-.fixed-input {
-    width: 220px;
-    max-width: 100%;
-    box-sizing: border-box;
-}
 :root {
-    --primary-color: #22243f;
-    --secondary-color: #7fffd4;
-    --primary-gap: 0.5rem;
-    --secondary-gap: 0.25rem;
-    --skill-gap: 1rem;
-    --light-dark: white;
-    --go-green: #00ff00
+    --primary-color: rgb(34, 36, 63);
+    --primary-color-transparent: rgba(20, 20, 30, 0.7);
+    --secondary-color: rgb(128, 255, 212);
+    --secondary-color-dark: rgba(128, 255, 212, 0.5);
 }
 
 html {
     font-size: 17px;
 }
-
 
 body {
     background-color: var(--primary-color);
@@ -27,6 +18,7 @@ body {
 .form-field-vertical {
     display: flex;
     flex-direction: column;
+    flex-wrap: wrap;
     align-items: flex-start;
     margin-bottom: 1rem;
 }
@@ -36,4 +28,111 @@ body {
     font-weight: bold;
 }
 
+.fixed-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    font-size: 1.05rem;
+    transition: background 0.2s;
+    display: block;
+    max-width: 300px;
+}
 
+.row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 1rem;
+}
+
+.row label {
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color-dark);
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    margin-bottom: 0;
+    display: block;
+    font-size: 0.6rem;
+    width: 100%;
+    max-width: 300px;
+    box-sizing: border-box;
+    transition: background 0.2s;
+    line-height: 1;
+    text-align: left;
+    overflow-wrap: break-word;
+    padding-left: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+/* Responsive flexbox for character info fields */
+.char-info-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.char-info-field {
+    flex: 1 1 100%;
+    min-width: 120px;
+    max-width: 300px;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Make the level field square: width = height (label + input) across all screen sizes */
+.level-square {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    max-width: none;
+    margin: 0;
+}
+@media (min-width: 500px) {
+    .level-square {
+        margin: auto auto;
+    }
+}
+
+.level-square label,
+.level-square input {
+    min-width: 0;
+    width: 5rem;
+    text-align: center;
+    padding: 0.25rem 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.level-square input {
+    font-size: 2.5rem;
+    box-sizing: border-box;
+    padding: 0.3rem;
+}
+
+@media (min-width: 500px) {
+    .char-info-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+    .char-info-field {
+        flex: 1 1 45%;
+    }
+}
+
+@media (min-width: 900px) {
+    .char-info-row {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+    }
+    .char-info-field {
+        flex: 1 1 0;
+    }
+}
