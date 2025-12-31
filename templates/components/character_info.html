@@ -5,33 +5,33 @@
     <input type="hidden" id="character-id" name="character-id" value="{{ character.id or '' }}">
 
     {# Name #}
-    <div>
-        <input type="text" id="character-name" name="character-name" value="{{ character.name or '' }}">
+    <div class="row">
         <label for="character-name">Name</label>
+        <input type="text" id="character-name" name="character-name" value="{{ character.name or '' }}" class="fixed-input">
     </div>
 
     {# Level (calculated, disabled) #}
-    <div>
-        <input type="number" id="character-level" name="character-level" value="{{ character.level or '' }}" disabled>
+    <div class="row">
         <label for="character-level">Level</label>
+        <input type="number" id="character-level" name="character-level" value="{{ character.level or '' }}" disabled class="fixed-input">
     </div>
 
     {# Race #}
-    <div>
-        <input type="text" id="character-race" name="character-race" value="{{ character.race or '' }}">
+    <div class="row">
         <label for="character-race">Race</label>
+        <input type="text" id="character-race" name="character-race" value="{{ character.race or '' }}" class="fixed-input">
     </div>
 
     {# Background #}
-    <div>
-        <input type="text" id="character-background" name="character-background" value="{{ character.background or '' }}">
+    <div class="row">
         <label for="character-background">Background</label>
+        <input type="text" id="character-background" name="character-background" value="{{ character.background or '' }}" class="fixed-input">
     </div>
 
     {# Alignment #}
-    <div>
-        <input type="text" id="character-alignment" name="character-alignment" value="{{ character.alignment or '' }}">
+    <div class="row">
         <label for="character-alignment">Alignment</label>
+        <input type="text" id="character-alignment" name="character-alignment" value="{{ character.alignment or '' }}" class="fixed-input">
     </div>
 </div>
 <br>

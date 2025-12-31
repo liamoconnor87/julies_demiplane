@@ -1,3 +1,8 @@
+.fixed-input {
+    width: 220px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
 :root {
     --primary-color: #22243f;
     --secondary-color: #7fffd4;
@@ -12,9 +17,23 @@ html {
     font-size: 17px;
 }
 
+
 body {
     background-color: var(--primary-color);
     color: var(--secondary-color);
+}
+
+/* Ensure form labels are always above fields */
+.form-field-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.form-field-vertical label {
+    margin-bottom: 0.25rem;
+    font-weight: bold;
 }
 
 

@@ -15,13 +15,13 @@
         {% if field_type=="checkbox" and field_value == 1 %} checked {% endif %}
         {% if field_disabled %} disabled {% endif %}>
     {% else %}
-        <div>
+        <div class="form-field-vertical" style="{{ field_container_styles }}">
             {% if field_type != "hidden" %}
-                <label for="{{ table_name }}-{{ field }}">{{ field_name }}</label>
+                <label for="{{ table_name }}-{{ field }}" style="{{ label_styles }}">{{ field_name }}</label>
             {% endif %}
 
             {% if field_type == "select" %}
-                <select id="{{ table_name }}-{{ field }}" name="{{ table_name }}-{{ field }}">
+                <select id="{{ table_name }}-{{ field }}" name="{{ table_name }}-{{ field }}" style="{{ input_styles }}">
                     {{ field_data.get('options', '') | safe }}
                 </select>
             {% else %}
@@ -30,10 +30,8 @@
                 id="{{ table_name }}-{{ field }}"
                 name="{{ table_name }}-{{ field }}"
                 value="{{ field_value }}"
+                style="{{ input_styles }}"
                 {% if field_disabled %} disabled {% endif %}>
-            {% endif %}
-            {% if field_type != "hidden" %}
-                <br>
             {% endif %}
         </div>
     {% endif %}

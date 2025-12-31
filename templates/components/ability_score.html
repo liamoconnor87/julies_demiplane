@@ -6,15 +6,15 @@
 
     {# Ability Value #}
     <div>
-        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}">
         <label for="{{ ability_name }}-value">{{ ability_name | title }}</label>
+        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}">
     </div>
 
     {# Ability Modifier (calculated) #}
     <div>
         <div>
-            <input type="number" id="{{ ability_name }}-modifier" name="{{ ability_name }}-modifier" value="{% if ability.modifier is not none %}{{ ability.modifier }}{% endif %}" readonly>
             <label for="{{ ability_name }}-modifier">Modifier</label>
+            <input type="number" id="{{ ability_name }}-modifier" name="{{ ability_name }}-modifier" value="{% if ability.modifier is not none %}{{ ability.modifier }}{% endif %}" readonly>
         </div>
 
         {# Proficiency checkbox (hidden, for saving throw proficiency) #}
