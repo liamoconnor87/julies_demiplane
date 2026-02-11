@@ -602,8 +602,13 @@ class CharacterSheet:
 
         # Classes
         all_classes = ggi.go_get_all('class') or []
-        # class_options = all_classes  # Send full class objects with id and name
         classes = ggi.go_get_all('class_to_character', {'character_id': self.character_id}) or []
+
+        # Get IDs of classes already assigned to this character
+        assigned_class_ids = [char_class['class_id'] for char_class in classes]
+
+        # Filter out classes that are already assigned
+        class_options = [c for c in all_classes if c['id'] not in assigned_class_ids]
 
         # Match class IDs to class names
         for char_class in classes:
@@ -619,9 +624,9 @@ class CharacterSheet:
 
         return {
             'character': character,
+            'classes': classes,
+            'class_options': class_options,
             # 'abilities': abilities_data,
-            # 'classes': classes,
-            # 'class_options': class_options,
             # 'feats_and_traits': feats_and_traits,
             # 'inventory': inventory
         }
@@ -676,6 +681,8 @@ class CharacterSheet:
         def _save_class_to_character_values(character_id: str):
             table_name = 'class_to_character'
             character_id = character_id
+
+            # Handle adding new class
             class_id = request_form.get(f'{table_name}-class_id')
             level = request_form.get(f'{table_name}-level')
 
@@ -688,6 +695,20 @@ class CharacterSheet:
                 }
 
                 ggi.go_add_new('class_to_character', class_to_character)
+
+            # Handle updating existing class levels
+            for field_name in request_form:
+                if field_name.startswith('classes-level-'):
+                    # Extract the class_to_character ID from field name
+                    class_to_character_id = field_name.replace('classes-level-', '')
+                    new_level = request_form.get(field_name)
+
+                    if new_level:
+                        # Update the existing class level
+                        ggi.go_update('class_to_character', {
+                            'id': class_to_character_id,
+                            'level': new_level
+                        })
 
         def _save_inventory_values(character_id: str):
             table_name = 'inventory'

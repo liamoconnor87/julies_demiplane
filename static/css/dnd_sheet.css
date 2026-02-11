@@ -30,6 +30,7 @@ body {
 
 .fixed-input {
     width: 100%;
+
     box-sizing: border-box;
     background: var(--primary-color-transparent);
     color: var(--secondary-color);
@@ -93,6 +94,149 @@ body {
     max-width: none;
     margin: 0;
 }
+
+/* Classes section fields */
+.classes-info-row {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+}
+
+.class-name-field {
+    max-width: 200px;
+    flex: 0 0 auto;
+    margin-right: 0.3rem;
+}
+
+.class-name-field select.fixed-input {
+    height: 2.58rem;
+}
+
+@media (max-width: 499px) {
+    #add-class-field-dropdown.class-name-field {
+        max-width: calc(200px - 3.31rem);
+    }
+}
+
+.class-level-field {
+    max-width: 3rem;
+    min-width: 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 0.3rem;
+    margin-bottom: 0.3rem;
+}
+
+.class-level-field input {
+    text-align: center;
+    padding: 0.5rem 0;
+    width: 100%;
+    -moz-appearance: textfield;
+}
+
+.class-level-field input::-webkit-outer-spin-button,
+.class-level-field input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.class-level-field label {
+    text-align: center;
+    padding-left: 0;
+    width: 100%;
+}
+
+.class-delete-field {
+    max-width: 100px;
+}
+
+.class-action-field {
+    max-width: 80px;
+}
+
+.add-class-btn-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 3.0rem;
+    min-width: 3.0rem;
+    flex: 0 0 auto;
+    margin: 0;
+    margin-right: 0.31rem;
+}
+
+.add-class-btn-field label,
+.add-class-btn-field .class-btn {
+    min-width: 0;
+    text-align: center;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.add-class-btn-field .class-btn {
+    font-size: 1.5rem;
+    box-sizing: border-box;
+    height: 2.7rem;
+    width: 3.0rem;
+    display: flex;
+    padding: 0;
+}
+
+.add-class-btn-field label {
+    font-size: 0.5rem;
+    width: 3.0rem;
+    padding: 0.25rem 0;
+}
+
+/* Small square button - matches field height */
+.small-square-btn-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    max-width: none;
+}
+
+.small-square-btn-field label,
+.small-square-btn-field .class-btn {
+    min-width: 0;
+    text-align: center;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.small-square-btn-field .class-btn {
+    font-size: 1.5rem;
+    box-sizing: border-box;
+    height: 2.7rem;
+    width: 3.0rem;
+    display: flex;
+    padding: 0;
+}
+
+.small-square-btn-field label {
+    font-size: 0.5rem;
+    width: 3.0rem;
+    padding: 0.25rem 0;
+}
+
+/* Hidden by default on page load */
+#close-class-btn-wrapper,
+#add-class-field-dropdown,
+#add-class-field-level,
+#add-class-submit-btn {
+    display: none;
+}
+
+.class-btn {
+    cursor: pointer;
+    text-align: center;
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    border: none;
+}
+
 @media (min-width: 500px) {
     .level-square {
         margin: auto auto;
@@ -113,6 +257,13 @@ body {
     font-size: 2.5rem;
     box-sizing: border-box;
     padding: 0.3rem;
+    -moz-appearance: textfield;
+}
+
+.level-square input::-webkit-outer-spin-button,
+.level-square input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 @media (min-width: 500px) {

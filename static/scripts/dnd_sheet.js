@@ -18,15 +18,15 @@ function selectClassField() {
     addClassBtn.addEventListener("click", () => {
         // Hide the + button, show close button and input fields
         addClassBtn.parentElement.style.display = 'none';
-        closeBtnWrapper.style.display = 'block';
+        closeBtnWrapper.style.display = 'flex';
         addClassFieldDropdown.style.display = 'block';
-        addClassFieldLevel.style.display = 'block';
-        addClassSubmitBtn.style.display = 'block';
+        addClassFieldLevel.style.display = 'flex';
+        addClassSubmitBtn.style.display = 'flex';
     });
 
     closeClassFieldXBtn.addEventListener("click", () => {
         // Show the + button, hide close button and input fields
-        addClassBtn.parentElement.style.display = 'block';
+        addClassBtn.parentElement.style.display = 'flex';
         closeBtnWrapper.style.display = 'none';
         addClassFieldDropdown.style.display = 'none';
         addClassFieldLevel.style.display = 'none';

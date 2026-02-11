@@ -23,11 +23,11 @@
             {# Character Information #}
             {% include 'components/character_info.html' %}
             {# All other sections commented out for focus #}
-            {#
+
             {% include 'components/classes_section.html' %}
-            {% include 'components/combat_stats.html' %}
-            {% include 'components/proficiency_passive.html' %}
-            <h3>Abilities & Skills</h3>
+            <!-- {% include 'components/combat_stats.html' %} -->
+            <!-- {% include 'components/proficiency_passive.html' %} -->
+            <!-- <h3>Abilities & Skills</h3>
             {% for ability_data in abilities %}
                 {% set ability_name = ability_data.ability_name %}
                 {% set ability = ability_data.ability %}
@@ -35,12 +35,12 @@
                 {% set skill_list = ability_data.skill_list %}
                 {% include 'components/ability_score.html' %}
                 {% include 'components/skills_group.html' %}
-            {% endfor %}
-            {% include 'components/feats_traits_section.html' %}
-            {% include 'components/inventory_section.html' %}
-            #}
+            {% endfor %} -->
+            {# {% include 'components/feats_traits_section.html' %} #}
+            {# {% include 'components/inventory_section.html' %} #}
+
         </div>
-        <!-- <button type="submit">Save</button> -->
+        <button type="submit">Update</button>
     </form>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

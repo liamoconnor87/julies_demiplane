@@ -40,9 +40,9 @@ def character_sheet():
         'index.html',
         character_id=character_id,
         character=character_sheet_data['character'],
+        classes=character_sheet_data['classes'],
+        class_options=character_sheet_data['class_options'],
         # abilities=character_sheet_data['abilities'],
-        # classes=character_sheet_data['classes'],
-        # class_options=character_sheet_data['class_options'],
         # feats_and_traits=character_sheet_data['feats_and_traits'],
         # inventory=inventory,
         debug=debug
