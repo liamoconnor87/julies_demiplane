@@ -91,8 +91,108 @@ body {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    max-width: none;
+    max-width: 5rem;
+    flex: 0 0 auto;
     margin: 0;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Stats row for level and combat stats */
+.stats-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+/* Combat stats section */
+.combat-stats-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    margin-bottom: 0.25rem;
+}
+
+.combat-stat-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex: 0 0 auto;
+    max-width: none;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.combat-stat-field label,
+.combat-stat-field input {
+    min-width: 0;
+    width: 5rem;
+    text-align: center;
+    padding: 0.25rem 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.combat-stat-field input {
+    font-size: 2.5rem;
+    box-sizing: border-box;
+    padding: 0.3rem;
+    -moz-appearance: textfield;
+}
+
+.combat-stat-field input::-webkit-outer-spin-button,
+.combat-stat-field input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.combat-stat-field label {
+    font-size: 0.6rem;
+    width: 5rem;
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color-dark);
+    padding: 0.5rem 0;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.combat-xp-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex: 0 0 auto;
+    max-width: 200px;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.combat-xp-field input {
+    width: 200px;
+    text-align: center;
+    font-size: 2.5rem;
+    box-sizing: border-box;
+    padding: 0.3rem;
+    -moz-appearance: textfield;
+}
+
+.combat-xp-field input::-webkit-outer-spin-button,
+.combat-xp-field input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.combat-xp-field label {
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color-dark);
+    font-weight: bold;
+    font-size: 0.6rem;
+    width: 200px;
+    padding: 0.25rem 0.25rem 0.25rem 0;
+    text-align: right;
+    line-height: 1;
+    box-sizing: border-box;
 }
 
 /* Classes section fields */
@@ -237,12 +337,6 @@ body {
     border: none;
 }
 
-@media (min-width: 500px) {
-    .level-square {
-        margin: auto auto;
-    }
-}
-
 .level-square label,
 .level-square input {
     min-width: 0;
@@ -275,6 +369,9 @@ body {
     .char-info-field {
         flex: 1 1 45%;
     }
+    .char-info-field.level-square {
+        flex: 0 0 auto;
+    }
 }
 
 @media (min-width: 900px) {
@@ -285,5 +382,8 @@ body {
     }
     .char-info-field {
         flex: 1 1 0;
+    }
+    .char-info-field.level-square {
+        flex: 0 0 auto;
     }
 }

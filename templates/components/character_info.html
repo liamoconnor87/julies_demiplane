@@ -26,11 +26,47 @@
             <input type="text" id="character-alignment" name="character-alignment" value="{{ character.alignment or '' }}" class="fixed-input">
         </div>
     </div>
-    <div class="char-info-row">
+    <div class="stats-row">
         {# Level (calculated, disabled) #}
-        <div class="char-info-field level-square">
+        <div class="level-square">
             <input type="number" id="character-level" name="character-level" value="{{ character.level or '' }}" disabled class="fixed-input">
             <label for="character-level">Level</label>
+        </div>
+
+        {# Armour Class #}
+        <div class="level-square">
+            <input type="number" id="character-armour_class" name="character-armour_class" value="{{ character.armour_class or '' }}" class="fixed-input">
+            <label for="character-armour_class">Armour Class</label>
+        </div>
+
+        {# Initiative #}
+        <div class="level-square">
+            <input type="number" id="character-initiative" name="character-initiative" value="{{ character.initiative or '' }}" class="fixed-input">
+            <label for="character-initiative">Initiative</label>
+        </div>
+
+        {# Speed #}
+        <div class="level-square">
+            <input type="number" id="character-speed" name="character-speed" value="{{ character.speed or '' }}" class="fixed-input">
+            <label for="character-speed">Speed</label>
+        </div>
+
+        {# Proficiency Bonus #}
+        <div class="level-square">
+            <input type="number" id="character-proficiency" name="character-proficiency" value="{{ character.proficiency or '' }}" class="fixed-input">
+            <label for="character-proficiency">Proficiency</label>
+        </div>
+
+        {# Passive Wisdom #}
+        <div class="level-square">
+            <input type="number" id="character-passive_wisdom" name="character-passive_wisdom" value="{{ character.passive_wisdom or '' }}" class="fixed-input">
+            <label for="character-passive_wisdom">Passive Wisdom</label>
+        </div>
+
+        {# XP #}
+        <div class="combat-xp-field">
+            <input type="number" id="character-xp" name="character-xp" value="{{ character.xp or '' }}" class="fixed-input">
+            <label for="character-xp">XP</label>
         </div>
     </div>
 </div>
