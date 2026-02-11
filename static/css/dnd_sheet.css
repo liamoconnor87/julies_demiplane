@@ -3,6 +3,9 @@
     --primary-color-transparent: rgba(20, 20, 30, 0.7);
     --secondary-color: rgb(128, 255, 212);
     --secondary-color-dark: rgba(128, 255, 212, 0.5);
+    --text-colour-one: rgb(255, 0, 200);
+    --text-colour-two: rgb(0, 191, 255);
+    --text-colour-three: rgb(255, 255, 255);
 }
 
 html {
@@ -11,7 +14,7 @@ html {
 
 body {
     background-color: var(--primary-color);
-    color: var(--secondary-color);
+    color: var(--text-colour-three);
 }
 
 /* Ensure form labels are always above fields */
@@ -30,10 +33,9 @@ body {
 
 .fixed-input {
     width: 100%;
-
     box-sizing: border-box;
     background: var(--primary-color-transparent);
-    color: var(--secondary-color);
+    color: var(--text-colour-three);
     padding: 0.5rem 0.75rem;
     border: none;
     border-radius: 0;
@@ -41,7 +43,11 @@ body {
     font-size: 1.05rem;
     transition: background 0.2s;
     display: block;
-    max-width: 300px;
+    max-width: 15.5rem;
+}
+
+.fixed-input[disabled] {
+   color: var(--text-colour-one);
 }
 
 .row {
@@ -53,7 +59,7 @@ body {
 
 .row label {
     background: var(--primary-color-transparent);
-    color: var(--secondary-color-dark);
+    color: var(--secondary-color);
     padding: 0;
     border: none;
     border-radius: 0;
@@ -62,7 +68,7 @@ body {
     display: block;
     font-size: 0.6rem;
     width: 100%;
-    max-width: 300px;
+    max-width: 15.5rem;
     box-sizing: border-box;
     transition: background 0.2s;
     line-height: 1;
@@ -81,7 +87,7 @@ body {
 .char-info-field {
     flex: 1 1 100%;
     min-width: 120px;
-    max-width: 300px;
+    max-width: 15.5rem;
     margin-right: 0.25rem;
     margin-bottom: 0.25rem;
 }
@@ -163,13 +169,13 @@ body {
     flex-direction: column;
     align-items: stretch;
     flex: 0 0 auto;
-    max-width: 200px;
+    max-width: 10.25rem;
     margin-right: 0.25rem;
     margin-bottom: 0.25rem;
 }
 
 .combat-xp-field input {
-    width: 200px;
+    width: 10.25rem;
     text-align: center;
     font-size: 2.5rem;
     box-sizing: border-box;
@@ -185,10 +191,9 @@ body {
 
 .combat-xp-field label {
     background: var(--primary-color-transparent);
-    color: var(--secondary-color-dark);
     font-weight: bold;
     font-size: 0.6rem;
-    width: 200px;
+    width: 10.25rem;
     padding: 0.25rem 0.25rem 0.25rem 0;
     text-align: right;
     line-height: 1;
@@ -202,7 +207,7 @@ body {
 }
 
 .class-name-field {
-    max-width: 200px;
+    max-width: 100px;
     flex: 0 0 auto;
     margin-right: 0.3rem;
 }
@@ -213,7 +218,7 @@ body {
 
 @media (max-width: 499px) {
     #add-class-field-dropdown.class-name-field {
-        max-width: calc(200px - 3.31rem);
+        max-width: calc(100px - 3.31rem);
     }
 }
 
@@ -224,7 +229,6 @@ body {
     flex-direction: column;
     align-items: center;
     margin-right: 0.3rem;
-    margin-bottom: 0.3rem;
 }
 
 .class-level-field input {
@@ -232,6 +236,7 @@ body {
     padding: 0.5rem 0;
     width: 100%;
     -moz-appearance: textfield;
+    height: 2.58rem;
 }
 
 .class-level-field input::-webkit-outer-spin-button,
@@ -261,7 +266,6 @@ body {
     max-width: 3.0rem;
     min-width: 3.0rem;
     flex: 0 0 auto;
-    margin: 0;
     margin-right: 0.31rem;
 }
 
@@ -309,7 +313,7 @@ body {
 .small-square-btn-field .class-btn {
     font-size: 1.5rem;
     box-sizing: border-box;
-    height: 2.7rem;
+    height: 2.65rem;
     width: 3.0rem;
     display: flex;
     padding: 0;
@@ -333,7 +337,7 @@ body {
     cursor: pointer;
     text-align: center;
     background: var(--primary-color-transparent);
-    color: var(--secondary-color);
+    color: var(--text-colour-three);
     border: none;
 }
 

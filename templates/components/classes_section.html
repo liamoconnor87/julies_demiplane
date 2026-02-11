@@ -6,7 +6,7 @@
             <div class="char-info-field class-name-field">
                 <label for="classes-class_name-{{ char_class.id }}">Class Name</label>
                 <input type="text" id="classes-class_name-{{ char_class.id }}"
-                       name="classes-class_name-{{ char_class.id }}" value="{{ char_class.class_name }}" readonly class="fixed-input">
+                       name="classes-class_name-{{ char_class.id }}" value="{{ char_class.class_name | title() }}" readonly class="fixed-input">
             </div>
             <div class="char-info-field class-level-field">
                 <label for="classes-level-{{ char_class.id }}">Level</label>
@@ -34,9 +34,9 @@
             <div class="char-info-field class-name-field" id="add-class-field-dropdown">
                 <label for="class_to_character-class_id">Select Class</label>
                 <select id="class_to_character-class_id" name="class_to_character-class_id" class="fixed-input">
-                    <option value="">--- Options ---</option>
+                    <option value="" disabled selected>Classes</option>
                         {% for class_option in class_options %}
-                            <option value="{{ class_option.id }}">{{ class_option.name }}</option>
+                            <option value="{{ class_option.id }}">{{ class_option.name | title() }}</option>
                         {% endfor %}
                 </select>
             </div>
