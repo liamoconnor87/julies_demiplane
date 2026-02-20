@@ -10,8 +10,13 @@
             <label for="character-name">Name</label>
             <input type="text" id="character-name" name="character-name" value="{{ character.name or '' }}" class="fixed-input">
         </div>
+        {# Level (calculated, disabled) #}
+        <div class="char-info-field level-square character-level-field">
+            <input type="number" id="character-level" name="character-level" value="{{ character.level or '' }}" disabled class="fixed-input">
+            <label for="character-level">Level</label>
+        </div>
         {# Race #}
-        <div class="char-info-field">
+        <div class="char-info-field character-race-field">
             <label for="character-race">Race</label>
             <input type="text" id="character-race" name="character-race" value="{{ character.race or '' }}" class="fixed-input">
         </div>
@@ -27,12 +32,6 @@
         </div>
     </div>
     <div class="stats-row">
-        {# Level (calculated, disabled) #}
-        <div class="level-square">
-            <input type="number" id="character-level" name="character-level" value="{{ character.level or '' }}" disabled class="fixed-input">
-            <label for="character-level">Level</label>
-        </div>
-
         {# Armour Class #}
         <div class="level-square">
             <input type="number" id="character-armour_class" name="character-armour_class" value="{{ character.armour_class or '' }}" class="fixed-input">

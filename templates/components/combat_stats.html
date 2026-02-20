@@ -1,31 +1,30 @@
 {# Combat Stats Component #}
 <h4>Combat</h4>
 <div class="row">
-    {# Hit Dice and Temp HP Column #}
-    <div>
-        {# Hit Dice #}
-        <div>
-            <input type="text" id="character-hit_dice" name="character-hit_dice" value="{{ character.hit_dice or '' }}">
-            <label for="character-hit_dice">Hit Dice</label>
+    <div class="combat-layout-row">
+        {# Column 1: Health Points, Temp HP, Hit Dice #}
+        <div class="combat-col-one">
+            <div class="combat-col-one-field">
+                <label for="character-health_points">Health Points</label>
+                <input type="number" id="character-health_points" name="character-health_points" value="{{ character.health_points or '' }}" class="fixed-input">
+            </div>
+
+            <div class="combat-col-one-field">
+                <label for="character-temporary_hit_points">Temp HP</label>
+                <input type="number" id="character-temporary_hit_points" name="character-temporary_hit_points" value="{{ character.temporary_hit_points or '' }}" class="fixed-input">
+            </div>
+
+            <div class="combat-col-one-field">
+                <label for="character-hit_dice">Hit Dice</label>
+                <input type="text" id="character-hit_dice" name="character-hit_dice" value="{{ character.hit_dice or '' }}" class="fixed-input">
+            </div>
         </div>
 
-        {# Temporary Hit Points #}
-        <div>
-            <input type="number" id="character-temporary_hit_points" name="character-temporary_hit_points" value="{{ character.temporary_hit_points or '' }}">
-            <label for="character-temporary_hit_points">Temp HP</label>
+        {# Column 2: Current Health Points square #}
+        <div class="combat-col-two-field">
+            <input type="number" id="character-current_health_points" name="character-current_health_points" value="{{ character.current_health_points or '' }}" disabled class="fixed-input">
+            <label for="character-current_health_points">Current HP</label>
         </div>
-    </div>
-
-    {# Max Health Points #}
-    <div>
-        <input type="number" id="character-health_points" name="character-health_points" value="{{ character.health_points or '' }}">
-        <label for="character-health_points">Health Points</label>
-    </div>
-
-    {# Current Health Points (calculated, disabled) #}
-    <div>
-        <input type="number" id="character-current_health_points" name="character-current_health_points" value="{{ character.current_health_points or '' }}" disabled>
-        <label for="character-current_health_points">Current Health Points</label>
     </div>
 </div>
 <br>

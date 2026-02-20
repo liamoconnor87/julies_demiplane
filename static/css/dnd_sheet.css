@@ -194,10 +194,108 @@ body {
     font-weight: bold;
     font-size: 0.6rem;
     width: 10.25rem;
-    padding: 0.25rem 0.25rem 0.25rem 0;
-    text-align: right;
+    padding: 0.25rem 0;
+    text-align: center;
     line-height: 1;
     box-sizing: border-box;
+}
+
+/* Combat form layout (two-column) */
+.combat-layout-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    --combat-col-field-width: 100px;
+    --combat-col-input-height: 2.58rem;
+    --combat-col-label-height: 1.1rem;
+    --combat-col-gap: 0.25rem;
+}
+
+.combat-col-one {
+    display: flex;
+    flex-direction: column;
+    margin-right: 0.3rem;
+}
+
+.combat-col-one-field {
+    display: flex;
+    flex-direction: column;
+    max-width: var(--combat-col-field-width);
+    min-width: var(--combat-col-field-width);
+    margin-bottom: var(--combat-col-gap);
+}
+
+.combat-col-one-field:last-child {
+    margin-bottom: 0;
+}
+
+.combat-col-one-field .fixed-input {
+    order: 1;
+    min-width: 0;
+    width: 100%;
+    max-width: var(--combat-col-field-width);
+    height: var(--combat-col-input-height);
+    font-size: 1.55rem;
+    box-sizing: border-box;
+    padding: 0.3rem;
+    text-align: center;
+}
+
+.combat-col-one-field input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.combat-col-one-field input[type="number"]::-webkit-outer-spin-button,
+.combat-col-one-field input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.combat-col-one-field label {
+    order: 2;
+    min-width: 0;
+    width: 100%;
+    max-width: var(--combat-col-field-width);
+    min-height: var(--combat-col-label-height);
+    line-height: 1;
+    text-align: center;
+    padding: 0.25rem 0;
+}
+
+.combat-col-two-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 10.4rem;
+    max-width: 10.4rem;
+    min-width: 10.4rem;
+}
+
+.combat-col-two-field input,
+.combat-col-two-field label {
+    width: 10.4rem;
+}
+
+.combat-col-two-field input {
+    height: 10.4rem;
+    font-size: 3rem;
+    text-align: center;
+    padding: 0;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.combat-col-two-field input::-webkit-outer-spin-button,
+.combat-col-two-field input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.combat-col-two-field label {
+    text-align: center;
+    padding: 0.25rem 0;
 }
 
 /* Classes section fields */
@@ -217,6 +315,16 @@ body {
 }
 
 @media (max-width: 499px) {
+    .combat-layout-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .combat-col-one {
+        margin-right: 0;
+        margin-bottom: 0.3rem;
+    }
+
     #add-class-field-dropdown.class-name-field {
         max-width: calc(100px - 3.31rem);
     }
@@ -362,6 +470,30 @@ body {
 .level-square input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
+}
+
+.character-level-field {
+    margin-top: 0;
+    max-width: 2.58rem;
+    min-width: 2.58rem;
+}
+
+.character-level-field input,
+.character-level-field label {
+    width: 2.58rem;
+}
+
+.character-level-field input {
+    height: 2.58rem;
+    padding: 0;
+    font-size: 2rem;
+    text-align: center;
+}
+
+.character-level-field label {
+    font-size: 0.5rem;
+    padding: 0.25rem 0;
+    text-align: center;
 }
 
 @media (min-width: 500px) {
