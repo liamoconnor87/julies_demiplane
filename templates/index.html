@@ -26,29 +26,14 @@
 
     <form action="/" method="POST">
         <div>
-            <h4>Character</h4>
             {% include 'components/character_info.html' %}
 
-            <h4>Classes</h4>
             {% include 'components/classes_section.html' %}
 
-            <h4>Combat</h4>
             {% include 'components/combat_stats.html' %}
 
-            <h4>Abilities & Skills</h4>
-            <div class="abilities-section">
-                {% for ability_data in abilities %}
-                    {% set ability_name = ability_data.ability_name %}
-                    {% set ability = ability_data.ability %}
-                    {% set skills = ability_data.skills %}
-                    {% set skill_list = ability_data.skill_list %}
-                    <div class="abilities-section-row">
-                        {% include 'components/ability_score.html' %}
-                        {% include 'components/skills_group.html' %}
-                    </div>
-                {% endfor %}
-            </div>
-            <br>
+            {% include 'components/abilities_section.html' %}
+
             {% include 'components/feats_traits_section.html' %}
             {# {% include 'components/inventory_section.html' %} #}
 
