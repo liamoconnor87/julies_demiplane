@@ -29,8 +29,8 @@ def character_sheet():
                 'level': char_class['level']
             })
 
+    feats_and_traits = db.go_get_all('feat_and_trait', {'character_id': character_id})
     # inventory = db.go_get_all('inventory', {'character_id': character_id})
-    # feats_and_traits = db.go_get_all('feat_and_trait', {'character_id': character_id})
 
     if request.method == 'POST':
         character_id = character_sheet.process_form(request.form)
@@ -43,7 +43,7 @@ def character_sheet():
         classes=character_sheet_data['classes'],
         class_options=character_sheet_data['class_options'],
         abilities=character_sheet_data['abilities'],
-        # feats_and_traits=character_sheet_data['feats_and_traits'],
+        feats_and_traits=character_sheet_data.get('feats_and_traits', feats_and_traits or []),
         # inventory=inventory,
         debug=debug
         )

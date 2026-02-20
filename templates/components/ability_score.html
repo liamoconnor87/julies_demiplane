@@ -1,29 +1,40 @@
 {# Single Ability Score Component - Pass: ability_name, ability, skills #}
-<div class="ability-score-row">
+<div class="abilities-section-score-row">
     {# Hidden fields #}
     <input type="hidden" id="{{ ability_name }}-id" name="{{ ability_name }}-id" value="{{ ability.id or '' }}">
     <input type="hidden" id="{{ ability_name }}-character_id" name="{{ ability_name }}-character_id" value="{{ ability.character_id or '' }}">
 
     {# Ability Value #}
-    <div class="ability-name-field">
-        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="ability-name-input">
-        <label for="{{ ability_name }}-value" class="ability-name-label">{{ ability_name | title }}</label>
+    <div class="abilities-section-name-field">
+        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="abilities-section-name-input">
+        <label for="{{ ability_name }}-value" class="abilities-section-name-label">{{ ability_name | title }}</label>
     </div>
 
-    <div class="ability-secondary-column">
+    <div class="abilities-section-secondary-column">
         {# Ability Modifier (calculated) #}
-        <div class="ability-secondary-field">
-            <div id="{{ ability_name }}-modifier" class="ability-secondary-value">{% if ability.modifier is not none %}{{ ability.modifier }}{% endif %}</div>
-            <label for="{{ ability_name }}-modifier" class="ability-secondary-label">Modifier</label>
-        </div>
+        {% set display_wrapper_classes = 'abilities-section-secondary-field' %}
+        {% set display_value_id = ability_name ~ '-modifier' %}
+        {% set display_value_classes = 'abilities-section-display-value' %}
+        {% set display_value = ability.modifier if ability.modifier is not none else '' %}
+        {% set display_label_classes = 'abilities-section-display-label' %}
+        {% set display_label_text = 'Modifier' %}
+        {% set display_toggle = false %}
+        {% set display_checkbox_id = '' %}
+        {% set display_checkbox_name = '' %}
+        {% set display_checkbox_checked = false %}
+        {% include 'components/abilities_display_field.html' %}
 
         {# Saving Throw #}
-        <div class="ability-secondary-field proficiency-toggle-item" data-checkbox-id="{{ ability_name }}-proficient" role="button" tabindex="0" aria-pressed="{% if ability.proficient == 1 %}true{% else %}false{% endif %}">
-            <div id="{{ ability_name }}_skills-saving_throw" class="ability-secondary-value">{% if skills.saving_throw is not none %}{{ skills.saving_throw }}{% endif %}</div>
-            <label for="{{ ability_name }}_skills-saving_throw" class="ability-secondary-label">Saving Throw</label>
-        </div>
-
-        {# Proficiency checkbox (hidden, for saving throw proficiency) #}
-        <input type="checkbox" id="{{ ability_name }}-proficient" name="{{ ability_name }}-proficient" value="1" {% if ability.proficient == 1 %}checked{% endif %} class="hidden-proficiency-checkbox">
+        {% set display_wrapper_classes = 'abilities-section-secondary-field' %}
+        {% set display_value_id = ability_name ~ '_skills-saving_throw' %}
+        {% set display_value_classes = 'abilities-section-display-value' %}
+        {% set display_value = skills.saving_throw if skills.saving_throw is not none else '' %}
+        {% set display_label_classes = 'abilities-section-display-label' %}
+        {% set display_label_text = 'Saving Throw' %}
+        {% set display_toggle = true %}
+        {% set display_checkbox_id = ability_name ~ '-proficient' %}
+        {% set display_checkbox_name = ability_name ~ '-proficient' %}
+        {% set display_checkbox_checked = ability.proficient == 1 %}
+        {% include 'components/abilities_display_field.html' %}
     </div>
 </div>

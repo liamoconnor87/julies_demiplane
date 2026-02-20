@@ -1,20 +1,24 @@
 {# Skills Group Component - Pass: ability_name, skills, skill_list #}
-<div class="skills-group-wrapper">
+<div class="abilities-section-skills-wrapper">
     {# Hidden fields #}
     <input type="hidden" id="{{ ability_name }}_skills-id" name="{{ ability_name }}_skills-id" value="{{ skills.id or '' }}">
     <input type="hidden" id="{{ ability_name }}_skills-{{ ability_name }}_id" name="{{ ability_name }}_skills-{{ ability_name }}_id" value="{{ skills[ability_name ~ '_id'] or '' }}">
 
     {# Individual Skills #}
     {% if skill_list %}
-        <div class="skills-group-grid">
+        <div class="abilities-section-skills-grid">
             {% for skill_name in skill_list %}
-            <div class="skills-group-item proficiency-toggle-item" data-checkbox-id="{{ ability_name }}_skills-{{ skill_name }}_proficient" role="button" tabindex="0" aria-pressed="{% if skills[skill_name ~ '_proficient'] == 1 %}true{% else %}false{% endif %}">
-                <div id="{{ ability_name }}_skills-{{ skill_name }}" class="skills-group-value">{% if skills[skill_name] is not none %}{{ skills[skill_name] }}{% endif %}</div>
-                <label for="{{ ability_name }}_skills-{{ skill_name }}" class="skills-group-label">{{ skill_name | replace('_', ' ') | title }}</label>
-
-                {# Hidden proficiency checkbox #}
-                <input type="checkbox" id="{{ ability_name }}_skills-{{ skill_name }}_proficient" name="{{ ability_name }}_skills-{{ skill_name }}_proficient" value="1" {% if skills[skill_name ~ '_proficient'] == 1 %}checked{% endif %} class="hidden-proficiency-checkbox">
-            </div>
+                {% set display_wrapper_classes = 'abilities-section-skills-item' %}
+                {% set display_value_id = ability_name ~ '_skills-' ~ skill_name %}
+                {% set display_value_classes = 'abilities-section-display-value' %}
+                {% set display_value = skills[skill_name] if skills[skill_name] is not none else '' %}
+                {% set display_label_classes = 'abilities-section-display-label' %}
+                {% set display_label_text = skill_name | replace('_', ' ') | title %}
+                {% set display_toggle = true %}
+                {% set display_checkbox_id = ability_name ~ '_skills-' ~ skill_name ~ '_proficient' %}
+                {% set display_checkbox_name = ability_name ~ '_skills-' ~ skill_name ~ '_proficient' %}
+                {% set display_checkbox_checked = skills[skill_name ~ '_proficient'] == 1 %}
+                {% include 'components/abilities_display_field.html' %}
             {% endfor %}
         </div>
     {% endif %}

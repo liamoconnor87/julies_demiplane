@@ -1,0 +1,199 @@
+.abilities-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 1rem;
+}
+
+.abilities-section-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.abilities-section-score-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    margin-bottom: 0.25rem;
+}
+
+.abilities-section-name-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 7rem;
+    flex: 0 0 auto;
+    margin: 0;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+    --abilities-total-height: 7rem;
+    height: var(--abilities-total-height);
+}
+
+.abilities-section-name-input,
+.abilities-section-name-label {
+    min-width: 0;
+    width: 7rem;
+    text-align: center;
+    padding: 0.25rem 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.abilities-section-name-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    border: none;
+    border-radius: 0;
+    outline: none;
+    display: block;
+    font-size: 2.5rem;
+    padding: 0.3rem;
+    transition: background 0.2s;
+    appearance: textfield;
+    -moz-appearance: textfield;
+    height: 5.75rem;
+}
+
+.abilities-section-name-input::-webkit-outer-spin-button,
+.abilities-section-name-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.abilities-section-name-label {
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    margin-bottom: 0;
+    display: block;
+    box-sizing: border-box;
+    transition: background 0.2s;
+    line-height: 1;
+    font-size: 0.6rem;
+    padding: 0.4rem 0;
+    text-align: center;
+    padding-left: 0;
+}
+
+.abilities-section-secondary-column {
+    display: flex;
+    flex-direction: column;
+    width: 5rem;
+    min-width: 5rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+    --abilities-total-height: 7rem;
+    height: var(--abilities-total-height);
+}
+
+.abilities-section-secondary-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    height: calc((100% - 0.25rem) / 2);
+    border: 1px solid transparent;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.abilities-section-secondary-field:first-child {
+    margin-bottom: 0.25rem;
+}
+
+.abilities-section-skills-wrapper {
+    margin-bottom: 0.25rem;
+}
+
+.abilities-section-skills-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(2, calc((7rem - 0.25rem) / 2));
+    grid-auto-columns: 5rem;
+    row-gap: 0.25rem;
+    column-gap: 0.25rem;
+}
+
+.abilities-section-skills-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    height: calc((7rem - 0.25rem) / 2);
+    border: 1px solid transparent;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.abilities-section-display-value {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    border: none;
+    border-radius: 0;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    padding: 0;
+    text-align: center;
+    transition: background 0.2s;
+    height: calc(100% - 1.1rem);
+}
+
+.abilities-section-display-label {
+    width: 100%;
+    height: 1.1rem;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-size: 0.5rem;
+    padding: 0;
+    text-align: center;
+    padding-left: 0;
+}
+
+.hidden-proficiency-checkbox {
+    display: none;
+}
+
+.proficiency-toggle-item {
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.abilities-section-secondary-field:hover,
+.abilities-section-skills-item:hover {
+    transform: scale(1.02);
+}
+
+.abilities-section-secondary-field:active,
+.abilities-section-skills-item:active {
+    transform: scale(0.98);
+}
+
+.proficiency-toggle-item.proficient-active {
+    border: 1px solid var(--secondary-color);
+}
+
+.proficiency-toggle-item.toggle-border-suppressed,
+.proficiency-toggle-item.toggle-border-suppressed:hover,
+.proficiency-toggle-item.toggle-border-suppressed:active {
+    border-color: transparent !important;
+}
