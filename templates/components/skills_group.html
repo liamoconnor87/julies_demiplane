@@ -1,30 +1,21 @@
 {# Skills Group Component - Pass: ability_name, skills, skill_list #}
-<div>
+<div class="skills-group-wrapper">
     {# Hidden fields #}
     <input type="hidden" id="{{ ability_name }}_skills-id" name="{{ ability_name }}_skills-id" value="{{ skills.id or '' }}">
     <input type="hidden" id="{{ ability_name }}_skills-{{ ability_name }}_id" name="{{ ability_name }}_skills-{{ ability_name }}_id" value="{{ skills[ability_name ~ '_id'] or '' }}">
 
-    {# Saving Throw #}
-    <div>
-        <div>
-            <label for="{{ ability_name }}_skills-saving_throw">Saving Throw</label>
-            <input type="number" id="{{ ability_name }}_skills-saving_throw" name="{{ ability_name }}_skills-saving_throw" value="{% if skills.saving_throw is not none %}{{ skills.saving_throw }}{% endif %}" readonly>
-        </div>
-    </div>
-
     {# Individual Skills #}
     {% if skill_list %}
-        {% for skill_name in skill_list %}
-            <div>
-                <div>
-                    <label for="{{ ability_name }}_skills-{{ skill_name }}">{{ skill_name | replace('_', ' ') | title }}</label>
-                    <input type="number" id="{{ ability_name }}_skills-{{ skill_name }}" name="{{ ability_name }}_skills-{{ skill_name }}" value="{% if skills[skill_name] is not none %}{{ skills[skill_name] }}{% endif %}" readonly>
-                </div>
+        <div class="skills-group-grid">
+            {% for skill_name in skill_list %}
+            <div class="skills-group-item proficiency-toggle-item" data-checkbox-id="{{ ability_name }}_skills-{{ skill_name }}_proficient" role="button" tabindex="0" aria-pressed="{% if skills[skill_name ~ '_proficient'] == 1 %}true{% else %}false{% endif %}">
+                <input type="number" id="{{ ability_name }}_skills-{{ skill_name }}" name="{{ ability_name }}_skills-{{ skill_name }}" value="{% if skills[skill_name] is not none %}{{ skills[skill_name] }}{% endif %}" readonly class="skills-group-input">
+                <label for="{{ ability_name }}_skills-{{ skill_name }}" class="skills-group-label">{{ skill_name | replace('_', ' ') | title }}</label>
 
                 {# Hidden proficiency checkbox #}
-                <input type="checkbox" id="{{ ability_name }}_skills-{{ skill_name }}_proficient" name="{{ ability_name }}_skills-{{ skill_name }}_proficient" value="1" {% if skills[skill_name ~ '_proficient'] == 1 %}checked{% endif %}>
+                <input type="checkbox" id="{{ ability_name }}_skills-{{ skill_name }}_proficient" name="{{ ability_name }}_skills-{{ skill_name }}_proficient" value="1" {% if skills[skill_name ~ '_proficient'] == 1 %}checked{% endif %} class="hidden-proficiency-checkbox">
             </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
     {% endif %}
 </div>
-<br>

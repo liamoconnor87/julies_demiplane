@@ -1,23 +1,29 @@
-{# Single Ability Score Component - Pass: ability_name, ability #}
-<div>
+{# Single Ability Score Component - Pass: ability_name, ability, skills #}
+<div class="ability-score-row">
     {# Hidden fields #}
     <input type="hidden" id="{{ ability_name }}-id" name="{{ ability_name }}-id" value="{{ ability.id or '' }}">
     <input type="hidden" id="{{ ability_name }}-character_id" name="{{ ability_name }}-character_id" value="{{ ability.character_id or '' }}">
 
     {# Ability Value #}
-    <div>
-        <label for="{{ ability_name }}-value">{{ ability_name | title }}</label>
-        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}">
+    <div class="ability-name-field">
+        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="ability-name-input">
+        <label for="{{ ability_name }}-value" class="ability-name-label">{{ ability_name | title }}</label>
     </div>
 
-    {# Ability Modifier (calculated) #}
-    <div>
-        <div>
-            <label for="{{ ability_name }}-modifier">Modifier</label>
-            <input type="number" id="{{ ability_name }}-modifier" name="{{ ability_name }}-modifier" value="{% if ability.modifier is not none %}{{ ability.modifier }}{% endif %}" readonly>
+    <div class="ability-secondary-column">
+        {# Ability Modifier (calculated) #}
+        <div class="ability-secondary-field">
+            <input type="number" id="{{ ability_name }}-modifier" name="{{ ability_name }}-modifier" value="{% if ability.modifier is not none %}{{ ability.modifier }}{% endif %}" readonly class="ability-secondary-input">
+            <label for="{{ ability_name }}-modifier" class="ability-secondary-label">Modifier</label>
+        </div>
+
+        {# Saving Throw #}
+        <div class="ability-secondary-field proficiency-toggle-item" data-checkbox-id="{{ ability_name }}-proficient" role="button" tabindex="0" aria-pressed="{% if ability.proficient == 1 %}true{% else %}false{% endif %}">
+            <input type="number" id="{{ ability_name }}_skills-saving_throw" name="{{ ability_name }}_skills-saving_throw" value="{% if skills.saving_throw is not none %}{{ skills.saving_throw }}{% endif %}" readonly class="ability-secondary-input">
+            <label for="{{ ability_name }}_skills-saving_throw" class="ability-secondary-label">Saving Throw</label>
         </div>
 
         {# Proficiency checkbox (hidden, for saving throw proficiency) #}
-        <input type="checkbox" id="{{ ability_name }}-proficient" name="{{ ability_name }}-proficient" value="1" {% if ability.proficient == 1 %}checked{% endif %}>
+        <input type="checkbox" id="{{ ability_name }}-proficient" name="{{ ability_name }}-proficient" value="1" {% if ability.proficient == 1 %}checked{% endif %} class="hidden-proficiency-checkbox">
     </div>
 </div>

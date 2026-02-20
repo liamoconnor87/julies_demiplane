@@ -11,13 +11,13 @@
             <div class="char-info-field class-level-field">
                 <label for="classes-level-{{ char_class.id }}">Level</label>
                 <input type="number" id="classes-level-{{ char_class.id }}"
-                       name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="fixed-input">
+                       name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="fixed-input class-level-input" data-original-value="{{ char_class.level }}" data-char-class-id="{{ char_class.id }}">
             </div>
             <div class="char-info-field small-square-btn-field">
-                <button type="button" id="classes-delete-{{ char_class.id }}"
-                        onclick="window.location.href='/{{ character_id }}/class/{{ char_class.id }}/remove'"
+                <button type="button" id="classes-action-{{ char_class.id }}"
+                        data-remove-url="/{{ character_id }}/class/{{ char_class.id }}/remove"
                         class="fixed-input class-btn">−</button>
-                <label for="classes-delete-{{ char_class.id }}">Remove</label>
+                <label for="classes-action-{{ char_class.id }}" id="classes-action-label-{{ char_class.id }}">Remove</label>
             </div>
         </div>
         {% endfor %}

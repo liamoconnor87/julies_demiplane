@@ -640,7 +640,7 @@ class CharacterSheet:
             'character': character,
             'classes': classes,
             'class_options': class_options,
-            # 'abilities': abilities_data,
+            'abilities': abilities_data,
             # 'feats_and_traits': feats_and_traits,
             # 'inventory': inventory
         }
@@ -775,7 +775,7 @@ class CharacterSheet:
                 "wisdom",
                 "charisma",
             ]
-            # TODO: rename proficient field (everwhere) to be saving throw proficient
+
             for ability in abilities:
                 value = request_form.get(f'{ability}-value')
                 if value:

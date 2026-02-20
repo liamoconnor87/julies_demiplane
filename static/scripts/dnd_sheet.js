@@ -1,5 +1,7 @@
 window.addEventListener("load", () => {
     selectClassField();
+    bindClassLevelUpdateButtons();
+    bindProficiencyToggles();
     bindCurrentHpCalculation();
 })
 
@@ -32,6 +34,47 @@ function selectClassField() {
         addClassFieldDropdown.style.display = 'none';
         addClassFieldLevel.style.display = 'none';
         addClassSubmitBtn.style.display = 'none';
+    });
+}
+
+function bindClassLevelUpdateButtons() {
+    const classLevelInputs = document.querySelectorAll('.class-level-input');
+
+    classLevelInputs.forEach((input) => {
+        const classId = input.dataset.charClassId;
+        const actionBtn = document.getElementById(`classes-action-${classId}`);
+        const actionLabel = document.getElementById(`classes-action-label-${classId}`);
+
+        if (!actionBtn || !actionLabel) {
+            return;
+        }
+
+        const removeUrl = actionBtn.dataset.removeUrl;
+
+        const setButtonMode = () => {
+            const currentValue = input.value.trim();
+            const originalValue = (input.dataset.originalValue || '').trim();
+            const hasChanged = currentValue !== originalValue;
+
+            if (hasChanged) {
+                actionBtn.type = 'submit';
+                actionBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+                actionLabel.textContent = 'Update';
+                actionBtn.onclick = null;
+                return;
+            }
+
+            actionBtn.type = 'button';
+            actionBtn.textContent = '−';
+            actionLabel.textContent = 'Remove';
+            actionBtn.onclick = () => {
+                window.location.href = removeUrl;
+            };
+        };
+
+        setButtonMode();
+        input.addEventListener('input', setButtonMode);
+        input.addEventListener('change', setButtonMode);
     });
 }
 
@@ -140,12 +183,41 @@ function bindCurrentHpCalculation() {
     calculateCurrentHp();
 }
 
+function bindProficiencyToggles() {
+    const proficiencyToggleItems = document.querySelectorAll('.proficiency-toggle-item');
 
-const proficiencyFields = document.querySelectorAll('.proficient-hover');
-proficiencyFields.forEach(field => {
-    field.childNodes.forEach(child => {
-        child.addEventListener("click", () => {
-            field.classList.toggle("proficient-hl");
+    proficiencyToggleItems.forEach((item) => {
+        const checkboxId = item.dataset.checkboxId;
+        if (!checkboxId) {
+            return;
+        }
+
+        const checkbox = document.getElementById(checkboxId);
+        if (!checkbox) {
+            return;
+        }
+
+        const syncVisualState = () => {
+            item.classList.toggle('proficient-active', checkbox.checked);
+            item.setAttribute('aria-pressed', checkbox.checked ? 'true' : 'false');
+        };
+
+        const toggleCheckbox = () => {
+            checkbox.checked = !checkbox.checked;
+            syncVisualState();
+        };
+
+        item.addEventListener('click', () => {
+            toggleCheckbox();
         });
-    })
-});
+
+        item.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                toggleCheckbox();
+            }
+        });
+
+        syncVisualState();
+    });
+}

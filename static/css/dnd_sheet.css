@@ -512,6 +512,230 @@ body {
     text-align: center;
 }
 
+.ability-name-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 7rem;
+    flex: 0 0 auto;
+    margin: 0;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.ability-score-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    margin-bottom: 0.25rem;
+}
+
+.ability-name-field,
+.ability-secondary-column {
+    --ability-total-height: 7rem;
+    height: var(--ability-total-height);
+}
+
+.ability-name-input,
+.ability-name-label {
+    min-width: 0;
+    width: 7rem;
+    text-align: center;
+    padding: 0.25rem 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.ability-name-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    border: none;
+    border-radius: 0;
+    outline: none;
+    display: block;
+    font-size: 2.5rem;
+    padding: 0.3rem;
+    transition: background 0.2s;
+    -moz-appearance: textfield;
+    height: 5.75rem;
+}
+
+.ability-name-input::-webkit-outer-spin-button,
+.ability-name-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.ability-name-field .ability-name-label {
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    margin-bottom: 0;
+    display: block;
+    box-sizing: border-box;
+    transition: background 0.2s;
+    line-height: 1;
+    font-size: 0.6rem;
+    padding: 0.4rem 0;
+    text-align: center;
+    padding-left: 0;
+}
+
+.ability-secondary-column {
+    display: flex;
+    flex-direction: column;
+    width: 5rem;
+    min-width: 5rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.ability-secondary-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    height: calc((100% - 0.25rem) / 2);
+}
+
+.ability-secondary-field:first-child {
+    margin-bottom: 0.25rem;
+}
+
+.ability-secondary-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    border: none;
+    border-radius: 0;
+    outline: none;
+    display: block;
+    font-size: 1.1rem;
+    padding: 0;
+    text-align: center;
+    transition: background 0.2s;
+    -moz-appearance: textfield;
+    height: calc(100% - 1.1rem);
+    line-height: calc(100% - 1.1rem);
+}
+
+.ability-secondary-input::-webkit-outer-spin-button,
+.ability-secondary-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.ability-secondary-field .ability-secondary-label {
+    width: 100%;
+    height: 1.1rem;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-size: 0.5rem;
+    padding: 0;
+    text-align: center;
+    padding-left: 0;
+}
+
+.hidden-proficiency-checkbox {
+    display: none;
+}
+
+.skills-group-wrapper {
+    margin-bottom: 0.25rem;
+}
+
+.ability-skills-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.skills-group-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(2, calc((7rem - 0.25rem) / 2));
+    grid-auto-columns: 5rem;
+    row-gap: 0.25rem;
+    column-gap: 0.25rem;
+}
+
+.skills-group-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    height: calc((7rem - 0.25rem) / 2);
+}
+
+.proficiency-toggle-item {
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.proficiency-toggle-item.proficient-active {
+    border: 1px solid var(--secondary-color);
+}
+
+.skills-group-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    border: none;
+    border-radius: 0;
+    outline: none;
+    display: block;
+    font-size: 1.1rem;
+    padding: 0;
+    text-align: center;
+    transition: background 0.2s;
+    -moz-appearance: textfield;
+    height: calc(100% - 1.1rem);
+    line-height: calc(100% - 1.1rem);
+}
+
+.skills-group-input::-webkit-outer-spin-button,
+.skills-group-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.skills-group-item .skills-group-label {
+    width: 100%;
+    height: 1.1rem;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-size: 0.5rem;
+    padding: 0;
+    text-align: center;
+    padding-left: 0;
+}
+
 @media (min-width: 500px) {
     .char-info-row {
         flex-direction: row;

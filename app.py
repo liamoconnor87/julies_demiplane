@@ -42,7 +42,7 @@ def character_sheet():
         character=character_sheet_data['character'],
         classes=character_sheet_data['classes'],
         class_options=character_sheet_data['class_options'],
-        # abilities=character_sheet_data['abilities'],
+        abilities=character_sheet_data['abilities'],
         # feats_and_traits=character_sheet_data['feats_and_traits'],
         # inventory=inventory,
         debug=debug

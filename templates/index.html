@@ -27,15 +27,20 @@
             {% include 'components/classes_section.html' %}
             {% include 'components/combat_stats.html' %}
 
-            <!-- <h3>Abilities & Skills</h3>
-            {% for ability_data in abilities %}
-                {% set ability_name = ability_data.ability_name %}
-                {% set ability = ability_data.ability %}
-                {% set skills = ability_data.skills %}
-                {% set skill_list = ability_data.skill_list %}
-                {% include 'components/ability_score.html' %}
-                {% include 'components/skills_group.html' %}
-            {% endfor %} -->
+            <h4>Abilities & Skills</h4>
+            <div class="row">
+                {% for ability_data in abilities %}
+                    {% set ability_name = ability_data.ability_name %}
+                    {% set ability = ability_data.ability %}
+                    {% set skills = ability_data.skills %}
+                    {% set skill_list = ability_data.skill_list %}
+                    <div class="ability-skills-row">
+                        {% include 'components/ability_score.html' %}
+                        {% include 'components/skills_group.html' %}
+                    </div>
+                {% endfor %}
+            </div>
+            <br>
             {# {% include 'components/feats_traits_section.html' %} #}
             {# {% include 'components/inventory_section.html' %} #}
 
