@@ -1,0 +1,16 @@
+.section-action-field {
+    align-items: center;
+}
+
+.section-action-btn {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section-action-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-left: 0 !important;
+}

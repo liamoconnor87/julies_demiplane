@@ -12,11 +12,11 @@
                 <input type="number" id="classes-level-{{ char_class.id }}"
                        name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="classes-section-input class-level-input" data-original-value="{{ char_class.level }}" data-char-class-id="{{ char_class.id }}">
             </div>
-            <div class="classes-section-field classes-section-action-field">
+            <div class="classes-section-field classes-section-action-field section-action-field">
                 <button type="button" id="classes-action-{{ char_class.id }}"
                         data-remove-url="/{{ character_id }}/class/{{ char_class.id }}/remove"
-                        class="classes-section-btn">−</button>
-                <label for="classes-action-{{ char_class.id }}" id="classes-action-label-{{ char_class.id }}" class="classes-section-label">Remove</label>
+                        class="classes-section-btn section-action-btn">−</button>
+                <label for="classes-action-{{ char_class.id }}" id="classes-action-label-{{ char_class.id }}" class="classes-section-label section-action-label">Remove</label>
             </div>
         </div>
         {% endfor %}
@@ -25,9 +25,9 @@
     {% if class_options %}
         <div class="classes-section-row">
             {# Add Class Button - shown by default #}
-            <div class="classes-section-field classes-section-button-field">
-                <button type="button" id="add-class-btn" class="classes-section-btn">+</button>
-                <label for="add-class-btn" class="classes-section-label">Add Class</label>
+            <div class="classes-section-field classes-section-button-field section-action-field">
+                <button type="button" id="add-class-btn" class="classes-section-btn section-action-btn">+</button>
+                <label for="add-class-btn" class="classes-section-label section-action-label">Add Class</label>
             </div>
             {# Class Selection Dropdown - hidden by default #}
             <div class="classes-section-field classes-section-name-field" id="add-class-field-dropdown">
@@ -46,14 +46,14 @@
                     name="class_to_character-level" placeholder="1" class="classes-section-input">
             </div>
             {# Submit Button - hidden by default #}
-            <div class="classes-section-field classes-section-button-field" id="add-class-submit-btn">
-                <button type="submit" id="add-class-submit" class="classes-section-btn"><i class="bi bi-check-lg"></i></button>
-                <label for="add-class-submit" class="classes-section-label">Add</label>
+            <div class="classes-section-field classes-section-button-field section-action-field" id="add-class-submit-btn">
+                <button type="submit" id="add-class-submit" class="classes-section-btn section-action-btn"><i class="bi bi-check-lg"></i></button>
+                <label for="add-class-submit" class="classes-section-label section-action-label">Add</label>
             </div>
             {# Close Button - hidden by default #}
-            <div class="classes-section-field classes-section-button-field" id="close-class-btn-wrapper">
-                <button type="button" id="close-class-field-x-btn" class="classes-section-btn">×</button>
-                <label for="close-class-field-x-btn" class="classes-section-label">Close</label>
+            <div class="classes-section-field classes-section-button-field section-action-field" id="close-class-btn-wrapper">
+                <button type="button" id="close-class-field-x-btn" class="classes-section-btn section-action-btn">×</button>
+                <label for="close-class-field-x-btn" class="classes-section-label section-action-label">Close</label>
             </div>
         </div>
     {% endif %}
