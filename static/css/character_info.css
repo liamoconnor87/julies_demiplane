@@ -1,0 +1,203 @@
+.character-info-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 1rem;
+}
+
+.character-info-main-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.character-info-stats-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.character-info-main-field {
+    flex: 1 1 100%;
+    min-width: 120px;
+    max-width: 15.5rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.character-info-stat-field {
+    min-width: 0;
+    max-width: none;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.character-info-main-text-field {
+    max-width: 10.85rem;
+}
+
+.character-info-name-field {
+    max-width: 15.5rem;
+}
+
+.character-info-square-field {
+    max-width: 5rem;
+    flex: 0 0 auto;
+    margin: 0;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.character-info-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    font-size: 1.05rem;
+    transition: background 0.2s;
+    display: block;
+    max-width: 15.5rem;
+}
+
+.character-info-input[disabled] {
+    color: var(--text-colour-one);
+}
+
+.character-info-label {
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    margin-bottom: 0;
+    display: block;
+    font-size: 0.6rem;
+    width: 100%;
+    max-width: 15.5rem;
+    box-sizing: border-box;
+    transition: background 0.2s;
+    line-height: 1;
+    text-align: left;
+    overflow-wrap: break-word;
+    padding-left: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+.character-info-square-field .character-info-label,
+.character-info-square-field .character-info-input {
+    min-width: 0;
+    width: 5rem;
+    text-align: center;
+    padding: 0.25rem 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.character-info-square-field .character-info-input {
+    font-size: 2.5rem;
+    box-sizing: border-box;
+    padding: 0.3rem;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.character-info-square-field .character-info-input::-webkit-outer-spin-button,
+.character-info-square-field .character-info-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.character-info-level-field {
+    margin-top: 0;
+    max-width: 2.58rem;
+    min-width: 2.58rem;
+}
+
+.character-info-level-field .character-info-input,
+.character-info-level-field .character-info-label {
+    width: 2.58rem;
+}
+
+.character-info-level-field .character-info-input {
+    height: 2.58rem;
+    padding: 0;
+    font-size: 2rem;
+    text-align: center;
+}
+
+.character-info-level-field .character-info-label {
+    font-size: 0.5rem;
+    padding: 0.25rem 0;
+    text-align: center;
+}
+
+.character-info-xp-field {
+    max-width: 10.25rem;
+    flex: 0 0 auto;
+}
+
+.character-info-xp-field .character-info-input {
+    width: 10.25rem;
+    text-align: center;
+    font-size: 2.5rem;
+    box-sizing: border-box;
+    padding: 0.3rem;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.character-info-xp-field .character-info-input::-webkit-outer-spin-button,
+.character-info-xp-field .character-info-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.character-info-xp-field .character-info-label {
+    width: 10.25rem;
+    text-align: right;
+    padding: 0.25rem 0;
+    padding-right: 0.5rem;
+}
+
+@media (min-width: 500px) {
+    .character-info-main-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .character-info-main-field {
+        flex: 1 1 45%;
+    }
+
+    .character-info-square-field {
+        flex: 0 0 auto;
+    }
+}
+
+@media (min-width: 900px) {
+    .character-info-main-row {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+    }
+
+    .character-info-main-field {
+        flex: 1 1 0;
+    }
+
+    .character-info-square-field {
+        flex: 0 0 auto;
+    }
+}

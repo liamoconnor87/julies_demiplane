@@ -1,71 +1,87 @@
 {# Character Basic Information Component #}
-<div class="row">
+<div class="character-info-section">
     {# Hidden ID field #}
     <input type="hidden" id="character-id" name="character-id" value="{{ character.id or '' }}">
 
-    <div class="char-info-row">
+    <div class="character-info-main-row">
         {# Name #}
-        <div class="char-info-field">
-            <label for="character-name">Name</label>
-            <input type="text" id="character-name" name="character-name" value="{{ character.name or '' }}" class="fixed-input">
-        </div>
+        {% set field_id = 'character-name' %}
+        {% set field_name = 'character-name' %}
+        {% set field_label = 'Name' %}
+        {% set field_value = character.name %}
+        {% include 'components/character_info_name_field.html' %}
+
         {# Level (calculated, disabled) #}
-        <div class="char-info-field level-square character-level-field">
-            <input type="number" id="character-level" name="character-level" value="{{ character.level or '' }}" disabled class="fixed-input">
-            <label for="character-level">Level</label>
-        </div>
+        {% set field_id = 'character-level' %}
+        {% set field_name = 'character-level' %}
+        {% set field_label = 'Level' %}
+        {% set field_value = character.level %}
+        {% include 'components/character_info_level_field.html' %}
+
         {# Race #}
-        <div class="char-info-field character-race-field character-main-text-field">
-            <label for="character-race">Race</label>
-            <input type="text" id="character-race" name="character-race" value="{{ character.race or '' }}" class="fixed-input">
-        </div>
+        {% set field_id = 'character-race' %}
+        {% set field_name = 'character-race' %}
+        {% set field_label = 'Race' %}
+        {% set field_value = character.race %}
+        {% include 'components/character_info_text_field.html' %}
+
         {# Background #}
-        <div class="char-info-field character-main-text-field">
-            <label for="character-background">Background</label>
-            <input type="text" id="character-background" name="character-background" value="{{ character.background or '' }}" class="fixed-input">
-        </div>
+        {% set field_id = 'character-background' %}
+        {% set field_name = 'character-background' %}
+        {% set field_label = 'Background' %}
+        {% set field_value = character.background %}
+        {% include 'components/character_info_text_field.html' %}
+
         {# Alignment #}
-        <div class="char-info-field character-main-text-field">
-            <label for="character-alignment">Alignment</label>
-            <input type="text" id="character-alignment" name="character-alignment" value="{{ character.alignment or '' }}" class="fixed-input">
-        </div>
+        {% set field_id = 'character-alignment' %}
+        {% set field_name = 'character-alignment' %}
+        {% set field_label = 'Alignment' %}
+        {% set field_value = character.alignment %}
+        {% include 'components/character_info_text_field.html' %}
     </div>
-    <div class="stats-row">
+
+    <div class="character-info-stats-row">
         {# Armour Class #}
-        <div class="level-square">
-            <input type="number" id="character-armour_class" name="character-armour_class" value="{{ character.armour_class or '' }}" class="fixed-input">
-            <label for="character-armour_class">Armour Class</label>
-        </div>
+        {% set stat_id = 'character-armour_class' %}
+        {% set stat_name = 'character-armour_class' %}
+        {% set stat_label = 'Armour Class' %}
+        {% set stat_value = character.armour_class %}
+        {% include 'components/character_info_square_stat_field.html' %}
 
         {# Initiative #}
-        <div class="level-square">
-            <input type="number" id="character-initiative" name="character-initiative" value="{{ character.initiative or '' }}" class="fixed-input">
-            <label for="character-initiative">Initiative</label>
-        </div>
+        {% set stat_id = 'character-initiative' %}
+        {% set stat_name = 'character-initiative' %}
+        {% set stat_label = 'Initiative' %}
+        {% set stat_value = character.initiative %}
+        {% include 'components/character_info_square_stat_field.html' %}
 
         {# Speed #}
-        <div class="level-square">
-            <input type="number" id="character-speed" name="character-speed" value="{{ character.speed or '' }}" class="fixed-input">
-            <label for="character-speed">Speed</label>
-        </div>
+        {% set stat_id = 'character-speed' %}
+        {% set stat_name = 'character-speed' %}
+        {% set stat_label = 'Speed' %}
+        {% set stat_value = character.speed %}
+        {% include 'components/character_info_square_stat_field.html' %}
 
         {# Proficiency Bonus #}
-        <div class="level-square">
-            <input type="number" id="character-proficiency" name="character-proficiency" value="{{ character.proficiency or '' }}" class="fixed-input">
-            <label for="character-proficiency">Proficiency</label>
-        </div>
+        {% set stat_id = 'character-proficiency' %}
+        {% set stat_name = 'character-proficiency' %}
+        {% set stat_label = 'Proficiency' %}
+        {% set stat_value = character.proficiency %}
+        {% include 'components/character_info_square_stat_field.html' %}
 
         {# Passive Wisdom #}
-        <div class="level-square">
-            <input type="number" id="character-passive_wisdom" name="character-passive_wisdom" value="{{ character.passive_wisdom or '' }}" class="fixed-input">
-            <label for="character-passive_wisdom">Passive Wisdom</label>
-        </div>
+        {% set stat_id = 'character-passive_wisdom' %}
+        {% set stat_name = 'character-passive_wisdom' %}
+        {% set stat_label = 'Passive Wisdom' %}
+        {% set stat_value = character.passive_wisdom %}
+        {% include 'components/character_info_square_stat_field.html' %}
 
         {# XP #}
-        <div class="combat-xp-field">
-            <input type="number" id="character-xp" name="character-xp" value="{{ character.xp or '' }}" class="fixed-input">
-            <label for="character-xp">XP</label>
-        </div>
+        {% set stat_id = 'character-xp' %}
+        {% set stat_name = 'character-xp' %}
+        {% set stat_label = 'XP' %}
+        {% set stat_value = character.xp %}
+        {% include 'components/character_info_xp_stat_field.html' %}
     </div>
 </div>
 <br>
