@@ -7,7 +7,6 @@ app = Flask(__name__)
 app.secret_key = secret_key
 
 db = Database()
-debug = None
 
 @app.route('/', methods=['GET', 'POST'])
 def character_sheet():
@@ -17,20 +16,6 @@ def character_sheet():
     character_sheet = CharacterSheet(character_id=character_id)
     character_sheet_data = character_sheet.create_form()
 
-    class_to_chararcter = db.go_get_all('class_to_character', {'character_id': character_id}) or []
-
-    character_classes = []
-    for char_class in class_to_chararcter:
-        dnd_class = db.go_get_one('class', {'id': char_class['class_id']})
-        if dnd_class:
-            character_classes.append({
-                'id': char_class['id'],
-                'name': dnd_class['name'],
-                'level': char_class['level']
-            })
-
-    feats_and_traits = db.go_get_all('feat_and_trait', {'character_id': character_id})
-    # inventory = db.go_get_all('inventory', {'character_id': character_id})
 
     if request.method == 'POST':
         character_id = character_sheet.process_form(request.form)
@@ -43,7 +28,7 @@ def character_sheet():
         classes=character_sheet_data['classes'],
         class_options=character_sheet_data['class_options'],
         abilities=character_sheet_data['abilities'],
-        feats_and_traits=character_sheet_data.get('feats_and_traits', feats_and_traits or []),
+        feats_and_traits=character_sheet_data['feats_and_traits'],
         # inventory=inventory,
         debug=debug
         )

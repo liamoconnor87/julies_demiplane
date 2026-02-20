@@ -14,7 +14,6 @@ class Database():
         self.db_route = DB_ROUTE
         self.tables = TABLES
         self.seed = SEED
-        pass
 
     def go_connect_db(self):
         return sqlite3.connect(self.db_route)
@@ -34,7 +33,6 @@ class Database():
         """
         Goes and gets the data from the `table` you want
         """
-        data= []
         db = self.go_connect_db()
         db.row_factory = sqlite3.Row
         cursor = db.cursor()

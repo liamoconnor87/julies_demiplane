@@ -1,566 +1,21 @@
 from typing import Optional
-from flask import Flask, render_template
 from go_get_it.go_get_it import Database
 from functions.functions import uuid
-from go_get_it.tables import TABLES
-
-app = Flask(__name__)
 ggi = Database()
 
 class CharacterSheet:
+    ABILITY_TO_SKILL_MAPPING = {
+        "strength": ["athletics"],
+        "dexterity": ["acrobatics", "sleight_of_hand", "stealth"],
+        "constitution": [],
+        "intelligence": ["arcana", "history", "investigation", "nature", "religion"],
+        "wisdom": ["animal_handling", "insight", "medicine", "perception", "survival"],
+        "charisma": ["deception", "intimidation", "performance", "persuasion"],
+    }
+
     # TODO: Add validation
     def __init__(self, character_id: Optional[str] = None):
         self.character_id = character_id
-        self.character_field_type_mapping = {
-                "id": "hidden",
-                "name": "text",
-                "level": "number",
-                "race": "text",
-                "background": "text",
-                "alignment": "text",
-                "armour_class": "number",
-                "initiative": "number",
-                "speed": "number",
-                "proficiency": "number",
-                "passive_wisdom": "number",
-                "xp": "number",
-                "health_points": "number",
-                "hit_dice": "text",
-                "temporary_hit_points": "number",
-                # Non table fields
-                "current_health_points": "number",
-            }
-
-        self.inventory_field_type_mapping = {
-                "id": "hidden",
-                "character_id": "hidden",
-                "name": "text",
-                "description": "text",
-                "quantity": "number",
-            }
-
-        self.character_class_field_type_mapping = {
-                "id": "hidden",
-                "character_id": "hidden",
-                "class_id": "select",
-                "level": "number",
-        }
-
-        self.feat_and_trait_field_type_mapping = {
-                "id": "hidden",
-                "character_id": "hidden",
-                "name": "text",
-                "description": "text",
-        }
-
-        self.abilities_field_type_mapping = {
-            "strength": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-            "dexterity": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-            "constitution": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-            "intelligence": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-            "wisdom": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-            "charisma": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-        }
-
-        self.skills_field_type_mapping = {
-            "strength_skills": {
-                "id": "hidden",
-                "strength_id": "hidden",
-                "saving_throw": "number",
-                "athletics": "number",
-                "athletics_proficient": "checkbox",
-            },
-            "dexterity_skills": {
-                "id": "hidden",
-                "dexterity_id": "hidden",
-                "saving_throw": "number",
-                "acrobatics": "number",
-                "acrobatics_proficient": "checkbox",
-                "sleight_of_hand": "number",
-                "sleight_of_hand_proficient": "checkbox",
-                "stealth": "number",
-                "stealth_proficient": "checkbox",
-            },
-            "constitution_skills": {
-                "id": "hidden",
-                "constitution_id": "hidden",
-                "saving_throw": "number",
-            },
-            "intelligence_skills": {
-                "id": "hidden",
-                "intelligence_id": "hidden",
-                "saving_throw": "number",
-                "arcana": "number",
-                "arcana_proficient": "checkbox",
-                "history": "number",
-                "history_proficient": "checkbox",
-                "investigation": "number",
-                "investigation_proficient": "checkbox",
-                "nature": "number",
-                "nature_proficient": "checkbox",
-                "religion": "number",
-                "religion_proficient": "checkbox",
-            },
-            "wisdom_skills": {
-                "id": "hidden",
-                "wisdom_id": "hidden",
-                "saving_throw": "number",
-                "animal_handling": "number",
-                "animal_handling_proficient": "checkbox",
-                "insight": "number",
-                "insight_proficient": "checkbox",
-                "medicine": "number",
-                "medicine_proficient": "checkbox",
-                "perception": "number",
-                "perception_proficient": "checkbox",
-                "survival": "number",
-                "survival_proficient": "checkbox",
-            },
-            "charisma_skills": {
-                "id": "hidden",
-                "charisma_id": "hidden",
-                "saving_throw": "number",
-                "deception": "number",
-                "deception_proficient": "checkbox",
-                "intimidation": "number",
-                "intimidation_proficient": "checkbox",
-                "performance": "number",
-                "performance_proficient": "checkbox",
-                "persuasion": "number",
-                "persuasion_proficient": "checkbox",
-            },
-        }
-
-        self.ability_to_skill_mapping = {
-            "strength": ["athletics"],
-            "dexterity": ["acrobatics", "sleight_of_hand", "stealth"],
-            "constitution": [],
-            "intelligence": ["arcana", "history", "investigation", "nature", "religion"],
-            "wisdom": ["animal_handling", "insight", "medicine", "perception", "survival"],
-            "charisma": ["deception", "intimidation", "performance", "persuasion"],
-        }
-
-        """
-        {
-            table_name: {
-                field_name: {
-                    field_container_styles: str,
-                    input_styles: str,
-                    label_styles: str,
-                },
-                field_name: {
-                    field_container_styles: str,
-                    input_styles: str,
-                    label_styles: str,
-                }
-            }
-        }
-        """
-        self.field_styles = {
-            "character": {
-                "name": {
-                    "field_container_styles": "char-field field-margins",
-                    "input_styles": "char-field-input",
-                    "label_styles": "char-field-label",
-                },
-                "level": {
-                    "field_container_styles": "char-field-square field-margins",
-                    "input_styles": "char-field-input-square",
-                    "label_styles": "char-field-label-square",
-                    "disabled": "disabled",
-                },
-                "race": {
-                    "field_container_styles": "char-field field-margins",
-                    "input_styles": "char-field-input",
-                    "label_styles": "char-field-label",
-                },
-                "background": {
-                    "field_container_styles": "char-field field-margins",
-                    "input_styles": "char-field-input",
-                    "label_styles": "char-field-label",
-                },
-                "alignment": {
-                    "field_container_styles": "char-field field-margins",
-                    "input_styles": "char-field-input",
-                    "label_styles": "char-field-label",
-                },
-                "armour_class": {
-                    "field_container_styles": "char-field-square field-margins",
-                    "input_styles": "char-field-input-square",
-                    "label_styles": "char-field-label-square",
-                },
-                "initiative": {
-                    "field_container_styles": "char-field-square field-margins",
-                    "input_styles": "char-field-input-square",
-                    "label_styles": "char-field-label-square",
-                },
-                "speed": {
-                    "field_container_styles": "char-field-square field-margins",
-                    "input_styles": "char-field-input-square",
-                    "label_styles": "char-field-label-square",
-                },
-                "xp": {
-                    "field_name": "XP",
-                    "field_container_styles": "char-field-m field-margins",
-                    "input_styles": "char-field-input-xp",
-                    "label_styles": "char-field-label-xp",
-                },
-                "proficiency": {
-                    "field_container_styles": "char-field-square field-margins",
-                    "input_styles": "char-field-input-square",
-                    "label_styles": "char-field-label-square",
-                },
-                "passive_wisdom": {
-                    "field_container_styles": "char-field-sm field-margins",
-                    "input_styles": "char-field-input-square",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "health_points": {
-                    "field_container_styles": "char-field-square-lg field-margins",
-                    "input_styles": "char-field-input-square-lg",
-                    "label_styles": "char-field-label-square",
-                },
-                "hit_dice": {
-                    "field_container_styles": "char-field-sm-col field-margins",
-                    "input_styles": "char-field-input-square hd-tweaks",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "temporary_hit_points": {
-                    "field_name": "Temp HP",
-                    "field_container_styles": "char-field-sm-col field-margins",
-                    "input_styles": "char-field-input-square hd-tweaks",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "current_health_points": {
-                    "field_container_styles": "char-field-square-lg field-margins",
-                    "input_styles": "char-field-input-square-lg",
-                    "label_styles": "char-field-label-square",
-                    "disabled": "disabled",
-                }
-            },
-            "strength": {
-                "value": {
-                    "field_name": "Strength",
-                    "field_container_styles": "char-field-square-lg field-margins",
-                    "input_styles": "char-field-input-square-lg",
-                    "label_styles": "char-field-label-square",
-                },
-                "modifier": {
-                    "field_container_styles": "char-field-sm-col field-margins",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "proficient": {
-                    "input_styles": "display-none",
-                }
-            },
-            "dexterity": {
-                "value": {
-                    "field_name": "Dexterity",
-                    "field_container_styles": "char-field-square-lg field-margins",
-                    "input_styles": "char-field-input-square-lg",
-                    "label_styles": "char-field-label-square",
-                },
-                "modifier": {
-                    "field_container_styles": "char-field-sm-col field-margins",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "proficient": {
-                    "input_styles": "display-none",
-                }
-            },
-            "constitution": {
-                "value": {
-                    "field_name": "Constitution",
-                    "field_container_styles": "char-field-square-lg field-margins",
-                    "input_styles": "char-field-input-square-lg",
-                    "label_styles": "char-field-label-square",
-                },
-                "modifier": {
-                    "field_container_styles": "char-field-sm-col field-margins",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "proficient": {
-                    "input_styles": "display-none",
-                }
-            },
-            "intelligence": {
-                "value": {
-                    "field_name": "Intelligence",
-                    "field_container_styles": "char-field-square-lg field-margins",
-                    "input_styles": "char-field-input-square-lg",
-                    "label_styles": "char-field-label-square",
-                },
-                "modifier": {
-                    "field_container_styles": "char-field-sm-col field-margins",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "proficient": {
-                    "input_styles": "display-none",
-                }
-            },
-            "wisdom": {
-                "value": {
-                    "field_name": "Wisdom",
-                    "field_container_styles": "char-field-square-lg field-margins",
-                    "input_styles": "char-field-input-square-lg",
-                    "label_styles": "char-field-label-square",
-                },
-                "modifier": {
-                    "field_container_styles": "char-field-sm-col field-margins",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "proficient": {
-                    "input_styles": "display-none",
-                }
-            },
-            "charisma": {
-                "value": {
-                    "field_name": "Charisma",
-                    "field_container_styles": "char-field-square-lg field-margins",
-                    "input_styles": "char-field-input-square-lg",
-                    "label_styles": "char-field-label-square",
-                },
-                "modifier": {
-                    "field_container_styles": "char-field-sm-col field-margins",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "proficient": {
-                    "input_styles": "display-none",
-                }
-            },
-            "strength_skills": {
-                "saving_throw": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "athletics": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "athletics_proficient": {
-                    "input_styles": "display-none",
-                }
-            },
-
-            "dexterity_skills": {
-                "saving_throw": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "acrobatics": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "acrobatics_proficient": {
-                    "input_styles": "display-none",
-                },
-                "sleight_of_hand": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "sleight_of_hand_proficient": {
-                    "input_styles": "display-none",
-                },
-                "stealth": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "stealth_proficient": {
-                    "input_styles": "display-none",
-                },
-            },
-
-            "constitution_skills": {
-                "saving_throw": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-            },
-
-            "intelligence_skills": {
-                "saving_throw": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "arcana": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "arcana_proficient": {
-                    "input_styles": "display-none",
-                },
-                "history": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "history_proficient": {
-                    "input_styles": "display-none",
-                },
-                "investigation": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "investigation_proficient": {
-                    "input_styles": "display-none",
-                },
-                "nature": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "nature_proficient": {
-                    "input_styles": "display-none",
-                },
-                "religion": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "religion_proficient": {
-                    "input_styles": "display-none",
-                },
-            },
-
-            "wisdom_skills": {
-                "saving_throw": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "animal_handling": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "animal_handling_proficient": {
-                    "input_styles": "display-none",
-                },
-                "insight": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "insight_proficient": {
-                    "input_styles": "display-none",
-                },
-                "medicine": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "medicine_proficient": {
-                    "input_styles": "display-none",
-                },
-                "perception": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "perception_proficient": {
-                    "input_styles": "display-none",
-                },
-                "survival": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "survival_proficient": {
-                    "input_styles": "display-none",
-                },
-            },
-            "charisma_skills": {
-                "saving_throw": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "deception": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "deception_proficient": {
-                    "input_styles": "display-none",
-                },
-                "intimidation": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "intimidation_proficient": {
-                    "input_styles": "display-none",
-                },
-                "performance": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "performance_proficient": {
-                    "input_styles": "display-none",
-                },
-                "persuasion": {
-                    "field_container_styles": "char-field-sm-col field-margins pointer proficient-hover skill-margin-left",
-                    "input_styles": "char-field-input-square no-caret",
-                    "label_styles": "char-field-label-square text-center",
-                },
-                "persuasion_proficient": {
-                    "input_styles": "display-none",
-                },
-            }
-        }
 
     def create_form(self):
         """
@@ -589,7 +44,7 @@ class CharacterSheet:
 
         # Get abilities and skills data
         abilities_data = []
-        for ability_name in self.abilities_field_type_mapping:
+        for ability_name in self.ABILITY_TO_SKILL_MAPPING:
             ability = ggi.go_get_one(ability_name, {"character_id": self.character_id}) or {}
 
             # Get skills for this ability
@@ -598,7 +53,7 @@ class CharacterSheet:
                 skills = ggi.go_get_one(f"{ability_name}_skills", {f"{ability_name}_id": ability['id']}) or {}
 
             # Get skill list for this ability
-            skill_list = self.ability_to_skill_mapping.get(ability_name, [])
+            skill_list = self.ABILITY_TO_SKILL_MAPPING[ability_name]
 
             abilities_data.append({
                 'ability_name': ability_name,
@@ -609,7 +64,12 @@ class CharacterSheet:
 
         # Classes
         all_classes = ggi.go_get_all('class') or []
+        if not isinstance(all_classes, list):
+            all_classes = []
+
         classes = ggi.go_get_all('class_to_character', {'character_id': self.character_id}) or []
+        if not isinstance(classes, list):
+            classes = []
 
         # Get IDs of classes already assigned to this character
         assigned_class_ids = [char_class['class_id'] for char_class in classes]
@@ -631,7 +91,7 @@ class CharacterSheet:
         )
 
         # Feats & Traits
-        # feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': self.character_id}) or []
+        feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': self.character_id}) or []
 
         # Inventory
         # inventory = ggi.go_get_all('inventory', {'character_id': self.character_id}) or []
@@ -641,7 +101,7 @@ class CharacterSheet:
             'classes': classes,
             'class_options': class_options,
             'abilities': abilities_data,
-            # 'feats_and_traits': feats_and_traits,
+            'feats_and_traits': feats_and_traits,
             # 'inventory': inventory
         }
 
@@ -694,7 +154,6 @@ class CharacterSheet:
 
         def _save_class_to_character_values(character_id: str):
             table_name = 'class_to_character'
-            character_id = character_id
 
             # Handle adding new class
             class_id = request_form.get(f'{table_name}-class_id')
@@ -767,16 +226,7 @@ class CharacterSheet:
             if character:
                 character_proficiency = character.get('proficiency', 0)
 
-            abilities =[
-                "strength",
-                "dexterity",
-                "constitution",
-                "intelligence",
-                "wisdom",
-                "charisma",
-            ]
-
-            for ability in abilities:
+            for ability in self.ABILITY_TO_SKILL_MAPPING:
                 value = request_form.get(f'{ability}-value')
                 if value:
                     value = int(value)
@@ -826,7 +276,7 @@ class CharacterSheet:
                     "saving_throw": modifier_score + saving_proficient_score,
                 }
 
-                for skill in self.ability_to_skill_mapping.get(ability, []):
+                for skill in self.ABILITY_TO_SKILL_MAPPING[ability]:
                     skill_proficient = 0
                     skill_proficient_score = 0
                     if request_form.get(f'{ability}_skills-{skill}_proficient'):
