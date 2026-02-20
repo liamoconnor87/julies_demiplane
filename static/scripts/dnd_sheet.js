@@ -1,5 +1,6 @@
 window.addEventListener("load", () => {
     selectClassField();
+    bindCurrentHpCalculation();
 })
 
 const addClassBtn = document.getElementById('add-class-btn');
@@ -42,6 +43,101 @@ function updateInventoryItem(itemId) {
     // You can implement this as a fetch request or form submission
     // For now, this will trigger the main form save
     alert('Update inventory quantity to ' + newQuantity + ' - Click Save at the bottom to persist changes');
+}
+
+function bindCurrentHpCalculation() {
+    const healthPointsField = document.getElementById('character-health_points');
+    const tempHpField = document.getElementById('character-temporary_hit_points');
+    const currentHpField = document.getElementById('character-current_health_points');
+    const decreaseCurrentHpBtn = document.getElementById('decrease-current-hp-btn');
+    const increaseCurrentHpBtn = document.getElementById('increase-current-hp-btn');
+
+    if (!healthPointsField || !tempHpField || !currentHpField) {
+        return;
+    }
+
+    const parseNumberOrZero = (value) => {
+        const parsed = Number.parseInt(value, 10);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    };
+
+    const getMaxCurrentHp = () => {
+        const healthPoints = parseNumberOrZero(healthPointsField.value);
+        const tempHp = parseNumberOrZero(tempHpField.value);
+        return Math.max(0, healthPoints + tempHp);
+    };
+
+    let previousMaxCurrentHp = getMaxCurrentHp();
+
+    const adjustCurrentHp = (delta) => {
+        const currentHp = parseNumberOrZero(currentHpField.value);
+        const maxCurrentHp = getMaxCurrentHp();
+
+        if (delta > 0) {
+            currentHpField.value = Math.min(maxCurrentHp, currentHp + delta);
+            return;
+        }
+
+        if (delta < 0) {
+            if (currentHp <= 0) {
+                currentHpField.value = 0;
+                return;
+            }
+
+            const tempHp = parseNumberOrZero(tempHpField.value);
+            if (tempHp > 0) {
+                tempHpField.value = tempHp - 1;
+            }
+
+            currentHpField.value = Math.max(0, currentHp + delta);
+        }
+    };
+
+    const calculateCurrentHp = () => {
+        if (healthPointsField.value === '' && tempHpField.value === '') {
+            currentHpField.value = '';
+            previousMaxCurrentHp = 0;
+            return;
+        }
+
+        const maxCurrentHp = getMaxCurrentHp();
+
+        if (currentHpField.value === '') {
+            currentHpField.value = maxCurrentHp;
+            previousMaxCurrentHp = maxCurrentHp;
+            return;
+        }
+
+        const currentHp = parseNumberOrZero(currentHpField.value);
+        const maxDelta = maxCurrentHp - previousMaxCurrentHp;
+        const adjustedCurrentHp = currentHp + maxDelta;
+
+        currentHpField.value = Math.min(maxCurrentHp, Math.max(0, adjustedCurrentHp));
+        previousMaxCurrentHp = maxCurrentHp;
+    };
+
+    healthPointsField.addEventListener('input', calculateCurrentHp);
+    tempHpField.addEventListener('input', calculateCurrentHp);
+
+    if (decreaseCurrentHpBtn) {
+        decreaseCurrentHpBtn.addEventListener('click', () => {
+            adjustCurrentHp(-1);
+        });
+    }
+
+    if (increaseCurrentHpBtn) {
+        increaseCurrentHpBtn.addEventListener('click', () => {
+            adjustCurrentHp(1);
+        });
+    }
+
+    currentHpField.addEventListener('input', () => {
+        const currentHp = parseNumberOrZero(currentHpField.value);
+        const maxCurrentHp = getMaxCurrentHp();
+        currentHpField.value = Math.min(maxCurrentHp, Math.max(0, currentHp));
+    });
+
+    calculateCurrentHp();
 }
 
 

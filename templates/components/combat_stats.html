@@ -22,7 +22,11 @@
 
         {# Column 2: Current Health Points square #}
         <div class="combat-col-two-field">
-            <input type="number" id="character-current_health_points" name="character-current_health_points" value="{{ character.current_health_points or '' }}" disabled class="fixed-input">
+            <input type="number" id="character-current_health_points" name="character-current_health_points" value="{{ character.current_health_points or '' }}" class="fixed-input">
+            <div class="current-hp-controls" aria-label="Adjust current HP">
+                <button type="button" id="decrease-current-hp-btn" class="class-btn current-hp-btn" aria-label="Decrease current HP">-</button>
+                <button type="button" id="increase-current-hp-btn" class="class-btn current-hp-btn" aria-label="Increase current HP">+</button>
+            </div>
             <label for="character-current_health_points">Current HP</label>
         </div>
     </div>

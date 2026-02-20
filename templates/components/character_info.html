@@ -16,17 +16,17 @@
             <label for="character-level">Level</label>
         </div>
         {# Race #}
-        <div class="char-info-field character-race-field">
+        <div class="char-info-field character-race-field character-main-text-field">
             <label for="character-race">Race</label>
             <input type="text" id="character-race" name="character-race" value="{{ character.race or '' }}" class="fixed-input">
         </div>
         {# Background #}
-        <div class="char-info-field">
+        <div class="char-info-field character-main-text-field">
             <label for="character-background">Background</label>
             <input type="text" id="character-background" name="character-background" value="{{ character.background or '' }}" class="fixed-input">
         </div>
         {# Alignment #}
-        <div class="char-info-field">
+        <div class="char-info-field character-main-text-field">
             <label for="character-alignment">Alignment</label>
             <input type="text" id="character-alignment" name="character-alignment" value="{{ character.alignment or '' }}" class="fixed-input">
         </div>

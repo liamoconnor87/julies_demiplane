@@ -92,6 +92,10 @@ body {
     margin-bottom: 0.25rem;
 }
 
+.char-info-field.character-main-text-field {
+    max-width: 10.85rem;
+}
+
 /* Make the level field square: width = height (label + input) across all screen sizes */
 .level-square {
     display: flex;
@@ -195,7 +199,8 @@ body {
     font-size: 0.6rem;
     width: 10.25rem;
     padding: 0.25rem 0;
-    text-align: center;
+    text-align: right;
+    padding-right: 0.5rem;
     line-height: 1;
     box-sizing: border-box;
 }
@@ -279,8 +284,8 @@ body {
 }
 
 .combat-col-two-field input {
-    height: 10.4rem;
-    font-size: 3rem;
+    height: 8.4rem;
+    font-size: 4rem;
     text-align: center;
     padding: 0;
     appearance: textfield;
@@ -296,6 +301,17 @@ body {
 .combat-col-two-field label {
     text-align: center;
     padding: 0.25rem 0;
+}
+
+.current-hp-controls {
+    display: flex;
+    width: 10.4rem;
+}
+
+.current-hp-btn {
+    flex: 1 1 50%;
+    height: 2rem;
+    font-size: 1.35rem;
 }
 
 /* Classes section fields */

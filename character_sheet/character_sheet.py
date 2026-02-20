@@ -570,6 +570,12 @@ class CharacterSheet:
         # Get character data
         character = ggi.go_get_one('character', {'id': self.character_id}) if self.character_id else {}
 
+        def _to_int(value):
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return 0
+
         # Calculate total character level from base + class levels
         if character:
             characters_class_levels = ggi.go_get_all('class_to_character', {'character_id': character.get('id')})
@@ -579,6 +585,7 @@ class CharacterSheet:
                 character_level += char_class.get('level', 0)
 
             character['level'] = character_level
+            character['current_health_points'] = _to_int(character.get('health_points')) + _to_int(character.get('temporary_hit_points'))
 
         # Get abilities and skills data
         abilities_data = []
@@ -615,6 +622,13 @@ class CharacterSheet:
             matching_class = next((c for c in all_classes if c['id'] == char_class['class_id']), None)
             if matching_class:
                 char_class['class_name'] = matching_class['name']
+
+        classes.sort(
+            key=lambda char_class: (
+                -(int(char_class.get('level') or 0)),
+                (char_class.get('class_name') or '')
+            )
+        )
 
         # Feats & Traits
         # feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': self.character_id}) or []
