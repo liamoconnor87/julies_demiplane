@@ -9,7 +9,7 @@
         <div class="skills-group-grid">
             {% for skill_name in skill_list %}
             <div class="skills-group-item proficiency-toggle-item" data-checkbox-id="{{ ability_name }}_skills-{{ skill_name }}_proficient" role="button" tabindex="0" aria-pressed="{% if skills[skill_name ~ '_proficient'] == 1 %}true{% else %}false{% endif %}">
-                <input type="number" id="{{ ability_name }}_skills-{{ skill_name }}" name="{{ ability_name }}_skills-{{ skill_name }}" value="{% if skills[skill_name] is not none %}{{ skills[skill_name] }}{% endif %}" readonly class="skills-group-input">
+                <div id="{{ ability_name }}_skills-{{ skill_name }}" class="skills-group-value">{% if skills[skill_name] is not none %}{{ skills[skill_name] }}{% endif %}</div>
                 <label for="{{ ability_name }}_skills-{{ skill_name }}" class="skills-group-label">{{ skill_name | replace('_', ' ') | title }}</label>
 
                 {# Hidden proficiency checkbox #}

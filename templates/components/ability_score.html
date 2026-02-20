@@ -13,13 +13,13 @@
     <div class="ability-secondary-column">
         {# Ability Modifier (calculated) #}
         <div class="ability-secondary-field">
-            <input type="number" id="{{ ability_name }}-modifier" name="{{ ability_name }}-modifier" value="{% if ability.modifier is not none %}{{ ability.modifier }}{% endif %}" readonly class="ability-secondary-input">
+            <div id="{{ ability_name }}-modifier" class="ability-secondary-value">{% if ability.modifier is not none %}{{ ability.modifier }}{% endif %}</div>
             <label for="{{ ability_name }}-modifier" class="ability-secondary-label">Modifier</label>
         </div>
 
         {# Saving Throw #}
         <div class="ability-secondary-field proficiency-toggle-item" data-checkbox-id="{{ ability_name }}-proficient" role="button" tabindex="0" aria-pressed="{% if ability.proficient == 1 %}true{% else %}false{% endif %}">
-            <input type="number" id="{{ ability_name }}_skills-saving_throw" name="{{ ability_name }}_skills-saving_throw" value="{% if skills.saving_throw is not none %}{{ skills.saving_throw }}{% endif %}" readonly class="ability-secondary-input">
+            <div id="{{ ability_name }}_skills-saving_throw" class="ability-secondary-value">{% if skills.saving_throw is not none %}{{ skills.saving_throw }}{% endif %}</div>
             <label for="{{ ability_name }}_skills-saving_throw" class="ability-secondary-label">Saving Throw</label>
         </div>
 

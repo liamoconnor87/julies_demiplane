@@ -600,13 +600,15 @@ body {
     align-items: stretch;
     justify-content: center;
     height: calc((100% - 0.25rem) / 2);
+    border: 1px solid transparent;
+    transition: transform 0.12s ease, border-color 0.12s ease;
 }
 
 .ability-secondary-field:first-child {
     margin-bottom: 0.25rem;
 }
 
-.ability-secondary-input {
+.ability-secondary-value {
     width: 100%;
     box-sizing: border-box;
     background: var(--primary-color-transparent);
@@ -614,21 +616,16 @@ body {
     border: none;
     border-radius: 0;
     outline: none;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 1.1rem;
     padding: 0;
     text-align: center;
     transition: background 0.2s;
-    -moz-appearance: textfield;
     height: calc(100% - 1.1rem);
-    line-height: calc(100% - 1.1rem);
 }
 
-.ability-secondary-input::-webkit-outer-spin-button,
-.ability-secondary-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
 
 .ability-secondary-field .ability-secondary-label {
     width: 100%;
@@ -662,7 +659,7 @@ body {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    gap: 0.25rem;
+    gap: 0.75rem;
     margin-bottom: 0.25rem;
 }
 
@@ -681,6 +678,7 @@ body {
     align-items: stretch;
     justify-content: center;
     height: calc((7rem - 0.25rem) / 2);
+    transition: transform 0.12s ease, border-color 0.12s ease;
 }
 
 .proficiency-toggle-item {
@@ -688,11 +686,27 @@ body {
     cursor: pointer;
 }
 
+.ability-secondary-field:hover,
+.skills-group-item:hover {
+    transform: scale(1.02);
+}
+
+.ability-secondary-field:active,
+.skills-group-item:active {
+    transform: scale(0.98);
+}
+
 .proficiency-toggle-item.proficient-active {
     border: 1px solid var(--secondary-color);
 }
 
-.skills-group-input {
+.proficiency-toggle-item.toggle-border-suppressed,
+.proficiency-toggle-item.toggle-border-suppressed:hover,
+.proficiency-toggle-item.toggle-border-suppressed:active {
+    border-color: transparent !important;
+}
+
+.skills-group-value {
     width: 100%;
     box-sizing: border-box;
     background: var(--primary-color-transparent);
@@ -700,20 +714,15 @@ body {
     border: none;
     border-radius: 0;
     outline: none;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 1.1rem;
     padding: 0;
     text-align: center;
     transition: background 0.2s;
     -moz-appearance: textfield;
     height: calc(100% - 1.1rem);
-    line-height: calc(100% - 1.1rem);
-}
-
-.skills-group-input::-webkit-outer-spin-button,
-.skills-group-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
 }
 
 .skills-group-item .skills-group-label {

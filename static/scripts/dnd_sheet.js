@@ -203,8 +203,16 @@ function bindProficiencyToggles() {
         };
 
         const toggleCheckbox = () => {
+            const wasChecked = checkbox.checked;
             checkbox.checked = !checkbox.checked;
             syncVisualState();
+
+            if (wasChecked && !checkbox.checked) {
+                item.classList.add('toggle-border-suppressed');
+                window.setTimeout(() => {
+                    item.classList.remove('toggle-border-suppressed');
+                }, 180);
+            }
         };
 
         item.addEventListener('click', () => {
