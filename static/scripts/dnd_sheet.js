@@ -21,6 +21,7 @@ window.addEventListener("load", () => {
 
         if (target.id === 'abilities-section-container') {
             bindProficiencyToggles();
+            bindAbilitiesSectionLockToggle();
         }
     });
 })
@@ -32,6 +33,7 @@ function initializeUiBindings() {
     selectFeatField();
     bindClassLevelUpdateButtons();
     bindProficiencyToggles();
+    bindAbilitiesSectionLockToggle();
     bindCurrentHpCalculation();
     bindFeatDescriptionDisplayAutoHeight();
 }
@@ -305,10 +307,20 @@ function bindProficiencyToggles() {
         };
 
         item.addEventListener('click', () => {
+            const section = item.closest('.abilities-section');
+            if (section && section.dataset.locked === 'true') {
+                return;
+            }
+
             toggleCheckbox();
         });
 
         item.addEventListener('keydown', (event) => {
+            const section = item.closest('.abilities-section');
+            if (section && section.dataset.locked === 'true') {
+                return;
+            }
+
             if (event.key === ' ' || event.key === 'Enter') {
                 event.preventDefault();
                 toggleCheckbox();
@@ -317,6 +329,49 @@ function bindProficiencyToggles() {
 
         syncVisualState();
     });
+}
+
+function bindAbilitiesSectionLockToggle() {
+    const section = document.querySelector('.abilities-section');
+    const lockToggle = document.getElementById('abilities-lock-toggle');
+
+    if (!section || !lockToggle) {
+        return;
+    }
+
+    if (!section.dataset.locked) {
+        section.dataset.locked = 'false';
+    }
+
+    const syncLockText = () => {
+        const isLocked = section.dataset.locked === 'true';
+        lockToggle.innerHTML = isLocked
+            ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
+            : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
+        lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
+        lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
+    };
+
+    if (lockToggle.dataset.bound !== 'true') {
+        lockToggle.addEventListener('click', () => {
+            const isLocked = section.dataset.locked === 'true';
+            section.dataset.locked = isLocked ? 'false' : 'true';
+            syncLockText();
+        });
+
+        lockToggle.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                const isLocked = section.dataset.locked === 'true';
+                section.dataset.locked = isLocked ? 'false' : 'true';
+                syncLockText();
+            }
+        });
+
+        lockToggle.dataset.bound = 'true';
+    }
+
+    syncLockText();
 }
 
 function bindFeatDescriptionDisplayAutoHeight() {
