@@ -8,6 +8,11 @@
     <div id="{{ display_value_id }}" class="{{ display_value_classes }}">{{ display_value if display_value is not none and display_value != '' else 0 }}</div>
     <div class="{{ display_label_classes }}">{{ display_label_text }}</div>
     {% if display_checkbox_name %}
-    <input type="checkbox" id="{{ display_checkbox_id }}" name="{{ display_checkbox_name }}" value="1" {% if display_checkbox_checked %}checked{% endif %} class="hidden-proficiency-checkbox">
+    <input type="checkbox" id="{{ display_checkbox_id }}" name="{{ display_checkbox_name }}" value="1" {% if display_checkbox_checked %}checked{% endif %} class="hidden-proficiency-checkbox"
+        hx-post="/characters/{{ character_id }}/abilities-skills/fragment"
+        hx-target="#abilities-section-container"
+        hx-swap="innerHTML"
+        hx-include="closest form"
+        hx-trigger="change">
     {% endif %}
 </div>

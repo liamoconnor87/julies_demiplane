@@ -11,11 +11,16 @@
             <div class="classes-section-field classes-section-level-field">
                 <label for="classes-level-{{ char_class.id }}" class="classes-section-label">Level</label>
                 <input type="number" id="classes-level-{{ char_class.id }}"
-                       name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="classes-section-input class-level-input" data-original-value="{{ char_class.level }}" data-char-class-id="{{ char_class.id }}">
+                       name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="classes-section-input class-level-input" data-original-value="{{ char_class.level }}" data-char-class-id="{{ char_class.id }}" hx-post="/characters/{{ character_id }}/classes/fragment" hx-target="#classes-section-container" hx-swap="innerHTML" hx-include="closest form" hx-trigger="change">
             </div>
             <div class="classes-section-field classes-section-action-field section-action-field">
                 <button type="button" id="classes-action-{{ char_class.id }}"
-                        data-remove-url="/{{ character_id }}/class/{{ char_class.id }}/remove"
+                    data-remove-url="/characters/{{ character_id }}/class/{{ char_class.id }}/remove"
+                        data-htmx-update-url="/characters/{{ character_id }}/classes/fragment"
+                        hx-post="/characters/{{ character_id }}/class/{{ char_class.id }}/remove"
+                        hx-target="#classes-section-container"
+                        hx-swap="innerHTML"
+                        hx-include="closest form"
                         class="classes-section-btn section-action-btn">−</button>
                 <label for="classes-action-{{ char_class.id }}" id="classes-action-label-{{ char_class.id }}" class="classes-section-label section-action-label">Remove</label>
             </div>
@@ -48,7 +53,11 @@
             </div>
             {# Submit Button - hidden by default #}
             <div class="classes-section-field classes-section-button-field section-action-field" id="add-class-submit-btn">
-                <button type="submit" id="add-class-submit" class="classes-section-btn section-action-btn"><i class="bi bi-check-lg"></i></button>
+                <button type="button" id="add-class-submit" class="classes-section-btn section-action-btn"
+                        hx-post="/characters/{{ character_id }}/classes/fragment"
+                        hx-target="#classes-section-container"
+                    hx-swap="innerHTML"
+                        hx-include="closest form"><i class="bi bi-check-lg"></i></button>
                 <label for="add-class-submit" class="classes-section-label section-action-label">Add</label>
             </div>
             {# Close Button - hidden by default #}

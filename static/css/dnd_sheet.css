@@ -17,6 +17,28 @@ body {
     color: var(--text-colour-three);
 }
 
+.sheet-layout {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.sheet-main-column,
+.sheet-right-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.sheet-main-column {
+    flex: 0 0 auto;
+}
+
+.sheet-right-column {
+    flex: 0 0 auto;
+}
+
 /* Ensure form labels are always above fields */
 .form-field-vertical {
     display: flex;
@@ -406,5 +428,12 @@ body {
     }
     .char-info-field.level-square {
         flex: 0 0 auto;
+    }
+}
+
+@media (max-width: 1000px) {
+    .sheet-layout {
+        flex-direction: column;
+        gap: 0;
     }
 }

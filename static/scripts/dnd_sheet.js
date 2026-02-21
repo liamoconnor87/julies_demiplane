@@ -1,18 +1,49 @@
 window.addEventListener("load", () => {
+    initializeUiBindings();
+
+    document.body.addEventListener('htmx:afterSwap', (event) => {
+        const target = event.target;
+        if (!target || !target.id) {
+            return;
+        }
+
+        if (target.id === 'classes-section-container') {
+            selectClassField();
+            bindClassLevelUpdateButtons();
+            return;
+        }
+
+        if (target.id === 'feats-section-container') {
+            selectFeatField();
+            bindFeatDescriptionDisplayAutoHeight();
+            return;
+        }
+
+        if (target.id === 'abilities-section-container') {
+            bindProficiencyToggles();
+        }
+    });
+})
+
+let featDescriptionResizeWindowBound = false;
+
+function initializeUiBindings() {
     selectClassField();
+    selectFeatField();
     bindClassLevelUpdateButtons();
     bindProficiencyToggles();
     bindCurrentHpCalculation();
-})
-
-const addClassBtn = document.getElementById('add-class-btn');
-const closeClassFieldXBtn = document.getElementById('close-class-field-x-btn');
-const closeBtnWrapper = document.getElementById('close-class-btn-wrapper');
-const addClassFieldDropdown = document.getElementById('add-class-field-dropdown');
-const addClassFieldLevel = document.getElementById('add-class-field-level');
-const addClassSubmitBtn = document.getElementById('add-class-submit-btn');
+    bindFeatDescriptionDisplayAutoHeight();
+}
 
 function selectClassField() {
+    const addClassBtn = document.getElementById('add-class-btn');
+    const closeClassFieldXBtn = document.getElementById('close-class-field-x-btn');
+    const closeBtnWrapper = document.getElementById('close-class-btn-wrapper');
+    const addClassFieldDropdown = document.getElementById('add-class-field-dropdown');
+    const addClassFieldLevel = document.getElementById('add-class-field-level');
+    const addClassSubmitBtn = document.getElementById('add-class-submit-btn');
+
     // Add null check to prevent errors if elements don't exist
     if (!addClassBtn || !closeClassFieldXBtn || !addClassFieldDropdown || !addClassFieldLevel || !closeBtnWrapper || !addClassSubmitBtn) {
         return;
@@ -37,6 +68,55 @@ function selectClassField() {
     });
 }
 
+function selectFeatField() {
+    const addFeatBtn = document.getElementById('add-feat-btn');
+    const addFeatBtnWrapper = document.getElementById('add-feat-btn-wrapper');
+    const addFeatFieldName = document.getElementById('add-feat-field-name');
+    const addFeatFieldDescription = document.getElementById('add-feat-field-description');
+    const addFeatSubmitBtnWrapper = document.getElementById('add-feat-submit-btn-wrapper');
+    const closeFeatBtnWrapper = document.getElementById('close-feat-btn-wrapper');
+    const closeFeatFieldXBtn = document.getElementById('close-feat-field-x-btn');
+
+    if (!addFeatBtn || !addFeatBtnWrapper || !addFeatFieldName || !addFeatFieldDescription || !addFeatSubmitBtnWrapper || !closeFeatBtnWrapper || !closeFeatFieldXBtn) {
+        return;
+    }
+
+    addFeatBtn.addEventListener('click', () => {
+        addFeatBtnWrapper.style.display = 'none';
+        addFeatFieldName.style.display = 'flex';
+        addFeatFieldDescription.style.display = 'flex';
+        addFeatSubmitBtnWrapper.style.display = 'flex';
+        closeFeatBtnWrapper.style.display = 'flex';
+
+        const addDescriptionField = addFeatFieldDescription.querySelector('.feats-section-description-input');
+        if (addDescriptionField) {
+            addDescriptionField.style.height = '';
+            resizeFeatDescriptionField(addDescriptionField);
+        }
+    });
+
+    closeFeatFieldXBtn.addEventListener('click', () => {
+        addFeatBtnWrapper.style.display = 'flex';
+        addFeatFieldName.style.display = 'none';
+        addFeatFieldDescription.style.display = 'none';
+        addFeatSubmitBtnWrapper.style.display = 'none';
+        closeFeatBtnWrapper.style.display = 'none';
+    });
+}
+
+function resizeFeatDescriptionField(field) {
+    if (!field) {
+        return;
+    }
+
+    field.style.height = 'auto';
+
+    const computedStyles = window.getComputedStyle(field);
+    const minHeight = Number.parseFloat(computedStyles.minHeight) || field.clientHeight || 0;
+    const targetHeight = Math.max(field.scrollHeight, minHeight);
+    field.style.height = `${targetHeight}px`;
+}
+
 function bindClassLevelUpdateButtons() {
     const classLevelInputs = document.querySelectorAll('.class-level-input');
 
@@ -49,27 +129,35 @@ function bindClassLevelUpdateButtons() {
             return;
         }
 
-        const removeUrl = actionBtn.dataset.removeUrl;
-
         const setButtonMode = () => {
             const currentValue = input.value.trim();
             const originalValue = (input.dataset.originalValue || '').trim();
             const hasChanged = currentValue !== originalValue;
+            const updateUrl = actionBtn.dataset.htmxUpdateUrl;
+            const removeUrl = actionBtn.dataset.removeUrl;
 
             if (hasChanged) {
-                actionBtn.type = 'submit';
+                actionBtn.type = 'button';
                 actionBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
                 actionLabel.textContent = 'Update';
-                actionBtn.onclick = null;
+                if (updateUrl) {
+                    actionBtn.setAttribute('hx-post', updateUrl);
+                }
+                actionBtn.setAttribute('hx-target', '#classes-section-container');
+                actionBtn.setAttribute('hx-swap', 'innerHTML');
+                actionBtn.setAttribute('hx-include', 'closest form');
                 return;
             }
 
             actionBtn.type = 'button';
             actionBtn.textContent = '−';
             actionLabel.textContent = 'Remove';
-            actionBtn.onclick = () => {
-                window.location.href = removeUrl;
-            };
+            if (removeUrl) {
+                actionBtn.setAttribute('hx-post', removeUrl);
+            }
+            actionBtn.setAttribute('hx-target', '#classes-section-container');
+            actionBtn.setAttribute('hx-swap', 'innerHTML');
+            actionBtn.setAttribute('hx-include', 'closest form');
         };
 
         setButtonMode();
@@ -206,6 +294,7 @@ function bindProficiencyToggles() {
             const wasChecked = checkbox.checked;
             checkbox.checked = !checkbox.checked;
             syncVisualState();
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
 
             if (wasChecked && !checkbox.checked) {
                 item.classList.add('toggle-border-suppressed');
@@ -228,4 +317,39 @@ function bindProficiencyToggles() {
 
         syncVisualState();
     });
+}
+
+function bindFeatDescriptionDisplayAutoHeight() {
+    const descriptionFields = document.querySelectorAll('.feats-section-description-input');
+
+    if (!descriptionFields.length) {
+        return;
+    }
+
+    descriptionFields.forEach((field) => {
+        if (field.hasAttribute('readonly')) {
+            resizeFeatDescriptionField(field);
+        }
+
+        if (!field.hasAttribute('readonly') && field.dataset.autoresizeBound !== 'true') {
+            field.addEventListener('input', () => {
+                resizeFeatDescriptionField(field);
+            });
+            field.dataset.autoresizeBound = 'true';
+        }
+    });
+
+    if (!featDescriptionResizeWindowBound) {
+        window.addEventListener('resize', () => {
+            const activeDescriptionFields = document.querySelectorAll('.feats-section-description-input');
+            activeDescriptionFields.forEach((field) => {
+                if (field.offsetParent === null) {
+                    return;
+                }
+
+                resizeFeatDescriptionField(field);
+            });
+        });
+        featDescriptionResizeWindowBound = true;
+    }
 }

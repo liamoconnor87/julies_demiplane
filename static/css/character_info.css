@@ -7,6 +7,16 @@
 
 .character-info-main-row {
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+
+.character-info-main-row .character-info-main-field {
+    flex: 0 0 auto;
+}
+
+.character-info-secondary-row {
+    display: flex;
     flex-direction: column;
 }
 
@@ -177,6 +187,12 @@
         justify-content: flex-start;
     }
 
+    .character-info-secondary-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
     .character-info-main-field {
         flex: 1 1 45%;
     }
@@ -188,6 +204,12 @@
 
 @media (min-width: 900px) {
     .character-info-main-row {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+    }
+
+    .character-info-secondary-row {
         flex-direction: row;
         flex-wrap: nowrap;
         justify-content: flex-start;

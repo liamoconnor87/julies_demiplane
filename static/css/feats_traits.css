@@ -3,14 +3,28 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 0 1rem;
+    --feats-name-width: 12.35rem;
+    --feats-action-width: 3rem;
+    --feats-field-gap: 0.25rem;
 }
 
 .feats-section-row {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: nowrap;
     align-items: flex-start;
     margin-bottom: 0.25rem;
+}
+
+.feats-section-saved-row {
+    margin-bottom: 0.5rem;
+}
+
+.feats-section-top-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
 }
 
 .feats-section-field {
@@ -23,21 +37,27 @@
 }
 
 .feats-section-name-field {
-    width: 10.85rem;
-    min-width: 10.85rem;
-    max-width: 10.85rem;
+    width: var(--feats-name-width);
+    min-width: var(--feats-name-width);
+    max-width: var(--feats-name-width);
+}
+
+#add-feat-field-name {
+    width: calc(var(--feats-name-width) - var(--feats-action-width) - var(--feats-field-gap));
+    min-width: calc(var(--feats-name-width) - var(--feats-action-width) - var(--feats-field-gap));
+    max-width: calc(var(--feats-name-width) - var(--feats-action-width) - var(--feats-field-gap));
 }
 
 .feats-section-description-field {
-    width: 15.5rem;
-    min-width: 15.5rem;
-    max-width: 15.5rem;
+    width: calc(var(--feats-name-width) + var(--feats-action-width) + var(--feats-field-gap));
+    min-width: calc(var(--feats-name-width) + var(--feats-action-width) + var(--feats-field-gap));
+    max-width: calc(var(--feats-name-width) + var(--feats-action-width) + var(--feats-field-gap));
 }
 
 .feats-section-action-field {
-    width: 3rem;
-    min-width: 3rem;
-    max-width: 3rem;
+    width: var(--feats-action-width);
+    min-width: var(--feats-action-width);
+    max-width: var(--feats-action-width);
 }
 
 .feats-section-input {
@@ -56,6 +76,39 @@
 
 .feats-section-field .feats-section-input {
     height: var(--feats-field-input-height);
+}
+
+.feats-section-description-field .feats-section-input {
+    height: calc(var(--feats-field-input-height) * 3);
+}
+
+.feats-section-description-input {
+    resize: vertical;
+    line-height: 1.2;
+    white-space: pre-wrap;
+}
+
+.feats-section-description-display {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    border: none;
+    border-radius: 0;
+    outline: none;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    display: block;
+    padding: 0.5rem 0.75rem;
+    min-height: var(--feats-field-input-height);
+    white-space: pre-wrap;
+}
+
+.feats-section-description-input[readonly] {
+    height: auto;
+    min-height: var(--feats-field-input-height);
+    overflow: hidden;
+    resize: none;
 }
 
 .feats-section-label {
@@ -97,19 +150,53 @@
 .feats-section-action-field .feats-section-label {
     min-width: 0;
     text-align: center;
-    width: 3rem;
+    width: var(--feats-action-width);
     font-size: 0.5rem;
     padding: 0.25rem 0;
 }
 
+#add-feat-field-name,
+#add-feat-field-description,
+#add-feat-submit-btn-wrapper,
+#close-feat-btn-wrapper {
+    display: none;
+}
+
+#add-feat-field-description {
+    min-width: calc(var(--feats-name-width) + var(--feats-action-width) + var(--feats-field-gap));
+}
+
+#add-feat-field-description .feats-section-description-input {
+    height: calc(var(--feats-field-input-height) * 2);
+    min-height: calc(var(--feats-field-input-height) * 2);
+}
+
 @media (max-width: 900px) {
-    .feats-section-row {
-        flex-wrap: wrap;
+    .feats-section {
+        width: 100%;
     }
 
     .feats-section-description-field {
         width: 100%;
-        min-width: 15rem;
-        max-width: 30rem;
+        min-width: 0;
+        max-width: calc(var(--feats-name-width) + var(--feats-action-width) + var(--feats-field-gap));
+    }
+}
+
+@media (max-width: 499px) {
+    .feats-section-top-row {
+        flex-wrap: wrap;
+    }
+
+    .feats-section-name-field,
+    .feats-section-action-field,
+    .feats-section-description-field {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .feats-section-action-field .feats-section-label {
+        width: 100%;
     }
 }

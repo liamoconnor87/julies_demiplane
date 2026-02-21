@@ -8,13 +8,19 @@ app.secret_key = secret_key
 
 db = Database()
 
+def _is_htmx_request() -> bool:
+    return request.headers.get('HX-Request') == 'true'
+
+def _build_character_sheet_data(character_id: str):
+    sheet = CharacterSheet(character_id=character_id)
+    return sheet, sheet.create_form()
+
 @app.route('/', methods=['GET', 'POST'])
 def character_sheet():
     character_id = request.args.get('character_id') or "01964ee7cdcc1641bd25fe601c157a58" # debug purposes
     debug = f"{character_id}"
 
-    character_sheet = CharacterSheet(character_id=character_id)
-    character_sheet_data = character_sheet.create_form()
+    character_sheet, character_sheet_data = _build_character_sheet_data(character_id)
 
 
     if request.method == 'POST':
@@ -33,6 +39,44 @@ def character_sheet():
         debug=debug
         )
 
+@app.route('/characters/<character_id>/classes/fragment', methods=['POST'])
+def classes_fragment(character_id: str):
+    sheet = CharacterSheet(character_id=character_id)
+    sheet.save_class_to_character_values(character_id, request.form)
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/classes_fragment_response.html',
+        character_id=character_id,
+        classes=data['classes'],
+        class_options=data['class_options'],
+        character=data['character']
+    )
+
+@app.route('/characters/<character_id>/feats-traits/fragment', methods=['POST'])
+def feats_traits_fragment(character_id: str):
+    sheet = CharacterSheet(character_id=character_id)
+    sheet.save_feat_and_trait_values(character_id, request.form)
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/feats_traits_section.html',
+        character_id=character_id,
+        feats_and_traits=data['feats_and_traits']
+    )
+
+@app.route('/characters/<character_id>/abilities-skills/fragment', methods=['POST'])
+def abilities_skills_fragment(character_id: str):
+    sheet = CharacterSheet(character_id=character_id)
+    sheet.save_ability_values(character_id, request.form)
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/abilities_section.html',
+        abilities=data['abilities'],
+        character_id=character_id
+    )
+
 @app.route("/<character_id>/inventory/<inventory_id>/remove")
 def remove_inventory_item(character_id: str, inventory_id: str):
     if not character_id or not inventory_id or not db.go_get_one('inventory', {'id': inventory_id, "character_id": character_id}):
@@ -43,6 +87,7 @@ def remove_inventory_item(character_id: str, inventory_id: str):
     return redirect(url_for('character_sheet', character_id=character_id))
 
 
+@app.route('/characters/<character_id>/feat-and-trait/<feat_and_trait_id>/remove', methods=['POST'])
 @app.route("/<character_id>/feat-and-trait/<feat_and_trait_id>/remove")
 def remove_feat_and_trait_item(character_id: str, feat_and_trait_id: str):
     if not character_id or not feat_and_trait_id or not db.go_get_one('feat_and_trait', {'id': feat_and_trait_id, "character_id": character_id}):
@@ -50,9 +95,19 @@ def remove_feat_and_trait_item(character_id: str, feat_and_trait_id: str):
         return redirect(url_for('character_sheet'))
 
     db.go_delete_it('feat_and_trait', {'id': feat_and_trait_id, "character_id": character_id})
+
+    if _is_htmx_request() or request.method == 'POST':
+        _, data = _build_character_sheet_data(character_id)
+        return render_template(
+            'components/feats_traits_section.html',
+            character_id=character_id,
+            feats_and_traits=data['feats_and_traits']
+        )
+
     return redirect(url_for('character_sheet', character_id=character_id))
 
 
+@app.route('/characters/<character_id>/class/<class_id>/remove', methods=['POST'])
 @app.route("/<character_id>/class/<class_id>/remove")
 def remove_class(character_id: str, class_id: str):
     if not character_id or not class_id or not db.go_get_one('class_to_character', {'id': class_id, "character_id": character_id}):
@@ -60,6 +115,17 @@ def remove_class(character_id: str, class_id: str):
         return redirect(url_for('character_sheet'))
 
     db.go_delete_it('class_to_character', {'id': class_id, "character_id": character_id})
+
+    if _is_htmx_request() or request.method == 'POST':
+        _, data = _build_character_sheet_data(character_id)
+        return render_template(
+            'components/classes_fragment_response.html',
+            character_id=character_id,
+            classes=data['classes'],
+            class_options=data['class_options'],
+            character=data['character']
+        )
+
     return redirect(url_for('character_sheet', character_id=character_id))
 
 

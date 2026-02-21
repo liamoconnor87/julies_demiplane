@@ -2,45 +2,64 @@
     <h4>Feats & Traits</h4>
     {% if feats_and_traits %}
         {% for feat in feats_and_traits %}
-            <div class="feats-section-row">
-                <div class="feats-section-field feats-section-name-field">
-                    <label for="feat_and_trait-name-{{ feat.id }}" class="feats-section-label">Name</label>
-                    <input type="text" id="feat_and_trait-name-{{ feat.id }}"
-                           name="feat_and_trait-name-{{ feat.id }}" value="{{ feat.name }}" readonly class="feats-section-input">
+            <div class="feats-section-row feats-section-saved-row">
+                <div class="feats-section-top-row">
+                    <div class="feats-section-field feats-section-name-field">
+                        <label for="feat_and_trait-name-{{ feat.id }}" class="feats-section-label">Feat/Trait</label>
+                        <input type="text" id="feat_and_trait-name-{{ feat.id }}"
+                               name="feat_and_trait-name-{{ feat.id }}" value="{{ feat.name }}" readonly class="feats-section-input">
+                    </div>
+
+                    <div class="feats-section-field feats-section-action-field section-action-field">
+                        <button type="button" id="feat-and-trait-delete-{{ feat.id }}" class="feats-section-btn section-action-btn"
+                                hx-post="/characters/{{ character_id }}/feat-and-trait/{{ feat.id }}/remove"
+                                hx-target="#feats-section-container"
+                            hx-swap="innerHTML"
+                                hx-include="closest form">−</button>
+                        <label for="feat-and-trait-delete-{{ feat.id }}" class="feats-section-label section-action-label">Remove</label>
+                    </div>
                 </div>
 
                 <div class="feats-section-field feats-section-description-field">
                     <label for="feat_and_trait-description-{{ feat.id }}" class="feats-section-label">Description</label>
-                    <input type="text" id="feat_and_trait-description-{{ feat.id }}"
-                           name="feat_and_trait-description-{{ feat.id }}" value="{{ feat.description }}" readonly class="feats-section-input">
-                </div>
-
-                <div class="feats-section-field feats-section-action-field section-action-field">
-                    <button type="button" id="feat-and-trait-delete-{{ feat.id }}" class="feats-section-btn section-action-btn"
-                            onclick="window.location.href='/{{ character_id }}/feat-and-trait/{{ feat.id }}/remove'">−</button>
-                    <label for="feat-and-trait-delete-{{ feat.id }}" class="feats-section-label section-action-label">Remove</label>
+                    <div id="feat_and_trait-description-{{ feat.id }}" class="feats-section-description-display">{{ feat.description }}</div>
                 </div>
             </div>
         {% endfor %}
     {% endif %}
 
     <div class="feats-section-row feats-section-add-row">
-        <div class="feats-section-field feats-section-name-field">
-            <label for="feat_and_trait-name" class="feats-section-label">New Feat/Trait Name</label>
-            <input type="text" id="feat_and_trait-name"
-                   name="feat_and_trait-name" placeholder="Enter name" class="feats-section-input">
+        <div class="feats-section-top-row">
+            <div class="feats-section-field feats-section-action-field section-action-field" id="add-feat-btn-wrapper">
+                <button type="button" id="add-feat-btn" class="feats-section-btn section-action-btn">+</button>
+                <label for="add-feat-btn" class="feats-section-label section-action-label">Add Feat</label>
+            </div>
+
+            <div class="feats-section-field feats-section-name-field" id="add-feat-field-name">
+                <label for="feat_and_trait-name" class="feats-section-label">New Feat/Trait</label>
+                <input type="text" id="feat_and_trait-name"
+                       name="feat_and_trait-name" placeholder="Enter name" class="feats-section-input">
+            </div>
+
+            <div class="feats-section-field feats-section-action-field section-action-field" id="add-feat-submit-btn-wrapper">
+                <button type="button" id="feat-and-trait-add" class="feats-section-btn section-action-btn"
+                        hx-post="/characters/{{ character_id }}/feats-traits/fragment"
+                        hx-target="#feats-section-container"
+                    hx-swap="innerHTML"
+                        hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+                <label for="feat-and-trait-add" class="feats-section-label section-action-label">Add</label>
+            </div>
+
+            <div class="feats-section-field feats-section-action-field section-action-field" id="close-feat-btn-wrapper">
+                <button type="button" id="close-feat-field-x-btn" class="feats-section-btn section-action-btn">×</button>
+                <label for="close-feat-field-x-btn" class="feats-section-label section-action-label">Close</label>
+            </div>
         </div>
 
-        <div class="feats-section-field feats-section-description-field">
+        <div class="feats-section-field feats-section-description-field" id="add-feat-field-description">
             <label for="feat_and_trait-description" class="feats-section-label">Description</label>
-            <input type="text" id="feat_and_trait-description"
-                   name="feat_and_trait-description" placeholder="Enter description" class="feats-section-input">
-        </div>
-
-        <div class="feats-section-field feats-section-action-field section-action-field">
-            <button type="submit" id="feat-and-trait-add" class="feats-section-btn section-action-btn">+</button>
-            <label for="feat-and-trait-add" class="feats-section-label section-action-label">Add</label>
+            <textarea id="feat_and_trait-description"
+                      name="feat_and_trait-description" rows="3" placeholder="Enter description" class="feats-section-input feats-section-description-input"></textarea>
         </div>
     </div>
 </div>
-<br>

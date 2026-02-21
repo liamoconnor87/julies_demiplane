@@ -25,18 +25,27 @@
     {% endif %}
 
     <form action="/" method="POST">
-        <div>
-            {% include 'components/character_info.html' %}
+        <div class="sheet-layout">
+            <div class="sheet-main-column">
+                {% include 'components/character_info.html' %}
 
-            {% include 'components/classes_section.html' %}
+                <div id="abilities-section-container">
+                    {% include 'components/abilities_section.html' %}
+                </div>
+                {# {% include 'components/inventory_section.html' %} #}
+            </div>
 
-            {% include 'components/combat_stats.html' %}
+            <div class="sheet-right-column">
+                <div id="classes-section-container">
+                    {% include 'components/classes_section.html' %}
+                </div>
 
-            {% include 'components/abilities_section.html' %}
+                {% include 'components/combat_stats.html' %}
 
-            {% include 'components/feats_traits_section.html' %}
-            {# {% include 'components/inventory_section.html' %} #}
-
+                <div id="feats-section-container">
+                    {% include 'components/feats_traits_section.html' %}
+                </div>
+            </div>
         </div>
         <button type="submit">Update</button>
     </form>
@@ -44,6 +53,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <script src="{{ url_for('static', filename='scripts/dnd_sheet.js') }}"></script>
 </body>
 
