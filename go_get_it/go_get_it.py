@@ -10,20 +10,19 @@ class Database():
     """
     Does various things to do with the database
     """
-    def __init__(self):
-        self.db_route = DB_ROUTE
-        self.tables = TABLES
-        self.seed = SEED
+    DB_ROUTE = DB_ROUTE
+    TABLES = TABLES
+    SEED = SEED
 
     def go_connect_db(self):
-        return sqlite3.connect(self.db_route)
+        return sqlite3.connect(self.DB_ROUTE)
 
     def go_create_db(self):
         db = self.go_connect_db()
         cursor = db.cursor()
 
-        for table in self.tables:
-            cursor.execute(f'''CREATE TABLE IF NOT EXISTS {table} ({", ".join([f"{key} {value}" for key, value in self.tables[table].items()])})''')
+        for table in self.TABLES:
+            cursor.execute(f'''CREATE TABLE IF NOT EXISTS {table} ({", ".join([f"{key} {value}" for key, value in self.TABLES[table].items()])})''')
 
         # Commit changes and close the connection
         db.commit()
@@ -105,7 +104,7 @@ class Database():
         db.close()
 
     def go_seed_db(self):
-        for table, seed in self.seed.items():
+        for table, seed in self.SEED.items():
             for data, field in seed.items():
                 if not self.go_get_one(table, {field:data}):
                     self.go_add_new(table, {"id": uuid(), field:data})

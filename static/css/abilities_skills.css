@@ -86,8 +86,8 @@
 .abilities-section-secondary-column {
     display: flex;
     flex-direction: column;
-    width: 5rem;
-    min-width: 5rem;
+    width: 4.5rem;
+    min-width: 4.5rem;
     margin-right: 0.25rem;
     margin-bottom: 0.25rem;
     --abilities-total-height: 7rem;
@@ -116,7 +116,7 @@
     display: grid;
     grid-auto-flow: column;
     grid-template-rows: repeat(2, calc((7rem - 0.25rem) / 2));
-    grid-auto-columns: 5rem;
+    grid-auto-columns: 4.5rem;
     row-gap: 0.25rem;
     column-gap: 0.25rem;
 }
