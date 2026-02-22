@@ -35,7 +35,7 @@ def character_sheet():
         class_options=character_sheet_data['class_options'],
         abilities=character_sheet_data['abilities'],
         feats_and_traits=character_sheet_data['feats_and_traits'],
-        # inventory=inventory,
+        inventory=character_sheet_data['inventory'],
         debug=debug
         )
 
@@ -77,6 +77,19 @@ def abilities_skills_fragment(character_id: str):
         character_id=character_id
     )
 
+@app.route('/characters/<character_id>/inventory/fragment', methods=['POST'])
+def inventory_fragment(character_id: str):
+    sheet = CharacterSheet(character_id=character_id)
+    sheet.save_inventory_values(character_id, request.form)
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/inventory_section.html',
+        inventory=data['inventory'],
+        character_id=character_id
+    )
+
+@app.route('/characters/<character_id>/inventory/<inventory_id>/remove', methods=['POST'])
 @app.route("/<character_id>/inventory/<inventory_id>/remove")
 def remove_inventory_item(character_id: str, inventory_id: str):
     if not character_id or not inventory_id or not db.go_get_one('inventory', {'id': inventory_id, "character_id": character_id}):
@@ -84,6 +97,15 @@ def remove_inventory_item(character_id: str, inventory_id: str):
         return redirect(url_for('character_sheet'))
 
     db.go_delete_it('inventory', {'id': inventory_id, "character_id": character_id})
+
+    if _is_htmx_request() or request.method == 'POST':
+        _, data = _build_character_sheet_data(character_id)
+        return render_template(
+            'components/inventory_section.html',
+            inventory=data['inventory'],
+            character_id=character_id
+        )
+
     return redirect(url_for('character_sheet', character_id=character_id))
 
 

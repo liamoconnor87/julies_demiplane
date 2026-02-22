@@ -94,7 +94,7 @@ class CharacterSheet:
         feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': self.character_id}) or []
 
         # Inventory
-        # inventory = ggi.go_get_all('inventory', {'character_id': self.character_id}) or []
+        inventory = ggi.go_get_all('inventory', {'character_id': self.character_id}) or []
 
         return {
             'character': character,
@@ -102,7 +102,7 @@ class CharacterSheet:
             'class_options': class_options,
             'abilities': abilities_data,
             'feats_and_traits': feats_and_traits,
-            # 'inventory': inventory
+            'inventory': inventory
         }
 
     def save_character_values(self, request_form):
@@ -178,14 +178,77 @@ class CharacterSheet:
 
     def save_inventory_values(self, character_id: str, request_form):
         table_name = 'inventory'
-        inventory_id = uuid()
         name = request_form.get(f'{table_name}-name')
         description = request_form.get(f'{table_name}-description')
         quantity = request_form.get(f'{table_name}-quantity')
+        action = request_form.get('inventory-action')
+        update_id = request_form.get('inventory-update-id')
+        step_value = request_form.get('inventory-step')
 
-        if name:
+        def update_inventory_by_id(inventory_id: str):
+            existing_inventory = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
+            if not existing_inventory:
+                return
+
+            quantity_value = request_form.get(f'inventory-quantity-{inventory_id}')
+
+            if quantity_value is None or str(quantity_value).strip() == '':
+                ggi.go_delete_it('inventory', {
+                    'id': inventory_id,
+                    'character_id': character_id,
+                })
+                return
+
+            try:
+                parsed_quantity = int(quantity_value)
+            except (TypeError, ValueError):
+                parsed_quantity = existing_inventory.get('quantity', 1)
+
+            if parsed_quantity <= 0:
+                ggi.go_delete_it('inventory', {
+                    'id': inventory_id,
+                    'character_id': character_id,
+                })
+                return
+
+            ggi.go_update('inventory', {
+                'id': inventory_id,
+                'name': existing_inventory.get('name'),
+                'description': existing_inventory.get('description'),
+                'quantity': parsed_quantity,
+                'character_id': character_id,
+            })
+
+        def step_inventory_by_id(inventory_id: str, step: int):
+            existing_inventory = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
+            if not existing_inventory:
+                return
+
+            current_quantity = existing_inventory.get('quantity')
+            try:
+                parsed_current_quantity = int(current_quantity)
+            except (TypeError, ValueError):
+                parsed_current_quantity = 1
+
+            next_quantity = parsed_current_quantity + step
+            if next_quantity <= 0:
+                ggi.go_delete_it('inventory', {
+                    'id': inventory_id,
+                    'character_id': character_id,
+                })
+                return
+
+            ggi.go_update('inventory', {
+                'id': inventory_id,
+                'name': existing_inventory.get('name'),
+                'description': existing_inventory.get('description'),
+                'quantity': next_quantity,
+                'character_id': character_id,
+            })
+
+        if action == 'add' and name:
             inventory = {
-                "id": inventory_id,
+                "id": uuid(),
                 "name": name,
                 "description": description,
                 "quantity": quantity or 1,
@@ -193,6 +256,30 @@ class CharacterSheet:
             }
 
             ggi.go_add_new('inventory', inventory)
+
+        if action == 'update' and update_id:
+            update_inventory_by_id(update_id)
+            return
+
+        if action == 'step' and update_id:
+            try:
+                parsed_step = int(step_value) if step_value is not None else 0
+            except (TypeError, ValueError):
+                parsed_step = 0
+
+            if parsed_step != 0:
+                step_inventory_by_id(update_id, parsed_step)
+            return
+
+        if action:
+            return
+
+        for field_name in request_form:
+            if not field_name.startswith('inventory-quantity-'):
+                continue
+
+            inventory_id = field_name.replace('inventory-quantity-', '')
+            update_inventory_by_id(inventory_id)
 
     def save_feat_and_trait_values(self, character_id: str, request_form):
         table_name = 'feat_and_trait'

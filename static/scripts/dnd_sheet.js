@@ -22,6 +22,11 @@ window.addEventListener("load", () => {
         if (target.id === 'abilities-section-container') {
             bindProficiencyToggles();
             bindAbilitiesSectionLockToggle();
+            return;
+        }
+
+        if (target.id === 'inventory-section-container') {
+            selectInventoryField();
         }
     });
 })
@@ -31,6 +36,7 @@ let featDescriptionResizeWindowBound = false;
 function initializeUiBindings() {
     selectClassField();
     selectFeatField();
+    selectInventoryField();
     bindClassLevelUpdateButtons();
     bindProficiencyToggles();
     bindAbilitiesSectionLockToggle();
@@ -103,6 +109,39 @@ function selectFeatField() {
         addFeatFieldDescription.style.display = 'none';
         addFeatSubmitBtnWrapper.style.display = 'none';
         closeFeatBtnWrapper.style.display = 'none';
+    });
+}
+
+function selectInventoryField() {
+    const addInventoryBtn = document.getElementById('add-inventory-btn');
+    const addInventoryBtnWrapper = document.getElementById('add-inventory-btn-wrapper');
+    const addInventoryFieldName = document.getElementById('add-inventory-field-name');
+    const addInventoryFieldQuantity = document.getElementById('add-inventory-field-quantity');
+    const addInventoryFieldDescription = document.getElementById('add-inventory-field-description');
+    const addInventorySubmitBtnWrapper = document.getElementById('add-inventory-submit-btn-wrapper');
+    const closeInventoryBtnWrapper = document.getElementById('close-inventory-btn-wrapper');
+    const closeInventoryFieldXBtn = document.getElementById('close-inventory-field-x-btn');
+
+    if (!addInventoryBtn || !addInventoryBtnWrapper || !addInventoryFieldName || !addInventoryFieldQuantity || !addInventoryFieldDescription || !addInventorySubmitBtnWrapper || !closeInventoryBtnWrapper || !closeInventoryFieldXBtn) {
+        return;
+    }
+
+    addInventoryBtn.addEventListener('click', () => {
+        addInventoryBtnWrapper.style.display = 'none';
+        addInventoryFieldName.style.display = 'flex';
+        addInventoryFieldQuantity.style.display = 'flex';
+        addInventoryFieldDescription.style.display = 'flex';
+        addInventorySubmitBtnWrapper.style.display = 'flex';
+        closeInventoryBtnWrapper.style.display = 'flex';
+    });
+
+    closeInventoryFieldXBtn.addEventListener('click', () => {
+        addInventoryBtnWrapper.style.display = 'flex';
+        addInventoryFieldName.style.display = 'none';
+        addInventoryFieldQuantity.style.display = 'none';
+        addInventoryFieldDescription.style.display = 'none';
+        addInventorySubmitBtnWrapper.style.display = 'none';
+        closeInventoryBtnWrapper.style.display = 'none';
     });
 }
 

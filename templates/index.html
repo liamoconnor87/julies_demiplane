@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classes.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/combat.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/abilities_skills.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/feats_traits.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/section_action_buttons.css') }}">
 </head>
@@ -32,7 +33,10 @@
                 <div id="abilities-section-container">
                     {% include 'components/abilities_section.html' %}
                 </div>
-                {# {% include 'components/inventory_section.html' %} #}
+
+                <div id="inventory-section-container">
+                    {% include 'components/inventory_section.html' %}
+                </div>
             </div>
 
             <div class="sheet-right-column">

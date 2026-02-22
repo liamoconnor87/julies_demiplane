@@ -178,13 +178,13 @@
     cursor: pointer;
 }
 
-.abilities-section-secondary-field:hover,
-.abilities-section-skills-item:hover {
+.abilities-section[data-locked='false'] .abilities-section-secondary-field:hover,
+.abilities-section[data-locked='false'] .abilities-section-skills-item:hover {
     transform: scale(1.02);
 }
 
-.abilities-section-secondary-field:active,
-.abilities-section-skills-item:active {
+.abilities-section[data-locked='false'] .abilities-section-secondary-field:active,
+.abilities-section[data-locked='false'] .abilities-section-skills-item:active {
     transform: scale(0.98);
 }
 

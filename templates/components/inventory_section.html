@@ -1,64 +1,83 @@
-<div>
-    <div>
-        <h3>Inventory</h3>
+<div class="inventory-section">
+    <h4>Inventory</h4>
 
-        <!-- Add New Inventory Item Form -->
-        <div>
-            <div>
-                <div>
-                    <label for="inventory-name">New Item Name</label>
-                    <input type="text" id="inventory-name"
-                           name="inventory-name" placeholder="Enter item name">
+    {% if inventory %}
+        {% for item in inventory %}
+            <div class="inventory-section-row inventory-section-saved-row">
+                <div class="inventory-section-top-row">
+                    <div class="inventory-section-field inventory-section-name-field">
+                        <label for="inventory-name-{{ item.id }}" class="inventory-section-label">Item Name</label>
+                        <input type="text" id="inventory-name-{{ item.id }}"
+                            name="inventory-name-{{ item.id }}" value="{{ item.name }}" readonly class="inventory-section-input">
+                    </div>
+
+                    <div class="inventory-section-field inventory-section-quantity-field">
+                        <label for="inventory-quantity-{{ item.id }}" class="inventory-section-label">Qty</label>
+                            <div class="inventory-quantity-control" aria-label="Adjust quantity for {{ item.name }}">
+                                <button type="button" id="inventory-decrease-{{ item.id }}" class="inventory-section-btn inventory-quantity-btn"
+                                    hx-post="/characters/{{ character_id }}/inventory/fragment"
+                                    hx-target="#inventory-section-container"
+                                    hx-swap="innerHTML"
+                                    hx-include="closest form"
+                                    hx-vals='{"inventory-action":"step","inventory-update-id":"{{ item.id }}","inventory-step":"-1"}'>−</button>
+                                <input type="number" id="inventory-quantity-{{ item.id }}"
+                                    name="inventory-quantity-{{ item.id }}" value="{{ item.quantity }}" class="inventory-section-input inventory-quantity-display" min="0" readonly>
+                                <button type="button" id="inventory-increase-{{ item.id }}" class="inventory-section-btn inventory-quantity-btn"
+                                    hx-post="/characters/{{ character_id }}/inventory/fragment"
+                                    hx-target="#inventory-section-container"
+                                    hx-swap="innerHTML"
+                                    hx-include="closest form"
+                                    hx-vals='{"inventory-action":"step","inventory-update-id":"{{ item.id }}","inventory-step":"1"}'>+</button>
+                            </div>
+                    </div>
+
+                </div>
+
+                <div class="inventory-section-field inventory-section-description-field">
+                    <label for="inventory-description-{{ item.id }}" class="inventory-section-label">Description</label>
+                    <div id="inventory-description-{{ item.id }}" class="inventory-section-description-display">{{ item.description }}</div>
                 </div>
             </div>
-            <div>
-                <div>
-                    <label for="inventory-description">Description</label>
-                    <input type="text" id="inventory-description"
-                           name="inventory-description" placeholder="Enter description">
-                </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="inventory-section-row inventory-section-add-row">
+        <div class="inventory-section-top-row">
+            <div class="inventory-section-field inventory-section-action-field section-action-field" id="add-inventory-btn-wrapper">
+                <button type="button" id="add-inventory-btn" class="inventory-section-btn section-action-btn">+</button>
+                <label for="add-inventory-btn" class="inventory-section-label section-action-label">Add Item</label>
             </div>
-            <div>
-                <div>
-                    <label for="inventory-quantity">Qty</label>
-                    <input type="text" id="inventory-quantity"
-                           name="inventory-quantity" placeholder="1">
-                </div>
+
+            <div class="inventory-section-field inventory-section-name-field" id="add-inventory-field-name">
+                <label for="inventory-name" class="inventory-section-label">New Item</label>
+                <input type="text" id="inventory-name" name="inventory-name" placeholder="Enter item" class="inventory-section-input">
+            </div>
+
+            <div class="inventory-section-field inventory-section-quantity-field" id="add-inventory-field-quantity">
+                <label for="inventory-quantity" class="inventory-section-label">Qty</label>
+                <input type="number" id="inventory-quantity" name="inventory-quantity" value="1" min="0" class="inventory-section-input">
+            </div>
+
+            <div class="inventory-section-field inventory-section-action-field section-action-field" id="add-inventory-submit-btn-wrapper">
+                <button type="button" id="inventory-add" class="inventory-section-btn section-action-btn"
+                    name="inventory-action"
+                    value="add"
+                    hx-post="/characters/{{ character_id }}/inventory/fragment"
+                    hx-target="#inventory-section-container"
+                    hx-swap="innerHTML"
+                    hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+                <label for="inventory-add" class="inventory-section-label section-action-label">Add</label>
+            </div>
+
+            <div class="inventory-section-field inventory-section-action-field section-action-field" id="close-inventory-btn-wrapper">
+                <button type="button" id="close-inventory-field-x-btn" class="inventory-section-btn section-action-btn">×</button>
+                <label for="close-inventory-field-x-btn" class="inventory-section-label section-action-label">Close</label>
             </div>
         </div>
 
-        <!-- Inventory List -->
-        {% if inventory %}
-            <div>
-                <div>
-                    <h5>Current Inventory</h5>
-                </div>
-            </div>
-            {% for item in inventory %}
-                <div>
-                    <div>
-                        <div>
-                            <label for="inventory-name-{{ item.id }}">Item Name</label>
-                            <input type="text" id="inventory-name-{{ item.id }}"
-                                   name="inventory-name-{{ item.id }}" value="{{ item.name }}" readonly>
-                        </div>
-                    </div>
-                    <div>
-                        <div>
-                            <label for="inventory-description-{{ item.id }}">Description</label>
-                            <input type="text" id="inventory-description-{{ item.id }}"
-                                   name="inventory-description-{{ item.id }}" value="{{ item.description }}" readonly>
-                        </div>
-                    </div>
-                    <div>
-                        <div>
-                            <label for="inventory-quantity-{{ item.id }}">Qty</label>
-                            <input type="number" id="inventory-quantity-{{ item.id }}"
-                                   name="inventory-quantity-{{ item.id }}" value="{{ item.quantity }}">
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        {% endif %}
+        <div class="inventory-section-field inventory-section-description-field" id="add-inventory-field-description">
+            <label for="inventory-description" class="inventory-section-label">Description</label>
+            <textarea id="inventory-description" name="inventory-description" rows="2" placeholder="Enter description" class="inventory-section-input inventory-section-description-input"></textarea>
+        </div>
     </div>
 </div>
