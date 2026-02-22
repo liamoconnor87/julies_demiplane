@@ -44,6 +44,12 @@
     max-width: var(--inventory-name-width);
 }
 
+.inventory-section-saved-row .inventory-section-name-field {
+    width: calc(var(--inventory-name-width) + var(--inventory-quantity-width) + (var(--inventory-action-width) * 2) + (var(--inventory-field-gap) * 2) - var(--inventory-quantity-control-width));
+    min-width: calc(var(--inventory-name-width) + var(--inventory-quantity-width) + (var(--inventory-action-width) * 2) + (var(--inventory-field-gap) * 2) - var(--inventory-quantity-control-width));
+    max-width: calc(var(--inventory-name-width) + var(--inventory-quantity-width) + (var(--inventory-action-width) * 2) + (var(--inventory-field-gap) * 2) - var(--inventory-quantity-control-width));
+}
+
 .inventory-section-quantity-field {
     width: var(--inventory-quantity-width);
     min-width: var(--inventory-quantity-width);
@@ -66,12 +72,6 @@
     width: calc(var(--inventory-name-width) + var(--inventory-quantity-width) + (var(--inventory-action-width) * 2) + (var(--inventory-field-gap) * 3));
     min-width: calc(var(--inventory-name-width) + var(--inventory-quantity-width) + (var(--inventory-action-width) * 2) + (var(--inventory-field-gap) * 3));
     max-width: calc(var(--inventory-name-width) + var(--inventory-quantity-width) + (var(--inventory-action-width) * 2) + (var(--inventory-field-gap) * 3));
-}
-
-.inventory-section-saved-row .inventory-section-description-field {
-    width: calc(var(--inventory-name-width) + var(--inventory-quantity-control-width) + var(--inventory-field-gap));
-    min-width: calc(var(--inventory-name-width) + var(--inventory-quantity-control-width) + var(--inventory-field-gap));
-    max-width: calc(var(--inventory-name-width) + var(--inventory-quantity-control-width) + var(--inventory-field-gap));
 }
 
 .inventory-section-input {

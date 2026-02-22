@@ -27,11 +27,13 @@ window.addEventListener("load", () => {
 
         if (target.id === 'inventory-section-container') {
             selectInventoryField();
+            bindInventoryDescriptionDisplayAutoHeight();
         }
     });
 })
 
 let featDescriptionResizeWindowBound = false;
+let inventoryDescriptionResizeWindowBound = false;
 
 function initializeUiBindings() {
     selectClassField();
@@ -42,6 +44,7 @@ function initializeUiBindings() {
     bindAbilitiesSectionLockToggle();
     bindCurrentHpCalculation();
     bindFeatDescriptionDisplayAutoHeight();
+    bindInventoryDescriptionDisplayAutoHeight();
 }
 
 function selectClassField() {
@@ -133,6 +136,12 @@ function selectInventoryField() {
         addInventoryFieldDescription.style.display = 'flex';
         addInventorySubmitBtnWrapper.style.display = 'flex';
         closeInventoryBtnWrapper.style.display = 'flex';
+
+        const addDescriptionField = addInventoryFieldDescription.querySelector('.inventory-section-description-input');
+        if (addDescriptionField) {
+            addDescriptionField.style.height = '';
+            resizeInventoryDescriptionField(addDescriptionField);
+        }
     });
 
     closeInventoryFieldXBtn.addEventListener('click', () => {
@@ -146,6 +155,19 @@ function selectInventoryField() {
 }
 
 function resizeFeatDescriptionField(field) {
+    if (!field) {
+        return;
+    }
+
+    field.style.height = 'auto';
+
+    const computedStyles = window.getComputedStyle(field);
+    const minHeight = Number.parseFloat(computedStyles.minHeight) || field.clientHeight || 0;
+    const targetHeight = Math.max(field.scrollHeight, minHeight);
+    field.style.height = `${targetHeight}px`;
+}
+
+function resizeInventoryDescriptionField(field) {
     if (!field) {
         return;
     }
@@ -445,5 +467,40 @@ function bindFeatDescriptionDisplayAutoHeight() {
             });
         });
         featDescriptionResizeWindowBound = true;
+    }
+}
+
+function bindInventoryDescriptionDisplayAutoHeight() {
+    const descriptionFields = document.querySelectorAll('.inventory-section-description-input');
+
+    if (!descriptionFields.length) {
+        return;
+    }
+
+    descriptionFields.forEach((field) => {
+        if (field.hasAttribute('readonly')) {
+            resizeInventoryDescriptionField(field);
+        }
+
+        if (!field.hasAttribute('readonly') && field.dataset.autoresizeBound !== 'true') {
+            field.addEventListener('input', () => {
+                resizeInventoryDescriptionField(field);
+            });
+            field.dataset.autoresizeBound = 'true';
+        }
+    });
+
+    if (!inventoryDescriptionResizeWindowBound) {
+        window.addEventListener('resize', () => {
+            const activeDescriptionFields = document.querySelectorAll('.inventory-section-description-input');
+            activeDescriptionFields.forEach((field) => {
+                if (field.offsetParent === null) {
+                    return;
+                }
+
+                resizeInventoryDescriptionField(field);
+            });
+        });
+        inventoryDescriptionResizeWindowBound = true;
     }
 }
