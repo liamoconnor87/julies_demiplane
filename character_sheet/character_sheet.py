@@ -1,7 +1,7 @@
 from typing import Optional
-from go_get_it.go_get_it import Database
+from go_get_it.go_get_it import GoGetDB
 from functions.functions import uuid
-ggi = Database()
+ggi = GoGetDB()
 
 class CharacterSheet:
     ABILITY_TO_SKILL_MAPPING = {

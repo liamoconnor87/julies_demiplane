@@ -6,9 +6,9 @@ from go_get_it.tables import TABLES
 from misc.config import DB_ROUTE
 
 
-class Database():
+class GoGetDB():
     """
-    Does various things to do with the database
+    Go Get It is a simple wrapper around sqlite3 to make it easier to interact with the database. It provides methods to create the database, get all data from a table, get one data from a table, add new data to a table, update data in a table and delete data from a table.
     """
     DB_ROUTE = DB_ROUTE
     TABLES = TABLES
