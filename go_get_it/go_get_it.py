@@ -6,35 +6,65 @@ from go_get_it.tables import TABLES
 from misc.config import DB_ROUTE
 
 
-class Database():
+class GoGetDB():
     """
-    Does various things to do with the database
+    Go Get It is a simple wrapper around sqlite3 to make it easier to interact with the database. It provides methods to create the database, get all data from a table, get one data from a table, add new data to a table, update data in a table and delete data from a table.
     """
-    def __init__(self):
-        self.db_route = DB_ROUTE
-        self.tables = TABLES
-        self.seed = SEED
-        pass
+    DB_ROUTE = DB_ROUTE
+    TABLES = TABLES
+    SEED = SEED
 
     def go_connect_db(self):
-        return sqlite3.connect(self.db_route)
+        return sqlite3.connect(self.DB_ROUTE)
+
+    def _go_get_table_columns(self, cursor: sqlite3.Cursor, table: str):
+        cursor.execute(f"PRAGMA table_info({table})")
+        return {row[1] for row in cursor.fetchall()}
+
+    def _go_sync_table_columns(self, cursor: sqlite3.Cursor, table: str, schema: dict):
+        existing_columns = self._go_get_table_columns(cursor, table)
+        added_columns = []
+
+        for column, data_type in schema.items():
+            if column not in existing_columns:
+                cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {data_type}")
+                added_columns.append(column)
+
+        return added_columns
+
+    def go_sync_schema(self):
+        db = self.go_connect_db()
+        cursor = db.cursor()
+        applied_updates = {}
+
+        for table, schema in self.TABLES.items():
+            added_columns = self._go_sync_table_columns(cursor, table, schema)
+            if added_columns:
+                applied_updates[table] = added_columns
+
+        db.commit()
+        db.close()
+
+        for table, columns in applied_updates.items():
+            print(f"[db] schema sync: added columns to '{table}': {', '.join(columns)}")
 
     def go_create_db(self):
         db = self.go_connect_db()
         cursor = db.cursor()
 
-        for table in self.tables:
-            cursor.execute(f'''CREATE TABLE IF NOT EXISTS {table} ({", ".join([f"{key} {value}" for key, value in self.tables[table].items()])})''')
+        for table in self.TABLES:
+            cursor.execute(f'''CREATE TABLE IF NOT EXISTS {table} ({", ".join([f"{key} {value}" for key, value in self.TABLES[table].items()])})''')
 
         # Commit changes and close the connection
         db.commit()
         db.close()
 
+        self.go_sync_schema()
+
     def go_get_all(self, table: str, params: Optional[dict] = None, count: bool = False):
         """
         Goes and gets the data from the `table` you want
         """
-        data= []
         db = self.go_connect_db()
         db.row_factory = sqlite3.Row
         cursor = db.cursor()
@@ -107,7 +137,7 @@ class Database():
         db.close()
 
     def go_seed_db(self):
-        for table, seed in self.seed.items():
+        for table, seed in self.SEED.items():
             for data, field in seed.items():
                 if not self.go_get_one(table, {field:data}):
                     self.go_add_new(table, {"id": uuid(), field:data})

@@ -1,0 +1,90 @@
+{# Character Basic Information Component #}
+<div class="character-info-section">
+    <h4>Character</h4>
+    {# Hidden ID field #}
+    <input type="hidden" id="character-id" name="character-id" value="{{ character.id or '' }}">
+
+    <div class="character-info-main-row">
+        {# Name #}
+        {% set field_id = 'character-name' %}
+        {% set field_name = 'character-name' %}
+        {% set field_label = 'Name' %}
+        {% set field_value = character.name %}
+        {% include 'components/character_info_name_field.html' %}
+
+        {# Level (calculated, disabled) #}
+        {% set field_id = 'character-level' %}
+        {% set field_name = 'character-level' %}
+        {% set field_label = 'Level' %}
+        {% set field_value = character.level %}
+        {% include 'components/character_info_level_field.html' %}
+    </div>
+
+    <div class="character-info-secondary-row">
+
+        {# Race #}
+        {% set field_id = 'character-race' %}
+        {% set field_name = 'character-race' %}
+        {% set field_label = 'Race' %}
+        {% set field_value = character.race %}
+        {% include 'components/character_info_text_field.html' %}
+
+        {# Background #}
+        {% set field_id = 'character-background' %}
+        {% set field_name = 'character-background' %}
+        {% set field_label = 'Background' %}
+        {% set field_value = character.background %}
+        {% include 'components/character_info_text_field.html' %}
+
+        {# Alignment #}
+        {% set field_id = 'character-alignment' %}
+        {% set field_name = 'character-alignment' %}
+        {% set field_label = 'Alignment' %}
+        {% set field_value = character.alignment %}
+        {% include 'components/character_info_text_field.html' %}
+    </div>
+
+    <div class="character-info-stats-row">
+        {# Armour Class #}
+        {% set stat_id = 'character-armour_class' %}
+        {% set stat_name = 'character-armour_class' %}
+        {% set stat_label = 'Armour Class' %}
+        {% set stat_value = character.armour_class %}
+        {% include 'components/character_info_square_stat_field.html' %}
+
+        {# Initiative #}
+        {% set stat_id = 'character-initiative' %}
+        {% set stat_name = 'character-initiative' %}
+        {% set stat_label = 'Initiative' %}
+        {% set stat_value = character.initiative %}
+        {% include 'components/character_info_square_stat_field.html' %}
+
+        {# Speed #}
+        {% set stat_id = 'character-speed' %}
+        {% set stat_name = 'character-speed' %}
+        {% set stat_label = 'Speed' %}
+        {% set stat_value = character.speed %}
+        {% include 'components/character_info_square_stat_field.html' %}
+
+        {# Proficiency Bonus #}
+        {% set stat_id = 'character-proficiency' %}
+        {% set stat_name = 'character-proficiency' %}
+        {% set stat_label = 'Proficiency' %}
+        {% set stat_value = character.proficiency %}
+        {% include 'components/character_info_square_stat_field.html' %}
+
+        {# Passive Wisdom #}
+        {% set stat_id = 'character-passive_wisdom' %}
+        {% set stat_name = 'character-passive_wisdom' %}
+        {% set stat_label = 'Passive Wisdom' %}
+        {% set stat_value = character.passive_wisdom %}
+        {% include 'components/character_info_square_stat_field.html' %}
+
+        {# XP #}
+        {% set stat_id = 'character-xp' %}
+        {% set stat_name = 'character-xp' %}
+        {% set stat_label = 'XP' %}
+        {% set stat_value = character.xp %}
+        {% include 'components/character_info_xp_stat_field.html' %}
+    </div>
+</div>

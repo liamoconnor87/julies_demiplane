@@ -1,0 +1,40 @@
+{# Single Ability Score Component - Pass: ability_name, ability, skills #}
+<div class="abilities-section-score-row">
+    {# Hidden fields #}
+    <input type="hidden" id="{{ ability_name }}-id" name="{{ ability_name }}-id" value="{{ ability.id or '' }}">
+    <input type="hidden" id="{{ ability_name }}-character_id" name="{{ ability_name }}-character_id" value="{{ ability.character_id or '' }}">
+
+    {# Ability Value #}
+    <div class="abilities-section-name-field">
+        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="abilities-section-name-input">
+        <label for="{{ ability_name }}-value" class="abilities-section-name-label">{{ ability_name | title }}</label>
+    </div>
+
+    <div class="abilities-section-secondary-column">
+        {# Ability Modifier (calculated) #}
+        {% set display_wrapper_classes = 'abilities-section-secondary-field' %}
+        {% set display_value_id = ability_name ~ '-modifier' %}
+        {% set display_value_classes = 'abilities-section-display-value' %}
+        {% set display_value = ability.modifier if ability.modifier is not none else '' %}
+        {% set display_label_classes = 'abilities-section-display-label' %}
+        {% set display_label_text = 'Modifier' %}
+        {% set display_toggle = false %}
+        {% set display_checkbox_id = '' %}
+        {% set display_checkbox_name = '' %}
+        {% set display_checkbox_checked = false %}
+        {% include 'components/abilities_display_field.html' %}
+
+        {# Saving Throw #}
+        {% set display_wrapper_classes = 'abilities-section-secondary-field' %}
+        {% set display_value_id = ability_name ~ '_skills-saving_throw' %}
+        {% set display_value_classes = 'abilities-section-display-value' %}
+        {% set display_value = skills.saving_throw if skills.saving_throw is not none else '' %}
+        {% set display_label_classes = 'abilities-section-display-label' %}
+        {% set display_label_text = 'Saving Throw' %}
+        {% set display_toggle = true %}
+        {% set display_checkbox_id = ability_name ~ '-proficient' %}
+        {% set display_checkbox_name = ability_name ~ '-proficient' %}
+        {% set display_checkbox_checked = ability.proficient == 1 %}
+        {% include 'components/abilities_display_field.html' %}
+    </div>
+</div>

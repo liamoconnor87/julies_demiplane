@@ -14,3 +14,4 @@ def looger(msg):
     logger = _create_logger()
 
     return logger.warning(msg)
+

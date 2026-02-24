@@ -1,0 +1,33 @@
+<div class="combat-section">
+    <h4>Combat</h4>
+    <div class="combat-section-layout-row">
+        {# Column 1: Health Points, Temp HP, Hit Dice #}
+        <div class="combat-section-col-one">
+            <div class="combat-section-col-one-field">
+                <label for="character-health_points" class="combat-section-label">Health Points</label>
+                <input type="number" id="character-health_points" name="character-health_points" value="{{ character.health_points or '' }}" class="combat-section-input">
+            </div>
+
+            <div class="combat-section-col-one-field">
+                <label for="character-temporary_hit_points" class="combat-section-label">Temp HP</label>
+                <input type="number" id="character-temporary_hit_points" name="character-temporary_hit_points" value="{{ character.temporary_hit_points or '' }}" class="combat-section-input">
+            </div>
+
+            <div class="combat-section-col-one-field">
+                <label for="character-hit_dice" class="combat-section-label">Hit Dice</label>
+                <input type="text" id="character-hit_dice" name="character-hit_dice" value="{{ character.hit_dice or '' }}" class="combat-section-input">
+            </div>
+        </div>
+
+        {# Column 2: Current Health Points square #}
+        <div class="combat-section-col-two-field">
+            <input type="number" id="character-current_health_points" name="character-current_health_points" value="{{ character.current_health_points or '' }}" class="combat-section-input">
+            <div class="combat-section-current-hp-controls" aria-label="Adjust current HP">
+                <button type="button" id="decrease-current-hp-btn" class="combat-section-btn combat-section-current-hp-btn" aria-label="Decrease current HP">-</button>
+                <button type="button" id="increase-current-hp-btn" class="combat-section-btn combat-section-current-hp-btn" aria-label="Increase current HP">+</button>
+            </div>
+            <label for="character-current_health_points" class="combat-section-label">Current HP</label>
+        </div>
+    </div>
+</div>
+<br>

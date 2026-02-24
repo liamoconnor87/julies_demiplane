@@ -1,0 +1,71 @@
+<div class="classes-section">
+    <h4>Classes</h4>
+    {% if classes %}
+        {% for char_class in classes %}
+        <div class="classes-section-row">
+            <div class="classes-section-field classes-section-name-field">
+                <label for="classes-class_name-{{ char_class.id }}" class="classes-section-label">Class Name</label>
+                <input type="text" id="classes-class_name-{{ char_class.id }}"
+                       name="classes-class_name-{{ char_class.id }}" value="{{ char_class.class_name | title() }}" readonly class="classes-section-input">
+            </div>
+            <div class="classes-section-field classes-section-level-field">
+                <label for="classes-level-{{ char_class.id }}" class="classes-section-label">Level</label>
+                <input type="number" id="classes-level-{{ char_class.id }}"
+                       name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="classes-section-input class-level-input" data-original-value="{{ char_class.level }}" data-char-class-id="{{ char_class.id }}" hx-post="/characters/{{ character_id }}/classes/fragment" hx-target="#classes-section-container" hx-swap="innerHTML" hx-include="closest form" hx-trigger="change">
+            </div>
+            <div class="classes-section-field classes-section-action-field section-action-field">
+                <button type="button" id="classes-action-{{ char_class.id }}"
+                    data-remove-url="/characters/{{ character_id }}/class/{{ char_class.id }}/remove"
+                        data-htmx-update-url="/characters/{{ character_id }}/classes/fragment"
+                        hx-post="/characters/{{ character_id }}/class/{{ char_class.id }}/remove"
+                        hx-target="#classes-section-container"
+                        hx-swap="innerHTML"
+                        hx-include="closest form"
+                        class="classes-section-btn section-action-btn">−</button>
+                <label for="classes-action-{{ char_class.id }}" id="classes-action-label-{{ char_class.id }}" class="classes-section-label section-action-label">Remove</label>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if class_options %}
+        <div class="classes-section-row">
+            {# Add Class Button - shown by default #}
+            <div class="classes-section-field classes-section-button-field section-action-field">
+                <button type="button" id="add-class-btn" class="classes-section-btn section-action-btn">+</button>
+                <label for="add-class-btn" class="classes-section-label section-action-label">Add Class</label>
+            </div>
+            {# Class Selection Dropdown - hidden by default #}
+            <div class="classes-section-field classes-section-name-field" id="add-class-field-dropdown">
+                <label for="class_to_character-class_id" class="classes-section-label">Select Class</label>
+                <select id="class_to_character-class_id" name="class_to_character-class_id" class="classes-section-input">
+                    <option value="" disabled selected>Classes</option>
+                        {% for class_option in class_options %}
+                            <option value="{{ class_option.id }}">{{ class_option.name | title() }}</option>
+                        {% endfor %}
+                </select>
+            </div>
+            {# Level Input - hidden by default #}
+            <div class="classes-section-field classes-section-level-field" id="add-class-field-level">
+                <label for="class_to_character-level" class="classes-section-label">Level</label>
+                <input type="number" id="class_to_character-level"
+                    name="class_to_character-level" placeholder="1" class="classes-section-input">
+            </div>
+            {# Submit Button - hidden by default #}
+            <div class="classes-section-field classes-section-button-field section-action-field" id="add-class-submit-btn">
+                <button type="button" id="add-class-submit" class="classes-section-btn section-action-btn"
+                        hx-post="/characters/{{ character_id }}/classes/fragment"
+                        hx-target="#classes-section-container"
+                    hx-swap="innerHTML"
+                        hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+                <label for="add-class-submit" class="classes-section-label section-action-label">Add</label>
+            </div>
+            {# Close Button - hidden by default #}
+            <div class="classes-section-field classes-section-button-field section-action-field" id="close-class-btn-wrapper">
+                <button type="button" id="close-class-field-x-btn" class="classes-section-btn section-action-btn">×</button>
+                <label for="close-class-field-x-btn" class="classes-section-label section-action-label">Close</label>
+            </div>
+        </div>
+    {% endif %}
+</div>
+<br>

@@ -1,459 +1,441 @@
 from typing import Optional
-from flask import Flask, render_template
-from go_get_it.go_get_it import Database
+from go_get_it.go_get_it import GoGetDB
 from functions.functions import uuid
-from go_get_it.tables import TABLES
-
-app = Flask(__name__)
-ggi = Database()
+ggi = GoGetDB()
 
 class CharacterSheet:
+    ABILITY_TO_SKILL_MAPPING = {
+        "strength": ["athletics"],
+        "dexterity": ["acrobatics", "sleight_of_hand", "stealth"],
+        "constitution": [],
+        "intelligence": ["arcana", "history", "investigation", "nature", "religion"],
+        "wisdom": ["animal_handling", "insight", "medicine", "perception", "survival"],
+        "charisma": ["deception", "intimidation", "performance", "persuasion"],
+    }
+
     # TODO: Add validation
     def __init__(self, character_id: Optional[str] = None):
         self.character_id = character_id
-        self.character_field_type_mapping = {
-                "id": "hidden",
-                "name": "text",
-                "level": "number",
-                "race": "text",
-                "background": "text",
-                "alignment": "text",
-                "armour_class": "number",
-                "initiative": "number",
-                "speed": "number",
-                "proficiency": "number",
-                "health_points": "number",
-                "hit_dice": "text",
-                "passive_wisdom": "number",
-                "temporary_hit_points": "number",
-                "xp": "number",
-            }
-
-        self.inventory_field_type_mapping = {
-                "id": "hidden",
-                "character_id": "hidden",
-                "name": "text",
-                "description": "text",
-                "quantity": "number",
-            }
-
-        self.character_class_field_type_mapping = {
-                "id": "hidden",
-                "character_id": "hidden",
-                "class_id": "select",
-                "level": "number",
-        }
-
-        self.feat_and_trait_field_type_mapping = {
-                "id": "hidden",
-                "character_id": "hidden",
-                "name": "text",
-                "description": "text",
-        }
-
-        self.abilities_field_type_mapping = {
-            "strength": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-            "dexterity": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-            "constitution": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-            "intelligence": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-            "wisdom": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-            "charisma": {
-                "id": "hidden",
-                "character_id": "hidden",
-                "value": "number",
-                "modifier": "number",
-                "proficient": "checkbox",
-            },
-        }
-
-        self.skills_field_type_mapping = {
-            "strength_skills": {
-                "id": "hidden",
-                "strength_id": "hidden",
-                "saving_throw": "number",
-                "athletics": "number",
-                "athletics_proficient": "checkbox",
-            },
-            "dexterity_skills": {
-                "id": "hidden",
-                "dexterity_id": "hidden",
-                "saving_throw": "number",
-                "acrobatics": "number",
-                "acrobatics_proficient": "checkbox",
-                "sleight_of_hand": "number",
-                "sleight_of_hand_proficient": "checkbox",
-                "stealth": "number",
-                "stealth_proficient": "checkbox",
-            },
-            "constitution_skills": {
-                "id": "hidden",
-                "constitution_id": "hidden",
-                "saving_throw": "number",
-            },
-            "intelligence_skills": {
-                "id": "hidden",
-                "intelligence_id": "hidden",
-                "saving_throw": "number",
-                "arcana": "number",
-                "arcana_proficient": "checkbox",
-                "history": "number",
-                "history_proficient": "checkbox",
-                "investigation": "number",
-                "investigation_proficient": "checkbox",
-                "nature": "number",
-                "nature_proficient": "checkbox",
-                "religion": "number",
-                "religion_proficient": "checkbox",
-            },
-            "wisdom_skills": {
-                "id": "hidden",
-                "wisdom_id": "hidden",
-                "saving_throw": "number",
-                "animal_handling": "number",
-                "animal_handling_proficient": "checkbox",
-                "insight": "number",
-                "insight_proficient": "checkbox",
-                "medicine": "number",
-                "medicine_proficient": "checkbox",
-                "perception": "number",
-                "perception_proficient": "checkbox",
-                "survival": "number",
-                "survival_proficient": "checkbox",
-            },
-            "charisma_skills": {
-                "id": "hidden",
-                "charisma_id": "hidden",
-                "saving_throw": "number",
-                "deception": "number",
-                "deception_proficient": "checkbox",
-                "intimidation": "number",
-                "intimidation_proficient": "checkbox",
-                "performance": "number",
-                "performance_proficient": "checkbox",
-                "persuasion": "number",
-                "persuasion_proficient": "checkbox",
-            },
-        }
-
-        self.ability_to_skill_mapping = {
-            "strength": ["athletics"],
-            "dexterity": ["acrobatics", "sleight_of_hand", "stealth"],
-            "constitution": [],
-            "intelligence": ["arcana", "history", "investigation", "nature", "religion"],
-            "wisdom": ["animal_handling", "insight", "medicine", "perception", "survival"],
-            "charisma": ["deception", "intimidation", "performance", "persuasion"],
-        }
 
     def create_form(self):
-        form = []
-        # Character
-        form.append("<h3>Character</h3>")
-        character = ggi.go_get_one('character', {'id': self.character_id}) if self.character_id else None
+        """
+        Returns structured data for the character sheet instead of HTML strings.
+        This data will be passed to Jinja2 templates for rendering.
+        """
+        # Get character data
+        character = ggi.go_get_one('character', {'id': self.character_id}) if self.character_id else {}
 
-        # Work out characters level
+        def _to_int(value):
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return 0
+
+        # Calculate total character level from base + class levels
         if character:
-            characters_class_levels = ggi.go_get_all('class_to_character', {'character_id': character['id']})
-            character_level = character['level']
+            characters_class_levels = ggi.go_get_all('class_to_character', {'character_id': character.get('id')})
+            character_level = character.get('level', 0)
 
             for char_class in characters_class_levels or []:
-                character_level += char_class['level']
+                character_level += char_class.get('level', 0)
 
             character['level'] = character_level
+            character['current_health_points'] = _to_int(character.get('health_points')) + _to_int(character.get('temporary_hit_points'))
 
-        character_form = self._build_form('character', self.character_field_type_mapping, character)
-        form.append(character_form)
+        # Get abilities and skills data
+        abilities_data = []
+        for ability_name in self.ABILITY_TO_SKILL_MAPPING:
+            ability = ggi.go_get_one(ability_name, {"character_id": self.character_id}) or {}
 
-        # Class
-        form.append("<h3>Classes</h3>")
-        classes = ggi.go_get_all('class') or []
-        class_options = [{"": "Please select a class"}]
-        for c in classes:
-            class_options.append({c['id']: c['name']})
+            # Get skills for this ability
+            skills = {}
+            if ability.get('id'):
+                skills = ggi.go_get_one(f"{ability_name}_skills", {f"{ability_name}_id": ability['id']}) or {}
 
-        character_class_form = self._build_form('class_to_character', self.character_class_field_type_mapping, options=class_options)
-        form.append(character_class_form)
+            # Get skill list for this ability
+            skill_list = self.ABILITY_TO_SKILL_MAPPING[ability_name]
+
+            abilities_data.append({
+                'ability_name': ability_name,
+                'ability': ability,
+                'skills': skills,
+                'skill_list': skill_list
+            })
+
+        # Classes
+        all_classes = ggi.go_get_all('class') or []
+        if not isinstance(all_classes, list):
+            all_classes = []
+
+        classes = ggi.go_get_all('class_to_character', {'character_id': self.character_id}) or []
+        if not isinstance(classes, list):
+            classes = []
+
+        # Get IDs of classes already assigned to this character
+        assigned_class_ids = [char_class['class_id'] for char_class in classes]
+
+        # Filter out classes that are already assigned
+        class_options = [c for c in all_classes if c['id'] not in assigned_class_ids]
+
+        # Match class IDs to class names
+        for char_class in classes:
+            matching_class = next((c for c in all_classes if c['id'] == char_class['class_id']), None)
+            if matching_class:
+                char_class['class_name'] = matching_class['name']
+
+        classes.sort(
+            key=lambda char_class: (
+                -(int(char_class.get('level') or 0)),
+                (char_class.get('class_name') or '')
+            )
+        )
 
         # Feats & Traits
-        form.append("<h3>Feats & Traits</h3>")
-        feats_form = self._build_form('feat_and_trait', self.feat_and_trait_field_type_mapping)
-        form.append(feats_form)
+        feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': self.character_id}) or []
 
         # Inventory
-        form.append("<h3>Inventory</h3>")
-        inventory_form = self._build_form('inventory', self.inventory_field_type_mapping)
-        form.append(inventory_form)
+        inventory = ggi.go_get_all('inventory', {'character_id': self.character_id}) or []
 
-        # Abilities
-        form.append("<h3>Abilities</h3>")
-        for ability in self.abilities_field_type_mapping:
-            form.append(f"<h4>{ability}</h4>")
-            existing_ability = ggi.go_get_one(ability, {"character_id": self.character_id})
-            ability_form = self._build_form(ability, self.abilities_field_type_mapping[ability], existing_ability)
-            form.append(ability_form)
+        # Custom Stats
+        custom_stats = ggi.go_get_all('custom_stat', {'character_id': self.character_id}) or []
 
-            # Skills
-            ability_skills = None
-            if existing_ability:
-                ability_skills = ggi.go_get_one(f"{ability}_skills", {f"{ability}_id": existing_ability['id']})
+        return {
+            'character': character,
+            'classes': classes,
+            'class_options': class_options,
+            'abilities': abilities_data,
+            'feats_and_traits': feats_and_traits,
+            'inventory': inventory,
+            'custom_stats': custom_stats,
+        }
 
-            skill_form = self._build_form(f"{ability}_skills", self.skills_field_type_mapping[f"{ability}_skills"], ability_skills)
-            form.append(skill_form)
+    def save_character_values(self, request_form):
+        table_name = 'character'
+        character_id = request_form.get(f'{table_name}-id')
+        name = request_form.get(f'{table_name}-name')
+        level = 0
+        race = request_form.get(f'{table_name}-race')
+        background = request_form.get(f'{table_name}-background')
+        alignment = request_form.get(f'{table_name}-alignment')
+        armour_class = request_form.get(f'{table_name}-armour_class')
+        initiative = request_form.get(f'{table_name}-initiative')
+        speed = request_form.get(f'{table_name}-speed')
+        proficiency = request_form.get(f'{table_name}-proficiency')
+        health_points = request_form.get(f'{table_name}-health_points')
+        hit_dice = request_form.get(f'{table_name}-hit_dice')
+        passive_wisdom = request_form.get(f'{table_name}-passive_wisdom')
+        temporary_hit_points = request_form.get(f'{table_name}-temporary_hit_points')
+        xp = request_form.get(f'{table_name}-xp')
 
+        character = {
+            "id": character_id,
+            "name": name,
+            "level": level,
+            "race": race,
+            "background": background,
+            "alignment": alignment,
+            "armour_class": armour_class,
+            "initiative": initiative,
+            "speed": speed,
+            "proficiency": proficiency,
+            "health_points": health_points,
+            "hit_dice": hit_dice,
+            "passive_wisdom": passive_wisdom,
+            "temporary_hit_points": temporary_hit_points,
+            "xp": xp,
+        }
 
-        return "".join(form)
+        if character_id:
+            ggi.go_update('character', character)
+        else:
+            character_id = uuid()
+            character['id'] = character_id
+            ggi.go_add_new('character', character)
 
-    def _build_form(
-        self,
-        table_name: str,
-        field_types: dict,
-        data: Optional[dict] = None,
-        skip_fields: list = [],
-        options: Optional[list[dict[str, str]]] = []):
-        # Build from character table
-            table = TABLES[table_name]
-            fields_list = []
-            for k in table.keys():
-                if k in skip_fields:
-                    continue
-                fields_list.append(k)
+        return character_id
 
-            field_type_mapping = field_types
+    def save_class_to_character_values(self, character_id: str, request_form):
+        table_name = 'class_to_character'
 
-            fields = []
-            selection = ""
-            for field in fields_list:
-                field_value = data[field] if data else ""
-                field_type = field_type_mapping.get(field, "text")
+        class_id = request_form.get(f'{table_name}-class_id')
+        level = request_form.get(f'{table_name}-level')
 
-                if field_type == "select":
-                    for opt in options or []:
-                        for k, v in opt.items():
-                            selection += f'<option value="{k}">{v}</option>'
-
-                create_field = render_template('field.html', field=field, field_type=field_type, field_value=field_value, table=table_name, options=selection)
-                fields.append(create_field)
-
-            return "".join(fields)
-
-    def process_form(self, request_form):
-        def _save_character_values():
-            table_name = 'character'
-            character_id = request_form.get(f'{table_name}-id')
-            name = request_form.get(f'{table_name}-name')
-            level = 0 # request_form.get(f'{table_name}-level')
-            race = request_form.get(f'{table_name}-race')
-            background = request_form.get(f'{table_name}-background')
-            alignment = request_form.get(f'{table_name}-alignment')
-            armour_class = request_form.get(f'{table_name}-armour_class')
-            initiative = request_form.get(f'{table_name}-initiative')
-            speed = request_form.get(f'{table_name}-speed')
-            proficiency = request_form.get(f'{table_name}-proficiency')
-            health_points = request_form.get(f'{table_name}-health_points')
-            hit_dice = request_form.get(f'{table_name}-hit_dice')
-            passive_wisdom = request_form.get(f'{table_name}-passive_wisdom')
-            temporary_hit_points = request_form.get(f'{table_name}-temporary_hit_points')
-            xp = request_form.get(f'{table_name}-xp')
-
-            # Build character values to save
-            character = {
-                "id": character_id,
-                "name": name,
+        if level and class_id:
+            class_to_character = {
+                "id": uuid(),
+                "character_id": character_id,
+                "class_id": class_id,
                 "level": level,
-                "race": race,
-                "background": background,
-                "alignment": alignment,
-                "armour_class": armour_class,
-                "initiative": initiative,
-                "speed": speed,
-                "proficiency": proficiency,
-                "health_points": health_points,
-                "hit_dice": hit_dice,
-                "passive_wisdom": passive_wisdom,
-                "temporary_hit_points": temporary_hit_points,
-                "xp": xp,
+            }
+            ggi.go_add_new('class_to_character', class_to_character)
+
+        for field_name in request_form:
+            if field_name.startswith('classes-level-'):
+                class_to_character_id = field_name.replace('classes-level-', '')
+                new_level = request_form.get(field_name)
+
+                if new_level:
+                    ggi.go_update('class_to_character', {
+                        'id': class_to_character_id,
+                        'level': new_level
+                    })
+
+    def save_inventory_values(self, character_id: str, request_form):
+        table_name = 'inventory'
+        name = request_form.get(f'{table_name}-name')
+        description = request_form.get(f'{table_name}-description')
+        quantity = request_form.get(f'{table_name}-quantity')
+        action = request_form.get('inventory-action')
+        update_id = request_form.get('inventory-update-id')
+        step_value = request_form.get('inventory-step')
+
+        def update_inventory_by_id(inventory_id: str):
+            existing_inventory = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
+            if not existing_inventory:
+                return
+
+            quantity_value = request_form.get(f'inventory-quantity-{inventory_id}')
+
+            if quantity_value is None or str(quantity_value).strip() == '':
+                ggi.go_delete_it('inventory', {
+                    'id': inventory_id,
+                    'character_id': character_id,
+                })
+                return
+
+            try:
+                parsed_quantity = int(quantity_value)
+            except (TypeError, ValueError):
+                parsed_quantity = existing_inventory.get('quantity', 1)
+
+            if parsed_quantity <= 0:
+                ggi.go_delete_it('inventory', {
+                    'id': inventory_id,
+                    'character_id': character_id,
+                })
+                return
+
+            ggi.go_update('inventory', {
+                'id': inventory_id,
+                'name': existing_inventory.get('name'),
+                'description': existing_inventory.get('description'),
+                'quantity': parsed_quantity,
+                'character_id': character_id,
+            })
+
+        def step_inventory_by_id(inventory_id: str, step: int):
+            existing_inventory = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
+            if not existing_inventory:
+                return
+
+            current_quantity = existing_inventory.get('quantity')
+            try:
+                parsed_current_quantity = int(current_quantity)
+            except (TypeError, ValueError):
+                parsed_current_quantity = 1
+
+            next_quantity = parsed_current_quantity + step
+            if next_quantity <= 0:
+                ggi.go_delete_it('inventory', {
+                    'id': inventory_id,
+                    'character_id': character_id,
+                })
+                return
+
+            ggi.go_update('inventory', {
+                'id': inventory_id,
+                'name': existing_inventory.get('name'),
+                'description': existing_inventory.get('description'),
+                'quantity': next_quantity,
+                'character_id': character_id,
+            })
+
+        if action == 'add' and name:
+            inventory = {
+                "id": uuid(),
+                "name": name,
+                "description": description,
+                "quantity": quantity or 1,
+                "character_id": character_id,
             }
 
-            if character_id:
-                ggi.go_update('character', character)
+            ggi.go_add_new('inventory', inventory)
+
+        if action == 'update' and update_id:
+            update_inventory_by_id(update_id)
+            return
+
+        if action == 'step' and update_id:
+            try:
+                parsed_step = int(step_value) if step_value is not None else 0
+            except (TypeError, ValueError):
+                parsed_step = 0
+
+            if parsed_step != 0:
+                step_inventory_by_id(update_id, parsed_step)
+            return
+
+        if action:
+            return
+
+        for field_name in request_form:
+            if not field_name.startswith('inventory-quantity-'):
+                continue
+
+            inventory_id = field_name.replace('inventory-quantity-', '')
+            update_inventory_by_id(inventory_id)
+
+    def save_feat_and_trait_values(self, character_id: str, request_form):
+        table_name = 'feat_and_trait'
+        feat_and_trait_id = uuid()
+        name = request_form.get(f'{table_name}-name')
+        description = request_form.get(f'{table_name}-description')
+
+        if name:
+            feat_and_trait = {
+                "id": feat_and_trait_id,
+                "name": name,
+                "description": description,
+                "character_id": character_id,
+            }
+
+            ggi.go_add_new('feat_and_trait', feat_and_trait)
+
+    def save_custom_stat_values(self, character_id: str, request_form):
+        table_name = 'custom_stat'
+        name_prefix = f'{table_name}-name-'
+        value_prefix = f'{table_name}-value-'
+
+        existing_custom_stat_ids = set()
+        for field_name in request_form:
+            if field_name.startswith(name_prefix):
+                existing_custom_stat_ids.add(field_name.replace(name_prefix, ''))
+            if field_name.startswith(value_prefix):
+                existing_custom_stat_ids.add(field_name.replace(value_prefix, ''))
+
+        for custom_stat_id in existing_custom_stat_ids:
+            existing_custom_stat = ggi.go_get_one('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
+            if not existing_custom_stat:
+                continue
+
+            updated_name = request_form.get(f'{table_name}-name-{custom_stat_id}')
+            if updated_name is None or str(updated_name).strip() == '':
+                updated_name = existing_custom_stat.get('name')
+
+            updated_value = request_form.get(f'{table_name}-value-{custom_stat_id}')
+            try:
+                parsed_updated_value = int(updated_value) if updated_value is not None and str(updated_value).strip() != '' else 0
+            except (TypeError, ValueError):
+                parsed_updated_value = existing_custom_stat.get('value', 0)
+
+            ggi.go_update('custom_stat', {
+                'id': custom_stat_id,
+                'name': updated_name,
+                'value': parsed_updated_value,
+                'character_id': character_id,
+            })
+
+        name = request_form.get(f'{table_name}-name')
+        value = request_form.get(f'{table_name}-value')
+
+        if not name:
+            return
+
+        try:
+            parsed_value = int(value) if value is not None and str(value).strip() != '' else 0
+        except (TypeError, ValueError):
+            parsed_value = 0
+
+        custom_stat = {
+            "id": uuid(),
+            "name": name,
+            "value": parsed_value,
+            "character_id": character_id,
+        }
+
+        ggi.go_add_new('custom_stat', custom_stat)
+
+    def save_ability_values(self, character_id: str, request_form):
+        import math
+        character = ggi.go_get_one('character', {'id': character_id})
+        character_proficiency = 0
+        if character:
+            character_proficiency = character.get('proficiency', 0)
+
+        for ability in self.ABILITY_TO_SKILL_MAPPING:
+            value = request_form.get(f'{ability}-value')
+            if value:
+                value = int(value)
             else:
-                character_id = uuid()
-                character['id'] = character_id
-                ggi.go_add_new('character', character)
+                continue
 
-            return character_id
+            modifier = math.floor((value - 10) / 2)
 
-        def _save_class_to_character_values(character_id: str):
-            table_name = 'class_to_character'
-            character_id = character_id
-            class_id = request_form.get(f'{table_name}-class_id')
-            level = request_form.get(f'{table_name}-level')
+            saving_proficient = 0
+            if request_form.get(f'{ability}-proficient'):
+                if request_form[f"{ability}-proficient"] == "1":
+                    saving_proficient = 1
 
-            if level:
-                class_to_character = {
-                    "id": uuid(),
-                    "character_id": character_id,
-                    "class_id": class_id,
-                    "level": level,
-                }
+            character_ability = {
+                "id": "",
+                "character_id": character_id,
+                "value": value,
+                "modifier": modifier,
+                "proficient": int(saving_proficient),
+            }
 
-                ggi.go_add_new('class_to_character', class_to_character)
+            existing_ability = ggi.go_get_one(ability, {"character_id": character_id})
 
-        def _save_inventory_values(character_id: str):
-            table_name = 'inventory'
-            inventory_id = uuid()
-            name = request_form.get(f'{table_name}-name')
-            description = request_form.get(f'{table_name}-description')
-            quantity = request_form.get(f'{table_name}-quantity')
+            if existing_ability:
+                ability_id = existing_ability['id']
+                character_ability['id'] = ability_id
+                ggi.go_update(ability, character_ability)
+            else:
+                ability_id = uuid()
+                character_ability['id'] = ability_id
+                ggi.go_add_new(ability, character_ability)
 
-            # Only trigger save if there is a name and quantity
-            if name:
-                inventory = {
-                    "id": inventory_id,
-                    "name": name,
-                    "description": description,
-                    "quantity": quantity or 1,
-                    "character_id": character_id,
-                }
+            skills = ggi.go_get_one(f"{ability}_skills", {f"{ability}_id": ability_id})
 
-                ggi.go_add_new('inventory', inventory)
+            modifier_score = modifier
+            saving_proficient_score = 0
+            if saving_proficient:
+                if character and character.get('proficiency'):
+                    saving_proficient_score += character_proficiency
 
-        def _save_feat_and_trait_values(character_id: str):
-            table_name = 'feat_and_trait'
-            feat_and_trait_id = uuid()
-            name = request_form.get(f'{table_name}-name')
-            description = request_form.get(f'{table_name}-description')
+            characters_skills = {
+                "id": "",
+                f"{ability}_id": ability_id,
+                "saving_throw": modifier_score + saving_proficient_score,
+            }
 
-            # Only trigger save if there is a name
-            if name:
-                feat_and_trait = {
-                    "id": feat_and_trait_id,
-                    "name": name,
-                    "description": description,
-                    "character_id": character_id,
-                }
+            for skill in self.ABILITY_TO_SKILL_MAPPING[ability]:
+                skill_proficient = 0
+                skill_proficient_score = 0
+                if request_form.get(f'{ability}_skills-{skill}_proficient'):
+                    if request_form[f"{ability}_skills-{skill}_proficient"] == "1":
+                        skill_proficient_score += character_proficiency
+                        skill_proficient = 1
 
-                ggi.go_add_new('feat_and_trait', feat_and_trait)
+                characters_skills[skill] = modifier_score + skill_proficient_score
+                characters_skills[f"{skill}_proficient"] = int(skill_proficient)
 
-        def _save_ability_values(character_id: str):
-            import math
-            character = ggi.go_get_one('character', {'id': character_id})
-            character_proficiency = 0
-            if character:
-                character_proficiency = character.get('proficiency', 0)
+            if skills:
+                skill_id = skills['id']
+                characters_skills['id'] = skill_id
+                ggi.go_update(f"{ability}_skills", characters_skills)
+            else:
+                skill_id = uuid()
+                characters_skills['id'] = skill_id
+                ggi.go_add_new(f"{ability}_skills", characters_skills)
 
-            abilities =[
-                "strength",
-                "dexterity",
-                "constitution",
-                "intelligence",
-                "wisdom",
-                "charisma",
-            ]
-            # TODO: rename proficient field (everwhere) to be saving throw proficient
-            for ability in abilities:
-                value = request_form.get(f'{ability}-value')
-                if value:
-                    value = int(value)
-                else:
-                    continue
-                # Calc the ability modifier
-                modifier = math.floor((value - 10) / 2)
-
-                saving_proficient = 0
-                if request_form.get(f'{ability}-proficient'):
-                    if request_form[f"{ability}-proficient"] == "1":
-                        saving_proficient = 1
-
-                character_ability = {
-                    "id": "",
-                    "character_id": character_id,
-                    "value": value,
-                    "modifier": modifier,
-                    "proficient": int(saving_proficient),
-                }
-
-                existing_ability = ggi.go_get_one(ability, {"character_id": character_id})
-
-                if existing_ability:
-                    ability_id = existing_ability['id']
-                    character_ability['id'] = ability_id
-                    ggi.go_update(ability, character_ability)
-                else:
-                    ability_id = uuid()
-                    character_ability['id'] = ability_id
-                    ggi.go_add_new(ability, character_ability)
-
-                # Calc the skill scores based on the ability modifiers
-                skills = ggi.go_get_one(f"{ability}_skills", {f"{ability}_id": ability_id})
-
-                modifier_score = modifier
-                saving_proficient_score = 0
-                if saving_proficient:
-                    if character and character.get('proficiency'):
-                        saving_proficient_score += character_proficiency
-
-
-                characters_skills = {
-                    "id": "",
-                    f"{ability}_id": ability_id,
-                    "saving_throw": modifier_score + saving_proficient_score,
-                }
-
-                for skill in self.ability_to_skill_mapping.get(ability, []):
-                    skill_proficient = 0
-                    skill_proficient_score = 0
-                    if request_form.get(f'{ability}_skills-{skill}_proficient'):
-                        if request_form[f"{ability}_skills-{skill}_proficient"] == "1":
-                            skill_proficient_score += character_proficiency
-                            skill_proficient = 1
-
-                    characters_skills[skill] = modifier_score + skill_proficient_score
-                    characters_skills[f"{skill}_proficient"] = int(skill_proficient)
-
-                if skills:
-                    skill_id = skills['id']
-                    characters_skills['id'] = skill_id
-                    ggi.go_update(f"{ability}_skills", characters_skills)
-                else:
-                    skill_id = uuid()
-                    characters_skills['id'] = skill_id
-                    ggi.go_add_new(f"{ability}_skills", characters_skills)
-
-        character_id = _save_character_values()
-        _save_class_to_character_values(character_id)
-        _save_inventory_values(character_id)
-        _save_feat_and_trait_values(character_id)
-        _save_ability_values(character_id)
+    def process_form(self, request_form):
+        character_id = self.save_character_values(request_form)
+        self.save_class_to_character_values(character_id, request_form)
+        self.save_inventory_values(character_id, request_form)
+        self.save_feat_and_trait_values(character_id, request_form)
+        self.save_custom_stat_values(character_id, request_form)
+        self.save_ability_values(character_id, request_form)
         return character_id
 
 
