@@ -96,13 +96,17 @@ class CharacterSheet:
         # Inventory
         inventory = ggi.go_get_all('inventory', {'character_id': self.character_id}) or []
 
+        # Custom Stats
+        custom_stats = ggi.go_get_all('custom_stat', {'character_id': self.character_id}) or []
+
         return {
             'character': character,
             'classes': classes,
             'class_options': class_options,
             'abilities': abilities_data,
             'feats_and_traits': feats_and_traits,
-            'inventory': inventory
+            'inventory': inventory,
+            'custom_stats': custom_stats,
         }
 
     def save_character_values(self, request_form):
@@ -297,6 +301,60 @@ class CharacterSheet:
 
             ggi.go_add_new('feat_and_trait', feat_and_trait)
 
+    def save_custom_stat_values(self, character_id: str, request_form):
+        table_name = 'custom_stat'
+        name_prefix = f'{table_name}-name-'
+        value_prefix = f'{table_name}-value-'
+
+        existing_custom_stat_ids = set()
+        for field_name in request_form:
+            if field_name.startswith(name_prefix):
+                existing_custom_stat_ids.add(field_name.replace(name_prefix, ''))
+            if field_name.startswith(value_prefix):
+                existing_custom_stat_ids.add(field_name.replace(value_prefix, ''))
+
+        for custom_stat_id in existing_custom_stat_ids:
+            existing_custom_stat = ggi.go_get_one('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
+            if not existing_custom_stat:
+                continue
+
+            updated_name = request_form.get(f'{table_name}-name-{custom_stat_id}')
+            if updated_name is None or str(updated_name).strip() == '':
+                updated_name = existing_custom_stat.get('name')
+
+            updated_value = request_form.get(f'{table_name}-value-{custom_stat_id}')
+            try:
+                parsed_updated_value = int(updated_value) if updated_value is not None and str(updated_value).strip() != '' else 0
+            except (TypeError, ValueError):
+                parsed_updated_value = existing_custom_stat.get('value', 0)
+
+            ggi.go_update('custom_stat', {
+                'id': custom_stat_id,
+                'name': updated_name,
+                'value': parsed_updated_value,
+                'character_id': character_id,
+            })
+
+        name = request_form.get(f'{table_name}-name')
+        value = request_form.get(f'{table_name}-value')
+
+        if not name:
+            return
+
+        try:
+            parsed_value = int(value) if value is not None and str(value).strip() != '' else 0
+        except (TypeError, ValueError):
+            parsed_value = 0
+
+        custom_stat = {
+            "id": uuid(),
+            "name": name,
+            "value": parsed_value,
+            "character_id": character_id,
+        }
+
+        ggi.go_add_new('custom_stat', custom_stat)
+
     def save_ability_values(self, character_id: str, request_form):
         import math
         character = ggi.go_get_one('character', {'id': character_id})
@@ -376,6 +434,7 @@ class CharacterSheet:
         self.save_class_to_character_values(character_id, request_form)
         self.save_inventory_values(character_id, request_form)
         self.save_feat_and_trait_values(character_id, request_form)
+        self.save_custom_stat_values(character_id, request_form)
         self.save_ability_values(character_id, request_form)
         return character_id
 

@@ -1,0 +1,57 @@
+<div class="custom-stats-section">
+    <div class="custom-stats-section-grid">
+        {% if custom_stats %}
+            {% for stat in custom_stats %}
+                <div class="custom-stats-section-row custom-stats-section-saved-row custom-stats-stat-card">
+                    <div class="custom-stats-section-field custom-stats-section-value-field custom-stats-square-field custom-stats-saved-field">
+                        <input type="number" id="custom_stat-value-{{ stat.id }}"
+                            name="custom_stat-value-{{ stat.id }}" value="{{ stat.value }}" class="custom-stats-section-input">
+                        <label for="custom_stat-value-{{ stat.id }}" class="custom-stats-section-label">{{ stat.name }}</label>
+                        <button type="button" id="custom-stat-delete-{{ stat.id }}" class="custom-stats-remove-btn"
+                            hx-post="/characters/{{ character_id }}/custom-stat/{{ stat.id }}/remove"
+                            hx-target="#custom-stats-section-container"
+                            hx-swap="innerHTML"
+                            hx-include="closest form"
+                            aria-label="Remove {{ stat.name }}">×</button>
+                    </div>
+
+                    <input type="hidden" id="custom_stat-name-{{ stat.id }}" name="custom_stat-name-{{ stat.id }}" value="{{ stat.name }}">
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="custom-stats-section-row custom-stats-section-add-row">
+        <div class="custom-stats-section-top-row">
+            <div class="custom-stats-section-field custom-stats-section-action-field section-action-field" id="add-custom-stat-btn-wrapper">
+                <button type="button" id="add-custom-stat-btn" class="custom-stats-section-btn section-action-btn">+</button>
+                <label for="add-custom-stat-btn" class="custom-stats-section-label section-action-label">Add Stat</label>
+            </div>
+
+            <div class="custom-stats-section-field custom-stats-section-name-field" id="add-custom-stat-field-name">
+                <label for="custom_stat-name" class="custom-stats-section-label">Stat Name</label>
+                <input type="text" id="custom_stat-name" name="custom_stat-name" placeholder="Enter name" class="custom-stats-section-input">
+            </div>
+
+            <div class="custom-stats-section-field custom-stats-section-value-field" id="add-custom-stat-field-value">
+                <label for="custom_stat-value" class="custom-stats-section-label">Value</label>
+                <input type="number" id="custom_stat-value" name="custom_stat-value" value="0" class="custom-stats-section-input">
+            </div>
+
+            <div class="custom-stats-section-field custom-stats-section-action-field section-action-field" id="add-custom-stat-submit-btn-wrapper">
+                <button type="button" id="custom-stat-add" class="custom-stats-section-btn section-action-btn"
+                    hx-post="/characters/{{ character_id }}/custom-stats/fragment"
+                    hx-target="#custom-stats-section-container"
+                    hx-swap="innerHTML"
+                    hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+                <label for="custom-stat-add" class="custom-stats-section-label section-action-label">Add</label>
+            </div>
+
+            <div class="custom-stats-section-field custom-stats-section-action-field section-action-field" id="close-custom-stat-btn-wrapper">
+                <button type="button" id="close-custom-stat-field-x-btn" class="custom-stats-section-btn section-action-btn">×</button>
+                <label for="close-custom-stat-field-x-btn" class="custom-stats-section-label section-action-label">Close</label>
+            </div>
+        </div>
+    </div>
+</div>
+<br>

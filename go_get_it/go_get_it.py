@@ -17,6 +17,37 @@ class GoGetDB():
     def go_connect_db(self):
         return sqlite3.connect(self.DB_ROUTE)
 
+    def _go_get_table_columns(self, cursor: sqlite3.Cursor, table: str):
+        cursor.execute(f"PRAGMA table_info({table})")
+        return {row[1] for row in cursor.fetchall()}
+
+    def _go_sync_table_columns(self, cursor: sqlite3.Cursor, table: str, schema: dict):
+        existing_columns = self._go_get_table_columns(cursor, table)
+        added_columns = []
+
+        for column, data_type in schema.items():
+            if column not in existing_columns:
+                cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {data_type}")
+                added_columns.append(column)
+
+        return added_columns
+
+    def go_sync_schema(self):
+        db = self.go_connect_db()
+        cursor = db.cursor()
+        applied_updates = {}
+
+        for table, schema in self.TABLES.items():
+            added_columns = self._go_sync_table_columns(cursor, table, schema)
+            if added_columns:
+                applied_updates[table] = added_columns
+
+        db.commit()
+        db.close()
+
+        for table, columns in applied_updates.items():
+            print(f"[db] schema sync: added columns to '{table}': {', '.join(columns)}")
+
     def go_create_db(self):
         db = self.go_connect_db()
         cursor = db.cursor()
@@ -27,6 +58,8 @@ class GoGetDB():
         # Commit changes and close the connection
         db.commit()
         db.close()
+
+        self.go_sync_schema()
 
     def go_get_all(self, table: str, params: Optional[dict] = None, count: bool = False):
         """

@@ -32,7 +32,8 @@ body {
 }
 
 .sheet-main-column {
-    flex: 0 0 auto;
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .sheet-right-column {

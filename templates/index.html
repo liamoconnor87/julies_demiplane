@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/abilities_skills.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/feats_traits.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_stats.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/section_action_buttons.css') }}">
 </head>
 
@@ -29,6 +30,10 @@
         <div class="sheet-layout">
             <div class="sheet-main-column">
                 {% include 'components/character_info.html' %}
+
+                <div id="custom-stats-section-container">
+                    {% include 'components/custom_stats_section.html' %}
+                </div>
 
                 <div id="abilities-section-container">
                     {% include 'components/abilities_section.html' %}

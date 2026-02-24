@@ -28,6 +28,11 @@ window.addEventListener("load", () => {
         if (target.id === 'inventory-section-container') {
             selectInventoryField();
             bindInventoryDescriptionDisplayAutoHeight();
+            return;
+        }
+
+        if (target.id === 'custom-stats-section-container') {
+            selectCustomStatField();
         }
     });
 })
@@ -39,12 +44,43 @@ function initializeUiBindings() {
     selectClassField();
     selectFeatField();
     selectInventoryField();
+    selectCustomStatField();
     bindClassLevelUpdateButtons();
     bindProficiencyToggles();
     bindAbilitiesSectionLockToggle();
     bindCurrentHpCalculation();
     bindFeatDescriptionDisplayAutoHeight();
     bindInventoryDescriptionDisplayAutoHeight();
+}
+
+function selectCustomStatField() {
+    const addCustomStatBtn = document.getElementById('add-custom-stat-btn');
+    const addCustomStatBtnWrapper = document.getElementById('add-custom-stat-btn-wrapper');
+    const addCustomStatFieldName = document.getElementById('add-custom-stat-field-name');
+    const addCustomStatFieldValue = document.getElementById('add-custom-stat-field-value');
+    const addCustomStatSubmitBtnWrapper = document.getElementById('add-custom-stat-submit-btn-wrapper');
+    const closeCustomStatBtnWrapper = document.getElementById('close-custom-stat-btn-wrapper');
+    const closeCustomStatFieldXBtn = document.getElementById('close-custom-stat-field-x-btn');
+
+    if (!addCustomStatBtn || !addCustomStatBtnWrapper || !addCustomStatFieldName || !addCustomStatFieldValue || !addCustomStatSubmitBtnWrapper || !closeCustomStatBtnWrapper || !closeCustomStatFieldXBtn) {
+        return;
+    }
+
+    addCustomStatBtn.addEventListener('click', () => {
+        addCustomStatBtnWrapper.style.display = 'none';
+        addCustomStatFieldName.style.display = 'flex';
+        addCustomStatFieldValue.style.display = 'flex';
+        addCustomStatSubmitBtnWrapper.style.display = 'flex';
+        closeCustomStatBtnWrapper.style.display = 'flex';
+    });
+
+    closeCustomStatFieldXBtn.addEventListener('click', () => {
+        addCustomStatBtnWrapper.style.display = 'flex';
+        addCustomStatFieldName.style.display = 'none';
+        addCustomStatFieldValue.style.display = 'none';
+        addCustomStatSubmitBtnWrapper.style.display = 'none';
+        closeCustomStatBtnWrapper.style.display = 'none';
+    });
 }
 
 function selectClassField() {

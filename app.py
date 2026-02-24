@@ -36,6 +36,7 @@ def character_sheet():
         abilities=character_sheet_data['abilities'],
         feats_and_traits=character_sheet_data['feats_and_traits'],
         inventory=character_sheet_data['inventory'],
+        custom_stats=character_sheet_data['custom_stats'],
         debug=debug
         )
 
@@ -89,6 +90,18 @@ def inventory_fragment(character_id: str):
         character_id=character_id
     )
 
+@app.route('/characters/<character_id>/custom-stats/fragment', methods=['POST'])
+def custom_stats_fragment(character_id: str):
+    sheet = CharacterSheet(character_id=character_id)
+    sheet.save_custom_stat_values(character_id, request.form)
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/custom_stats_section.html',
+        custom_stats=data['custom_stats'],
+        character_id=character_id
+    )
+
 @app.route('/characters/<character_id>/inventory/<inventory_id>/remove', methods=['POST'])
 @app.route("/<character_id>/inventory/<inventory_id>/remove")
 def remove_inventory_item(character_id: str, inventory_id: str):
@@ -124,6 +137,25 @@ def remove_feat_and_trait_item(character_id: str, feat_and_trait_id: str):
             'components/feats_traits_section.html',
             character_id=character_id,
             feats_and_traits=data['feats_and_traits']
+        )
+
+    return redirect(url_for('character_sheet', character_id=character_id))
+
+
+@app.route('/characters/<character_id>/custom-stat/<custom_stat_id>/remove', methods=['POST'])
+@app.route("/<character_id>/custom-stat/<custom_stat_id>/remove")
+def remove_custom_stat_item(character_id: str, custom_stat_id: str):
+    if not character_id or not custom_stat_id or not db.go_get_one('custom_stat', {'id': custom_stat_id, "character_id": character_id}):
+        return redirect(url_for('character_sheet'))
+
+    db.go_delete_it('custom_stat', {'id': custom_stat_id, "character_id": character_id})
+
+    if _is_htmx_request() or request.method == 'POST':
+        _, data = _build_character_sheet_data(character_id)
+        return render_template(
+            'components/custom_stats_section.html',
+            character_id=character_id,
+            custom_stats=data['custom_stats']
         )
 
     return redirect(url_for('character_sheet', character_id=character_id))

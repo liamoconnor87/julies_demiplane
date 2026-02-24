@@ -171,4 +171,19 @@ TABLES = {
         "persuasion_proficient": _boolean,
         "charisma_id": _fk,
     },
+    "custom_stat": {
+        "id": _id,
+        "name": _text(),
+        "value": _integer,
+        "character_id": _fk,
+    },
+    "custom_buff": {
+        "id": _id,
+        "name": _text(),
+        "description": _mediumtext,
+        "character_id": _fk,
+        "value": _integer,
+        "table_name": _text(),
+        "table_column": _text(),
+    }
 }

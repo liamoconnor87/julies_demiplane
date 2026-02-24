@@ -1,0 +1,231 @@
+.custom-stats-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 1rem;
+    width: 100%;
+    min-width: 0;
+    --custom-stats-name-width: 9.75rem;
+    --custom-stats-value-width: 8rem;
+    --custom-stats-action-width: 3rem;
+    --custom-stats-field-gap: 0.25rem;
+}
+
+.custom-stats-section-grid {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    min-width: 0;
+    align-items: flex-start;
+}
+
+.custom-stats-section-row {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    margin-bottom: 0.25rem;
+    max-width: 100%;
+    width: auto;
+    min-width: 0;
+}
+
+.custom-stats-section-add-row {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.custom-stats-section-saved-row {
+    flex-direction: row;
+    width: auto;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.custom-stats-section-top-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    max-width: 100%;
+}
+
+.custom-stats-section-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+    --custom-stats-field-input-height: 2.55rem;
+}
+
+.custom-stats-section-name-field {
+    width: var(--custom-stats-name-width);
+    min-width: var(--custom-stats-name-width);
+    max-width: var(--custom-stats-name-width);
+}
+
+.custom-stats-section-value-field {
+    width: var(--custom-stats-value-width);
+    min-width: var(--custom-stats-value-width);
+    max-width: var(--custom-stats-value-width);
+}
+
+.custom-stats-stat-card {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 0;
+    max-width: none;
+}
+
+.custom-stats-saved-field {
+    position: relative;
+}
+
+.custom-stats-remove-btn {
+    position: absolute;
+    top: 0.15rem;
+    right: 0.15rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    line-height: 1;
+    font-size: 1rem;
+    border: none;
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.custom-stats-stat-card .custom-stats-square-field {
+    margin-right: 0;
+    margin-bottom: 0;
+    max-width: none;
+}
+
+.custom-stats-section-action-field {
+    width: var(--custom-stats-action-width);
+    min-width: var(--custom-stats-action-width);
+    max-width: var(--custom-stats-action-width);
+}
+
+.custom-stats-section-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+    display: block;
+}
+
+.custom-stats-section-field .custom-stats-section-input {
+    height: var(--custom-stats-field-input-height);
+}
+
+.custom-stats-square-field .custom-stats-section-label,
+.custom-stats-square-field .custom-stats-section-input {
+    min-width: 0;
+    width: var(--custom-stats-value-width);
+    text-align: center;
+    padding: 0.25rem 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-stats-square-field .custom-stats-section-input {
+    font-size: 2.5rem;
+    box-sizing: border-box;
+    padding: 0.3rem;
+    height: auto;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.custom-stats-square-field .custom-stats-section-input::-webkit-outer-spin-button,
+.custom-stats-square-field .custom-stats-section-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.custom-stats-section-label {
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    margin-bottom: 0;
+    display: block;
+    font-size: 0.6rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background 0.2s;
+    line-height: 1;
+    text-align: left;
+    overflow-wrap: break-word;
+    padding-left: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+.custom-stats-section-btn {
+    cursor: pointer;
+    text-align: center;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    border: none;
+    font-size: 1.5rem;
+    box-sizing: border-box;
+    height: 2.65rem;
+    width: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.custom-stats-section-action-field .custom-stats-section-label {
+    min-width: 0;
+    text-align: center;
+    width: var(--custom-stats-action-width);
+    font-size: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+#add-custom-stat-field-name,
+#add-custom-stat-field-value,
+#add-custom-stat-submit-btn-wrapper,
+#close-custom-stat-btn-wrapper {
+    display: none;
+}
+
+.custom-stats-section-add-row {
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 499px) {
+    .custom-stats-section-top-row {
+        flex-wrap: wrap;
+    }
+
+    .custom-stats-section-name-field,
+    .custom-stats-section-value-field,
+    .custom-stats-section-action-field {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .custom-stats-section-action-field .custom-stats-section-label {
+        width: 100%;
+    }
+}
