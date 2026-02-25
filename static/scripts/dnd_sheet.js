@@ -33,24 +33,310 @@ window.addEventListener("load", () => {
 
         if (target.id === 'custom-stats-section-container') {
             selectCustomStatField();
+            return;
+        }
+
+        if (target.id === 'custom-buffs-section-container') {
+            selectCustomBuffField();
+            applyPendingCustomBuffUiUpdate();
+            applyPendingCustomBuffRemovalUiUpdate();
         }
     });
 })
 
 let featDescriptionResizeWindowBound = false;
 let inventoryDescriptionResizeWindowBound = false;
+let pendingCustomBuffUiUpdate = null;
+let pendingCustomBuffRemoveUiUpdate = null;
 
 function initializeUiBindings() {
     selectClassField();
     selectFeatField();
     selectInventoryField();
     selectCustomStatField();
+    selectCustomBuffField();
     bindClassLevelUpdateButtons();
     bindProficiencyToggles();
     bindAbilitiesSectionLockToggle();
     bindCurrentHpCalculation();
     bindFeatDescriptionDisplayAutoHeight();
     bindInventoryDescriptionDisplayAutoHeight();
+}
+
+function selectCustomBuffField() {
+    const addCustomBuffBtn = document.getElementById('add-custom-buff-btn');
+    const addCustomBuffBtnWrapper = document.getElementById('add-custom-buff-btn-wrapper');
+    const addCustomBuffFieldsWrapper = document.getElementById('add-custom-buff-fields-wrapper');
+    const addCustomBuffSubmitBtnWrapper = document.getElementById('add-custom-buff-submit-btn-wrapper');
+    const closeCustomBuffBtnWrapper = document.getElementById('close-custom-buff-btn-wrapper');
+    const closeCustomBuffFieldXBtn = document.getElementById('close-custom-buff-field-x-btn');
+    const customBuffAddBtn = document.getElementById('custom-buff-add');
+    const customBuffRemoveButtons = document.querySelectorAll('.custom-buffs-remove-btn');
+    const targetColumnsField = document.getElementById('add-custom-buff-target-columns-field');
+
+    if (!addCustomBuffBtn || !addCustomBuffBtnWrapper || !addCustomBuffFieldsWrapper || !addCustomBuffSubmitBtnWrapper || !closeCustomBuffBtnWrapper || !closeCustomBuffFieldXBtn) {
+        return;
+    }
+
+    const tableCheckboxes = document.querySelectorAll('.custom-buffs-table-checkbox');
+
+    const updateTableStatGroups = () => {
+        let hasSelectedTable = false;
+
+        tableCheckboxes.forEach((tableCheckbox) => {
+            const tableName = tableCheckbox.dataset.tableName;
+            if (!tableName) {
+                return;
+            }
+
+            const statGroup = document.querySelector(`.custom-buffs-table-stat-group[data-table-name="${tableName}"]`);
+            if (!statGroup) {
+                return;
+            }
+
+            if (tableCheckbox.checked) {
+                hasSelectedTable = true;
+                statGroup.classList.add('is-active');
+                return;
+            }
+
+            statGroup.classList.remove('is-active');
+            const groupCheckboxes = statGroup.querySelectorAll('.custom-buffs-stat-checkbox');
+            groupCheckboxes.forEach((groupCheckbox) => {
+                groupCheckbox.checked = false;
+            });
+        });
+
+        if (targetColumnsField) {
+            targetColumnsField.style.display = hasSelectedTable ? 'flex' : 'none';
+        }
+    };
+
+    if (addCustomBuffBtn.dataset.bound !== 'true') {
+        addCustomBuffBtn.addEventListener('click', () => {
+            addCustomBuffBtnWrapper.style.display = 'none';
+            addCustomBuffFieldsWrapper.style.display = 'flex';
+            addCustomBuffSubmitBtnWrapper.style.display = 'flex';
+            closeCustomBuffBtnWrapper.style.display = 'flex';
+            updateTableStatGroups();
+        });
+        addCustomBuffBtn.dataset.bound = 'true';
+    }
+
+    if (closeCustomBuffFieldXBtn.dataset.bound !== 'true') {
+        closeCustomBuffFieldXBtn.addEventListener('click', () => {
+            addCustomBuffBtnWrapper.style.display = 'flex';
+            addCustomBuffFieldsWrapper.style.display = 'none';
+            addCustomBuffSubmitBtnWrapper.style.display = 'none';
+            closeCustomBuffBtnWrapper.style.display = 'none';
+        });
+        closeCustomBuffFieldXBtn.dataset.bound = 'true';
+    }
+
+    if (customBuffAddBtn && customBuffAddBtn.dataset.bound !== 'true') {
+        customBuffAddBtn.addEventListener('click', () => {
+            pendingCustomBuffUiUpdate = capturePendingCustomBuffUiUpdate();
+        });
+        customBuffAddBtn.dataset.bound = 'true';
+    }
+
+    customBuffRemoveButtons.forEach((removeButton) => {
+        if (removeButton.dataset.bound === 'true') {
+            return;
+        }
+
+        removeButton.addEventListener('click', () => {
+            pendingCustomBuffRemoveUiUpdate = capturePendingCustomBuffRemoveUiUpdate(removeButton);
+        });
+
+        removeButton.dataset.bound = 'true';
+    });
+
+    tableCheckboxes.forEach((tableCheckbox) => {
+        if (tableCheckbox.dataset.bound === 'true') {
+            return;
+        }
+
+        tableCheckbox.addEventListener('change', () => {
+            updateTableStatGroups();
+        });
+
+        tableCheckbox.dataset.bound = 'true';
+    });
+
+    updateTableStatGroups();
+}
+
+function capturePendingCustomBuffUiUpdate() {
+    const valueField = document.getElementById('custom_buff-value');
+    const parsedValue = Number.parseInt(valueField ? valueField.value : '0', 10);
+    const adjustmentValue = Number.isNaN(parsedValue) ? 0 : parsedValue;
+
+    const selectedTableCheckboxes = Array.from(document.querySelectorAll('.custom-buffs-table-checkbox:checked'));
+    const targets = selectedTableCheckboxes.map((tableCheckbox) => {
+        const tableName = tableCheckbox.dataset.tableName;
+        const selectedStatCheckboxes = Array.from(document.querySelectorAll(`.custom-buffs-stat-checkbox[data-table-name="${tableName}"]:checked`));
+        const statNames = selectedStatCheckboxes
+            .map((checkbox) => (checkbox.value || '').trim())
+            .filter((statName) => statName.length > 0);
+
+        return {
+            tableName,
+            statNames,
+        };
+    }).filter((target) => target.tableName && target.statNames.length > 0);
+
+    return {
+        previousBuffCount: document.querySelectorAll('.custom-buffs-card').length,
+        adjustmentValue,
+        targets,
+    };
+}
+
+function applyPendingCustomBuffUiUpdate() {
+    if (!pendingCustomBuffUiUpdate) {
+        return;
+    }
+
+    const newBuffCount = document.querySelectorAll('.custom-buffs-card').length;
+    const updateData = pendingCustomBuffUiUpdate;
+    pendingCustomBuffUiUpdate = null;
+
+    if (newBuffCount <= updateData.previousBuffCount) {
+        return;
+    }
+
+    if (!Array.isArray(updateData.targets) || updateData.targets.length === 0) {
+        return;
+    }
+
+    applyBuffDeltaToTargets(updateData.targets, updateData.adjustmentValue);
+}
+
+function capturePendingCustomBuffRemoveUiUpdate(removeButton) {
+    if (!removeButton) {
+        return null;
+    }
+
+    const parsedValue = Number.parseInt(removeButton.dataset.buffValue || '0', 10);
+    const adjustmentValue = Number.isNaN(parsedValue) ? 0 : (parsedValue * -1);
+
+    const rawTargets = removeButton.dataset.buffTargets || '[]';
+    let parsedTargets = [];
+
+    try {
+        parsedTargets = JSON.parse(rawTargets);
+    } catch {
+        parsedTargets = [];
+    }
+
+    const targets = normalizeBuffTargets(parsedTargets);
+
+    return {
+        previousBuffCount: document.querySelectorAll('.custom-buffs-card').length,
+        adjustmentValue,
+        targets,
+    };
+}
+
+function applyPendingCustomBuffRemovalUiUpdate() {
+    if (!pendingCustomBuffRemoveUiUpdate) {
+        return;
+    }
+
+    const newBuffCount = document.querySelectorAll('.custom-buffs-card').length;
+    const updateData = pendingCustomBuffRemoveUiUpdate;
+    pendingCustomBuffRemoveUiUpdate = null;
+
+    if (newBuffCount >= updateData.previousBuffCount) {
+        return;
+    }
+
+    if (!Array.isArray(updateData.targets) || updateData.targets.length === 0) {
+        return;
+    }
+
+    applyBuffDeltaToTargets(updateData.targets, updateData.adjustmentValue);
+}
+
+function normalizeBuffTargets(rawTargets) {
+    if (!Array.isArray(rawTargets)) {
+        return [];
+    }
+
+    return rawTargets
+        .map((target) => {
+            const tableName = target && target.stat_table_name ? String(target.stat_table_name).trim() : '';
+            const statNames = Array.isArray(target && target.stat_names)
+                ? target.stat_names.map((statName) => String(statName || '').trim()).filter((statName) => statName.length > 0)
+                : [];
+
+            return {
+                tableName,
+                statNames,
+            };
+        })
+        .filter((target) => target.tableName && target.statNames.length > 0);
+}
+
+function applyBuffDeltaToTargets(targets, adjustmentValue) {
+    if (!Array.isArray(targets) || !targets.length) {
+        return;
+    }
+
+    targets.forEach((target) => {
+        const tableName = target.tableName;
+        const statNames = target.statNames || [];
+
+        statNames.forEach((statName) => {
+            if (tableName === 'custom_stat') {
+                updateCustomStatValueByName(statName, adjustmentValue);
+                return;
+            }
+
+            const elementId = `${tableName}-${statName}`;
+            const element = document.getElementById(elementId);
+            applyNumericDeltaToElement(element, adjustmentValue);
+        });
+    });
+}
+
+function updateCustomStatValueByName(statName, delta) {
+    const normalizedTargetName = String(statName || '').trim().toLowerCase();
+    if (!normalizedTargetName) {
+        return;
+    }
+
+    const customStatNameFields = document.querySelectorAll('[id^="custom_stat-name-"]');
+    customStatNameFields.forEach((nameField) => {
+        const fieldValue = String(nameField.value || '').trim().toLowerCase();
+        if (!fieldValue || fieldValue !== normalizedTargetName) {
+            return;
+        }
+
+        const statId = nameField.id.replace('custom_stat-name-', '');
+        const statValueField = document.getElementById(`custom_stat-value-${statId}`);
+        applyNumericDeltaToElement(statValueField, delta);
+    });
+}
+
+function applyNumericDeltaToElement(element, delta) {
+    if (!element) {
+        return;
+    }
+
+    const currentRawValue = 'value' in element ? element.value : element.textContent;
+    const currentValue = Number.parseInt(currentRawValue, 10);
+    const numericValue = Number.isNaN(currentValue) ? 0 : currentValue;
+    const nextValue = numericValue + delta;
+
+    if ('value' in element) {
+        element.value = String(nextValue);
+        element.dispatchEvent(new Event('input', { bubbles: true }));
+        return;
+    }
+
+    element.textContent = String(nextValue);
 }
 
 function selectCustomStatField() {

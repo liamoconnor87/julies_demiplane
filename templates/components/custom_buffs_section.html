@@ -1,0 +1,103 @@
+<div class="custom-buffs-section">
+	<div class="custom-buffs-grid">
+		{% if custom_buffs %}
+			{% for buff in custom_buffs %}
+				<div class="custom-buffs-card">
+					<div class="custom-buffs-card-main-field">
+						<div class="custom-buffs-card-value">{{ buff.value }}</div>
+						<div class="custom-buffs-card-title">{{ buff.name }}</div>
+						<button type="button" class="custom-buffs-remove-btn"
+							data-buff-value="{{ buff.value }}"
+							data-buff-targets='{{ buff.targets | tojson | forceescape }}'
+							hx-post="/characters/{{ character_id }}/custom-buff/{{ buff.id }}/remove"
+							hx-target="#custom-buffs-section-container"
+							hx-swap="innerHTML"
+							hx-include="closest form"
+							aria-label="Remove {{ buff.name }}">×</button>
+					</div>
+				</div>
+			{% endfor %}
+		{% endif %}
+	</div>
+
+	<div class="custom-buffs-section-row custom-buffs-section-add-row">
+		<div class="custom-buffs-section-top-row">
+			<div class="custom-buffs-section-field custom-buffs-section-action-field section-action-field" id="add-custom-buff-btn-wrapper">
+				<button type="button" id="add-custom-buff-btn" class="custom-buffs-section-btn section-action-btn">+</button>
+				<label for="add-custom-buff-btn" class="custom-buffs-section-label section-action-label">Buff</label>
+			</div>
+
+			<div class="custom-buffs-section-fields" id="add-custom-buff-fields-wrapper">
+				<div class="custom-buffs-basic-fields-row">
+					<div class="custom-buffs-section-field custom-buffs-name-field">
+						<label for="custom_buff-name" class="custom-buffs-section-label">Stat Name</label>
+						<input type="text" id="custom_buff-name" name="custom_buff-name" class="custom-buffs-section-input" placeholder="Enter name">
+					</div>
+
+					<div class="custom-buffs-section-field custom-buffs-value-field">
+						<label for="custom_buff-value" class="custom-buffs-section-label">Value</label>
+						<input type="text" inputmode="numeric" pattern="-?[0-9]*" id="custom_buff-value" name="custom_buff-value" value="0" class="custom-buffs-section-input">
+					</div>
+				</div>
+
+				<div class="custom-buffs-target-fields-column">
+					<div class="custom-buffs-section-field custom-buffs-target-tables-field">
+						<label class="custom-buffs-section-label">Stat Tables</label>
+						<div class="custom-buffs-checkbox-grid">
+							{% for table_name, columns in buff_target_options.items() %}
+								<label class="custom-buffs-checkbox-item" for="custom_buff-table-{{ table_name }}">
+									<input type="checkbox"
+										id="custom_buff-table-{{ table_name }}"
+										name="custom_buff-table-{{ table_name }}"
+										value="1"
+										class="custom-buffs-table-checkbox"
+										data-table-name="{{ table_name }}">
+									<span>{{ table_name | replace('_', ' ') | title }}</span>
+								</label>
+							{% endfor %}
+						</div>
+					</div>
+
+					<div class="custom-buffs-section-field custom-buffs-target-columns-field" id="add-custom-buff-target-columns-field">
+						<label class="custom-buffs-section-label">Columns / Stats</label>
+						<div class="custom-buffs-table-stat-groups">
+							{% for table_name, columns in buff_target_options.items() %}
+								<div class="custom-buffs-table-stat-group" data-table-name="{{ table_name }}">
+									<div class="custom-buffs-table-stat-title">{{ table_name | replace('_', ' ') | title }}</div>
+									<div class="custom-buffs-checkbox-grid custom-buffs-columns-checkbox-grid">
+										{% for stat_name in columns %}
+											<label class="custom-buffs-checkbox-item custom-buffs-columns-checkbox-item" for="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}">
+												<input type="checkbox"
+													id="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}"
+													name="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}"
+													value="{{ stat_name }}"
+													class="custom-buffs-stat-checkbox"
+													data-table-name="{{ table_name }}">
+												<span>{{ stat_name | replace('_', ' ') | title }}</span>
+											</label>
+										{% endfor %}
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="custom-buffs-section-field custom-buffs-section-action-field section-action-field" id="add-custom-buff-submit-btn-wrapper">
+				<button type="button" id="custom-buff-add" class="custom-buffs-section-btn section-action-btn"
+					hx-post="/characters/{{ character_id }}/custom-buffs/fragment"
+					hx-target="#custom-buffs-section-container"
+					hx-swap="innerHTML"
+					hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+				<label for="custom-buff-add" class="custom-buffs-section-label section-action-label">Add</label>
+			</div>
+
+			<div class="custom-buffs-section-field custom-buffs-section-action-field section-action-field" id="close-custom-buff-btn-wrapper">
+				<button type="button" id="close-custom-buff-field-x-btn" class="custom-buffs-section-btn section-action-btn">×</button>
+				<label for="close-custom-buff-field-x-btn" class="custom-buffs-section-label section-action-label">Close</label>
+			</div>
+		</div>
+	</div>
+</div>
+<br>

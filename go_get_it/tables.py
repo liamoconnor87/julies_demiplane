@@ -180,10 +180,20 @@ TABLES = {
     "custom_buff": {
         "id": _id,
         "name": _text(),
-        "description": _mediumtext,
-        "character_id": _fk,
         "value": _integer,
-        "table_name": _text(),
-        "table_column": _text(),
+        "character_id": _fk,
+    },
+    "custom_buff_to_stat_table": {
+        "id": _id,
+        "custom_buff_id": _fk,
+        "stat_table_name": _text(),
+        "stat_table_id": _fk,
+        "character_id": _fk,
+    },
+    "stat_table_to_stat": {
+        "id": _id,
+        "stat_table_id": _fk,
+        "stat_name": _text(),
+        "character_id": _fk,
     }
 }

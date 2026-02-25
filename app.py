@@ -37,6 +37,8 @@ def character_sheet():
         feats_and_traits=character_sheet_data['feats_and_traits'],
         inventory=character_sheet_data['inventory'],
         custom_stats=character_sheet_data['custom_stats'],
+        custom_buffs=character_sheet_data['custom_buffs'],
+        buff_target_options=character_sheet_data['buff_target_options'],
         debug=debug
         )
 
@@ -102,6 +104,20 @@ def custom_stats_fragment(character_id: str):
         character_id=character_id
     )
 
+
+@app.route('/characters/<character_id>/custom-buffs/fragment', methods=['POST'])
+def custom_buffs_fragment(character_id: str):
+    sheet = CharacterSheet(character_id=character_id)
+    sheet.save_custom_buff_values(character_id, request.form)
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/custom_buffs_section.html',
+        custom_buffs=data['custom_buffs'],
+        buff_target_options=data['buff_target_options'],
+        character_id=character_id
+    )
+
 @app.route('/characters/<character_id>/inventory/<inventory_id>/remove', methods=['POST'])
 @app.route("/<character_id>/inventory/<inventory_id>/remove")
 def remove_inventory_item(character_id: str, inventory_id: str):
@@ -156,6 +172,42 @@ def remove_custom_stat_item(character_id: str, custom_stat_id: str):
             'components/custom_stats_section.html',
             character_id=character_id,
             custom_stats=data['custom_stats']
+        )
+
+    return redirect(url_for('character_sheet', character_id=character_id))
+
+
+@app.route('/characters/<character_id>/custom-buff/<custom_buff_id>/remove', methods=['POST'])
+@app.route('/<character_id>/custom-buff/<custom_buff_id>/remove')
+def remove_custom_buff_item(character_id: str, custom_buff_id: str):
+    if not character_id or not custom_buff_id or not db.go_get_one('custom_buff', {'id': custom_buff_id, 'character_id': character_id}):
+        return redirect(url_for('character_sheet'))
+
+    custom_buff_tables = db.go_get_all('custom_buff_to_stat_table', {'custom_buff_id': custom_buff_id, 'character_id': character_id}) or []
+
+    for custom_buff_table in custom_buff_tables:
+        stat_table_id = custom_buff_table.get('stat_table_id')
+        table_link_id = custom_buff_table.get('id')
+
+        if stat_table_id:
+            table_stats = db.go_get_all('stat_table_to_stat', {'stat_table_id': stat_table_id, 'character_id': character_id}) or []
+            for table_stat in table_stats:
+                table_stat_id = table_stat.get('id')
+                if table_stat_id:
+                    db.go_delete_it('stat_table_to_stat', {'id': table_stat_id})
+
+        if table_link_id:
+            db.go_delete_it('custom_buff_to_stat_table', {'id': table_link_id})
+
+    db.go_delete_it('custom_buff', {'id': custom_buff_id, 'character_id': character_id})
+
+    if _is_htmx_request() or request.method == 'POST':
+        _, data = _build_character_sheet_data(character_id)
+        return render_template(
+            'components/custom_buffs_section.html',
+            custom_buffs=data['custom_buffs'],
+            buff_target_options=data['buff_target_options'],
+            character_id=character_id
         )
 
     return redirect(url_for('character_sheet', character_id=character_id))

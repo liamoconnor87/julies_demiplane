@@ -1,0 +1,330 @@
+.custom-buffs-section {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 0 1rem;
+	width: 100%;
+	min-width: 0;
+	--custom-buffs-action-width: 3rem;
+	--custom-buffs-name-width: 9.75rem;
+	--custom-buffs-value-width: 8rem;
+	--custom-buffs-display-width: 8rem;
+	--custom-buffs-field-gap: 0.25rem;
+	--custom-buffs-top-control-height: 2.65rem;
+}
+
+.custom-buffs-grid {
+	display: flex;
+	flex-wrap: wrap;
+	width: 100%;
+	min-width: 0;
+	margin-bottom: 0.4rem;
+}
+
+.custom-buffs-card {
+	display: flex;
+	flex-direction: column;
+	width: var(--custom-buffs-display-width);
+	min-width: var(--custom-buffs-display-width);
+	max-width: var(--custom-buffs-display-width);
+	margin-right: 0.25rem;
+	margin-bottom: 0.25rem;
+	box-sizing: border-box;
+}
+
+.custom-buffs-card-main-field {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	width: 100%;
+}
+
+.custom-buffs-card-title {
+	background: var(--primary-color-transparent);
+	color: var(--secondary-color);
+	font-weight: bold;
+	font-size: 0.6rem;
+	line-height: 1;
+	text-align: center;
+	padding: 0.4rem 0.5rem;
+}
+
+.custom-buffs-card-value {
+	background: var(--primary-color-transparent);
+	color: var(--text-colour-three);
+	font-size: 2.1rem;
+	font-weight: 400;
+	line-height: 1;
+	text-align: center;
+	padding: 0.4rem;
+}
+
+.custom-buffs-card-targets {
+	margin-top: 0.35rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+
+.custom-buffs-card-target-table {
+	color: var(--secondary-color);
+	font-size: 0.68rem;
+	text-transform: uppercase;
+	font-weight: bold;
+}
+
+.custom-buffs-card-target-stats {
+	font-size: 0.7rem;
+	line-height: 1.25;
+}
+
+.custom-buffs-remove-btn {
+	position: absolute;
+	top: 0.15rem;
+	right: 0.15rem;
+	width: 1.35rem;
+	min-width: 1.35rem;
+	height: 1.35rem;
+	border: none;
+	background: var(--primary-color-transparent);
+	color: var(--secondary-color);
+	cursor: pointer;
+	padding: 0;
+	line-height: 1;
+	font-size: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1;
+}
+
+.custom-buffs-section-row {
+	width: 100%;
+}
+
+.custom-buffs-section-top-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	width: 100%;
+}
+
+.custom-buffs-section-field {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	margin-right: 0.25rem;
+	margin-bottom: 0.25rem;
+}
+
+.custom-buffs-section-fields {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+}
+
+.custom-buffs-basic-fields-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+}
+
+.custom-buffs-target-fields-column {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	width: calc(var(--custom-buffs-name-width) + var(--custom-buffs-value-width) + var(--custom-buffs-field-gap));
+	min-width: calc(var(--custom-buffs-name-width) + var(--custom-buffs-value-width) + var(--custom-buffs-field-gap));
+	max-width: calc(var(--custom-buffs-name-width) + var(--custom-buffs-value-width) + var(--custom-buffs-field-gap));
+}
+
+.custom-buffs-name-field {
+	width: var(--custom-buffs-name-width);
+	min-width: var(--custom-buffs-name-width);
+	max-width: var(--custom-buffs-name-width);
+}
+
+.custom-buffs-value-field {
+	width: var(--custom-buffs-value-width);
+	min-width: var(--custom-buffs-value-width);
+	max-width: var(--custom-buffs-value-width);
+}
+
+.custom-buffs-value-field .custom-buffs-section-input {
+	appearance: textfield;
+	-moz-appearance: textfield;
+}
+
+.custom-buffs-value-field .custom-buffs-section-input::-webkit-outer-spin-button,
+.custom-buffs-value-field .custom-buffs-section-input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.custom-buffs-target-tables-field,
+.custom-buffs-target-columns-field {
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.custom-buffs-section-action-field {
+	width: var(--custom-buffs-action-width);
+	min-width: var(--custom-buffs-action-width);
+	max-width: var(--custom-buffs-action-width);
+}
+
+.custom-buffs-section-btn {
+	cursor: pointer;
+	text-align: center;
+	background: var(--primary-color-transparent);
+	color: var(--text-colour-three);
+	border: none;
+	font-size: 1.5rem;
+	box-sizing: border-box;
+	height: var(--custom-buffs-top-control-height);
+	width: 3rem;
+	line-height: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+}
+
+.custom-buffs-section-action-field .custom-buffs-section-label {
+	min-width: 0;
+	text-align: center;
+	width: var(--custom-buffs-action-width);
+	font-size: 0.5rem;
+	padding: 0.25rem 0;
+}
+
+.custom-buffs-section-label {
+	background: var(--primary-color-transparent);
+	color: var(--secondary-color);
+	border: none;
+	border-radius: 0;
+	font-weight: bold;
+	margin-bottom: 0;
+	display: block;
+	font-size: 0.6rem;
+	width: 100%;
+	box-sizing: border-box;
+	line-height: 1;
+	text-align: left;
+	overflow-wrap: break-word;
+	padding-left: 0.5rem;
+	padding-top: 0.5rem;
+}
+
+.custom-buffs-section-input {
+	width: 100%;
+	box-sizing: border-box;
+	background: var(--primary-color-transparent);
+	color: var(--text-colour-three);
+	padding: 0.5rem 0.75rem;
+	border: none;
+	border-radius: 0;
+	outline: none;
+	font-size: 0.8rem;
+	display: block;
+}
+
+.custom-buffs-basic-fields-row .custom-buffs-section-input {
+	height: var(--custom-buffs-top-control-height);
+	min-height: var(--custom-buffs-top-control-height);
+	max-height: var(--custom-buffs-top-control-height);
+	margin: 0;
+}
+
+.custom-buffs-checkbox-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3rem;
+	width: 100%;
+	background: var(--primary-color-transparent);
+	padding: 0.45rem;
+	box-sizing: border-box;
+}
+
+.custom-buffs-checkbox-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.72rem;
+	cursor: pointer;
+	background: var(--primary-color);
+	padding: 0.25rem 0.4rem;
+}
+
+.custom-buffs-checkbox-item input[type="checkbox"] {
+	margin: 0;
+	accent-color: var(--secondary-color);
+	width: 0.9rem;
+	height: 0.9rem;
+}
+
+.custom-buffs-table-stat-groups {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.custom-buffs-table-stat-group {
+	display: none;
+	margin-bottom: 0.25rem;
+	background: var(--primary-color-transparent);
+	padding: 0.35rem 0.45rem;
+	box-sizing: border-box;
+}
+
+.custom-buffs-table-stat-group.is-active {
+	display: block;
+}
+
+.custom-buffs-table-stat-title {
+	background: transparent;
+	color: var(--secondary-color);
+	padding: 0 0 0.3rem 0;
+	font-weight: bold;
+	font-size: 0.65rem;
+	text-transform: none;
+}
+
+.custom-buffs-columns-checkbox-grid {
+	padding: 0;
+	background: transparent;
+	gap: 0.2rem;
+}
+
+.custom-buffs-columns-checkbox-item {
+	background: transparent;
+	padding: 0.1rem 0;
+	border: none;
+	width: 100%;
+}
+
+#add-custom-buff-fields-wrapper,
+#add-custom-buff-submit-btn-wrapper,
+#close-custom-buff-btn-wrapper {
+	display: none;
+}
+
+@media (max-width: 760px) {
+	.custom-buffs-name-field,
+	.custom-buffs-value-field,
+	.custom-buffs-target-fields-column,
+	.custom-buffs-target-tables-field,
+	.custom-buffs-target-columns-field {
+		width: 100%;
+		min-width: 0;
+		max-width: 100%;
+	}
+
+	.custom-buffs-card {
+		width: 100%;
+		min-width: 0;
+	}
+}
