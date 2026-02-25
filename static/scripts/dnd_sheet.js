@@ -48,6 +48,45 @@ let featDescriptionResizeWindowBound = false;
 let inventoryDescriptionResizeWindowBound = false;
 let pendingCustomBuffUiUpdate = null;
 let pendingCustomBuffRemoveUiUpdate = null;
+const ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 5;
+
+function getCookieValue(name) {
+    const encodedName = encodeURIComponent(name);
+    const cookiePairs = document.cookie ? document.cookie.split('; ') : [];
+
+    for (const cookiePair of cookiePairs) {
+        const separatorIndex = cookiePair.indexOf('=');
+        if (separatorIndex < 0) {
+            continue;
+        }
+
+        const cookieName = cookiePair.slice(0, separatorIndex);
+        if (cookieName !== encodedName) {
+            continue;
+        }
+
+        const cookieValue = cookiePair.slice(separatorIndex + 1);
+        return decodeURIComponent(cookieValue);
+    }
+
+    return null;
+}
+
+function setCookieValue(name, value, maxAgeSeconds) {
+    const encodedName = encodeURIComponent(name);
+    const encodedValue = encodeURIComponent(value);
+    document.cookie = `${encodedName}=${encodedValue}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
+}
+
+function getAbilityLockCookieKey() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return null;
+    }
+
+    return `ability_skill_lock_${characterId}`;
+}
 
 function initializeUiBindings() {
     selectClassField();
@@ -722,7 +761,12 @@ function bindAbilitiesSectionLockToggle() {
         return;
     }
 
-    if (!section.dataset.locked) {
+    const cookieKey = getAbilityLockCookieKey();
+    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
+
+    if (persistedLockState === 'true' || persistedLockState === 'false') {
+        section.dataset.locked = persistedLockState;
+    } else if (!section.dataset.locked) {
         section.dataset.locked = 'false';
     }
 
@@ -739,6 +783,9 @@ function bindAbilitiesSectionLockToggle() {
         lockToggle.addEventListener('click', () => {
             const isLocked = section.dataset.locked === 'true';
             section.dataset.locked = isLocked ? 'false' : 'true';
+            if (cookieKey) {
+                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+            }
             syncLockText();
         });
 
@@ -747,6 +794,9 @@ function bindAbilitiesSectionLockToggle() {
                 event.preventDefault();
                 const isLocked = section.dataset.locked === 'true';
                 section.dataset.locked = isLocked ? 'false' : 'true';
+                if (cookieKey) {
+                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+                }
                 syncLockText();
             }
         });

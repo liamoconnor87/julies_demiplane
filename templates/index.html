@@ -29,35 +29,38 @@
 
     <form action="/" method="POST">
         <div class="sheet-layout">
-            <div class="sheet-main-column">
+            <div class="sheet-column sheet-column-one">
                 {% include 'components/character_info.html' %}
 
                 <div id="custom-stats-section-container">
                     {% include 'components/custom_stats_section.html' %}
                 </div>
 
-                <div id="custom-buffs-section-container">
-                    {% include 'components/custom_buffs_section.html' %}
-                </div>
-
                 <div id="abilities-section-container">
                     {% include 'components/abilities_section.html' %}
                 </div>
 
-                <div id="inventory-section-container">
-                    {% include 'components/inventory_section.html' %}
-                </div>
             </div>
 
-            <div class="sheet-right-column">
+            <div class="sheet-column sheet-column-two">
                 <div id="classes-section-container">
                     {% include 'components/classes_section.html' %}
                 </div>
 
-                {% include 'components/combat_stats.html' %}
+                <div id="custom-buffs-section-container">
+                    {% include 'components/custom_buffs_section.html' %}
+                </div>
 
+                {% include 'components/combat_stats.html' %}
+            </div>
+
+            <div class="sheet-column sheet-column-three">
                 <div id="feats-section-container">
                     {% include 'components/feats_traits_section.html' %}
+                </div>
+
+                <div id="inventory-section-container">
+                    {% include 'components/inventory_section.html' %}
                 </div>
             </div>
         </div>
