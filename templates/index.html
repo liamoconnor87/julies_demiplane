@@ -30,7 +30,9 @@
     <form action="/" method="POST">
         <div class="sheet-layout">
             <div class="sheet-column sheet-column-one">
-                {% include 'components/character_info.html' %}
+                <div id="character-info-section-container">
+                    {% include 'components/character_info.html' %}
+                </div>
 
                 <div id="custom-stats-section-container">
                     {% include 'components/custom_stats_section.html' %}
@@ -46,7 +48,9 @@
             </div>
 
             <div class="sheet-column sheet-column-two">
-                {% include 'components/combat_stats.html' %}
+                <div id="combat-stats-section-container">
+                    {% include 'components/combat_stats.html' %}
+                </div>
 
                 <div id="abilities-section-container">
                     {% include 'components/abilities_section.html' %}

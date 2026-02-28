@@ -234,21 +234,4 @@
     }
 }
 
-@media (max-width: 499px) {
-    .inventory-section-top-row {
-        flex-wrap: wrap;
-    }
 
-    .inventory-section-name-field,
-    .inventory-section-quantity-field,
-    .inventory-section-action-field,
-    .inventory-section-description-field {
-        width: 100%;
-        min-width: 0;
-        max-width: 100%;
-    }
-
-    .inventory-section-action-field .inventory-section-label {
-        width: 100%;
-    }
-}

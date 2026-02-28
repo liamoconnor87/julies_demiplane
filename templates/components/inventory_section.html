@@ -33,10 +33,12 @@
 
                 </div>
 
-                <div class="inventory-section-field inventory-section-description-field">
-                    <label for="inventory-description-{{ item.id }}" class="inventory-section-label">Description</label>
-                    <div id="inventory-description-{{ item.id }}" class="inventory-section-description-display">{{ item.description }}</div>
-                </div>
+                {% if item.description %}
+                    <div class="inventory-section-field inventory-section-description-field">
+                        <label for="inventory-description-{{ item.id }}" class="inventory-section-label">Description</label>
+                        <div id="inventory-description-{{ item.id }}" class="inventory-section-description-display">{{ item.description }}</div>
+                    </div>
+                {% endif %}
             </div>
         {% endfor %}
     {% endif %}

@@ -38,16 +38,17 @@ window.addEventListener("load", () => {
 
         if (target.id === 'custom-buffs-section-container') {
             selectCustomBuffField();
-            applyPendingCustomBuffUiUpdate();
-            applyPendingCustomBuffRemovalUiUpdate();
+            bindProficiencyToggles();
+            bindAbilitiesSectionLockToggle();
+            bindCurrentHpCalculation();
+            selectCustomStatField();
+            decorateBuffedLabels();
         }
     });
 })
 
 let featDescriptionResizeWindowBound = false;
 let inventoryDescriptionResizeWindowBound = false;
-let pendingCustomBuffUiUpdate = null;
-let pendingCustomBuffRemoveUiUpdate = null;
 const ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 5;
 
 function getCookieValue(name) {
@@ -100,6 +101,67 @@ function initializeUiBindings() {
     bindCurrentHpCalculation();
     bindFeatDescriptionDisplayAutoHeight();
     bindInventoryDescriptionDisplayAutoHeight();
+    decorateBuffedLabels();
+}
+
+function addBuffIndicator(el) {
+    if (el && !el.querySelector('.buff-indicator')) {
+        el.insertAdjacentHTML('beforeend', ' <span class="buff-indicator">*</span>');
+    }
+}
+
+function decorateBuffedLabels() {
+    // Clear any existing indicators first
+    document.querySelectorAll('.buff-indicator').forEach(el => el.remove());
+
+    const dataEl = document.getElementById('buff-fields-data');
+    if (!dataEl) return;
+
+    let buffFields;
+    try {
+        buffFields = JSON.parse(dataEl.textContent);
+    } catch (e) {
+        return;
+    }
+
+    if (!buffFields || !buffFields.length) return;
+
+    buffFields.forEach(({ table, stat }) => {
+        if (table === 'custom_stat') {
+            // Match label by name text on custom_stat-value-* inputs
+            document.querySelectorAll('label.custom-stats-section-label').forEach(label => {
+                if (
+                    label.textContent.trim() === stat &&
+                    label.htmlFor &&
+                    label.htmlFor.startsWith('custom_stat-value-')
+                ) {
+                    addBuffIndicator(label);
+                }
+            });
+            return;
+        }
+
+        const key = `${table}-${stat}`;
+
+        // Try input (character stats, ability values)
+        const input = document.querySelector(`input[name="${key}"]`);
+        if (input && input.id) {
+            const label = document.querySelector(`label[for="${input.id}"]`);
+            if (label) {
+                addBuffIndicator(label);
+                return;
+            }
+        }
+
+        // Try display div (modifier, saving throw, skills)
+        const displayDiv = document.getElementById(key);
+        if (displayDiv) {
+            const labelDiv = displayDiv.closest('.abilities-section-secondary-field, .abilities-section-skills-item')?.querySelector('.abilities-section-display-label');
+            if (labelDiv) {
+                addBuffIndicator(labelDiv);
+            }
+        }
+    });
 }
 
 function selectCustomBuffField() {
@@ -109,8 +171,6 @@ function selectCustomBuffField() {
     const addCustomBuffSubmitBtnWrapper = document.getElementById('add-custom-buff-submit-btn-wrapper');
     const closeCustomBuffBtnWrapper = document.getElementById('close-custom-buff-btn-wrapper');
     const closeCustomBuffFieldXBtn = document.getElementById('close-custom-buff-field-x-btn');
-    const customBuffAddBtn = document.getElementById('custom-buff-add');
-    const customBuffRemoveButtons = document.querySelectorAll('.custom-buffs-remove-btn');
     const targetColumnsField = document.getElementById('add-custom-buff-target-columns-field');
 
     if (!addCustomBuffBtn || !addCustomBuffBtnWrapper || !addCustomBuffFieldsWrapper || !addCustomBuffSubmitBtnWrapper || !closeCustomBuffBtnWrapper || !closeCustomBuffFieldXBtn) {
@@ -172,25 +232,6 @@ function selectCustomBuffField() {
         closeCustomBuffFieldXBtn.dataset.bound = 'true';
     }
 
-    if (customBuffAddBtn && customBuffAddBtn.dataset.bound !== 'true') {
-        customBuffAddBtn.addEventListener('click', () => {
-            pendingCustomBuffUiUpdate = capturePendingCustomBuffUiUpdate();
-        });
-        customBuffAddBtn.dataset.bound = 'true';
-    }
-
-    customBuffRemoveButtons.forEach((removeButton) => {
-        if (removeButton.dataset.bound === 'true') {
-            return;
-        }
-
-        removeButton.addEventListener('click', () => {
-            pendingCustomBuffRemoveUiUpdate = capturePendingCustomBuffRemoveUiUpdate(removeButton);
-        });
-
-        removeButton.dataset.bound = 'true';
-    });
-
     tableCheckboxes.forEach((tableCheckbox) => {
         if (tableCheckbox.dataset.bound === 'true') {
             return;
@@ -204,178 +245,6 @@ function selectCustomBuffField() {
     });
 
     updateTableStatGroups();
-}
-
-function capturePendingCustomBuffUiUpdate() {
-    const valueField = document.getElementById('custom_buff-value');
-    const parsedValue = Number.parseInt(valueField ? valueField.value : '0', 10);
-    const adjustmentValue = Number.isNaN(parsedValue) ? 0 : parsedValue;
-
-    const selectedTableCheckboxes = Array.from(document.querySelectorAll('.custom-buffs-table-checkbox:checked'));
-    const targets = selectedTableCheckboxes.map((tableCheckbox) => {
-        const tableName = tableCheckbox.dataset.tableName;
-        const selectedStatCheckboxes = Array.from(document.querySelectorAll(`.custom-buffs-stat-checkbox[data-table-name="${tableName}"]:checked`));
-        const statNames = selectedStatCheckboxes
-            .map((checkbox) => (checkbox.value || '').trim())
-            .filter((statName) => statName.length > 0);
-
-        return {
-            tableName,
-            statNames,
-        };
-    }).filter((target) => target.tableName && target.statNames.length > 0);
-
-    return {
-        previousBuffCount: document.querySelectorAll('.custom-buffs-card').length,
-        adjustmentValue,
-        targets,
-    };
-}
-
-function applyPendingCustomBuffUiUpdate() {
-    if (!pendingCustomBuffUiUpdate) {
-        return;
-    }
-
-    const newBuffCount = document.querySelectorAll('.custom-buffs-card').length;
-    const updateData = pendingCustomBuffUiUpdate;
-    pendingCustomBuffUiUpdate = null;
-
-    if (newBuffCount <= updateData.previousBuffCount) {
-        return;
-    }
-
-    if (!Array.isArray(updateData.targets) || updateData.targets.length === 0) {
-        return;
-    }
-
-    applyBuffDeltaToTargets(updateData.targets, updateData.adjustmentValue);
-}
-
-function capturePendingCustomBuffRemoveUiUpdate(removeButton) {
-    if (!removeButton) {
-        return null;
-    }
-
-    const parsedValue = Number.parseInt(removeButton.dataset.buffValue || '0', 10);
-    const adjustmentValue = Number.isNaN(parsedValue) ? 0 : (parsedValue * -1);
-
-    const rawTargets = removeButton.dataset.buffTargets || '[]';
-    let parsedTargets = [];
-
-    try {
-        parsedTargets = JSON.parse(rawTargets);
-    } catch {
-        parsedTargets = [];
-    }
-
-    const targets = normalizeBuffTargets(parsedTargets);
-
-    return {
-        previousBuffCount: document.querySelectorAll('.custom-buffs-card').length,
-        adjustmentValue,
-        targets,
-    };
-}
-
-function applyPendingCustomBuffRemovalUiUpdate() {
-    if (!pendingCustomBuffRemoveUiUpdate) {
-        return;
-    }
-
-    const newBuffCount = document.querySelectorAll('.custom-buffs-card').length;
-    const updateData = pendingCustomBuffRemoveUiUpdate;
-    pendingCustomBuffRemoveUiUpdate = null;
-
-    if (newBuffCount >= updateData.previousBuffCount) {
-        return;
-    }
-
-    if (!Array.isArray(updateData.targets) || updateData.targets.length === 0) {
-        return;
-    }
-
-    applyBuffDeltaToTargets(updateData.targets, updateData.adjustmentValue);
-}
-
-function normalizeBuffTargets(rawTargets) {
-    if (!Array.isArray(rawTargets)) {
-        return [];
-    }
-
-    return rawTargets
-        .map((target) => {
-            const tableName = target && target.stat_table_name ? String(target.stat_table_name).trim() : '';
-            const statNames = Array.isArray(target && target.stat_names)
-                ? target.stat_names.map((statName) => String(statName || '').trim()).filter((statName) => statName.length > 0)
-                : [];
-
-            return {
-                tableName,
-                statNames,
-            };
-        })
-        .filter((target) => target.tableName && target.statNames.length > 0);
-}
-
-function applyBuffDeltaToTargets(targets, adjustmentValue) {
-    if (!Array.isArray(targets) || !targets.length) {
-        return;
-    }
-
-    targets.forEach((target) => {
-        const tableName = target.tableName;
-        const statNames = target.statNames || [];
-
-        statNames.forEach((statName) => {
-            if (tableName === 'custom_stat') {
-                updateCustomStatValueByName(statName, adjustmentValue);
-                return;
-            }
-
-            const elementId = `${tableName}-${statName}`;
-            const element = document.getElementById(elementId);
-            applyNumericDeltaToElement(element, adjustmentValue);
-        });
-    });
-}
-
-function updateCustomStatValueByName(statName, delta) {
-    const normalizedTargetName = String(statName || '').trim().toLowerCase();
-    if (!normalizedTargetName) {
-        return;
-    }
-
-    const customStatNameFields = document.querySelectorAll('[id^="custom_stat-name-"]');
-    customStatNameFields.forEach((nameField) => {
-        const fieldValue = String(nameField.value || '').trim().toLowerCase();
-        if (!fieldValue || fieldValue !== normalizedTargetName) {
-            return;
-        }
-
-        const statId = nameField.id.replace('custom_stat-name-', '');
-        const statValueField = document.getElementById(`custom_stat-value-${statId}`);
-        applyNumericDeltaToElement(statValueField, delta);
-    });
-}
-
-function applyNumericDeltaToElement(element, delta) {
-    if (!element) {
-        return;
-    }
-
-    const currentRawValue = 'value' in element ? element.value : element.textContent;
-    const currentValue = Number.parseInt(currentRawValue, 10);
-    const numericValue = Number.isNaN(currentValue) ? 0 : currentValue;
-    const nextValue = numericValue + delta;
-
-    if ('value' in element) {
-        element.value = String(nextValue);
-        element.dispatchEvent(new Event('input', { bubbles: true }));
-        return;
-    }
-
-    element.textContent = String(nextValue);
 }
 
 function selectCustomStatField() {

@@ -183,20 +183,4 @@
     }
 }
 
-@media (max-width: 499px) {
-    .feats-section-top-row {
-        flex-wrap: wrap;
-    }
 
-    .feats-section-name-field,
-    .feats-section-action-field,
-    .feats-section-description-field {
-        width: 100%;
-        min-width: 0;
-        max-width: 100%;
-    }
-
-    .feats-section-action-field .feats-section-label {
-        width: 100%;
-    }
-}

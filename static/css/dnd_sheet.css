@@ -8,6 +8,18 @@
     --text-colour-three: rgb(255, 255, 255);
 }
 
+.buff-indicator {
+    color: var(--text-colour-one);
+    font-weight: bold;
+    pointer-events: none;
+    user-select: none;
+}
+
+.buff-title-indicator {
+    color: var(--text-colour-one);
+    font-weight: bold;
+}
+
 html {
     font-size: 17px;
 }
@@ -433,7 +445,7 @@ body {
     }
 }
 
-@media (max-width: 1500px) {
+@media (max-width: 1900px) {
     .sheet-layout {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -459,7 +471,7 @@ body {
     }
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1500px) {
     .sheet-layout {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -485,7 +497,7 @@ body {
     }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
     .sheet-layout {
         grid-template-columns: minmax(0, 1fr);
         gap: 0;

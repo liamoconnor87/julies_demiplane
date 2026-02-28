@@ -20,9 +20,6 @@ class CharacterSheet:
             "speed",
             "proficiency",
             "passive_wisdom",
-            "xp",
-            "health_points",
-            "temporary_hit_points",
         ],
         "strength": ["value", "modifier"],
         "dexterity": ["value", "modifier"],
@@ -126,7 +123,6 @@ class CharacterSheet:
 
         buff_target_options = self._get_buff_target_options(custom_stats)
         custom_buffs = self._get_custom_buffs()
-        self._apply_custom_buffs(character, abilities_data, custom_stats, custom_buffs)
 
         return {
             'character': character,
@@ -172,31 +168,18 @@ class CharacterSheet:
         stats_by_table_id = {}
         for stat_record in table_to_stats:
             table_id = stat_record.get('stat_table_id')
-            if not table_id:
-                continue
-
             stat_name = str(stat_record.get('stat_name') or '').strip()
-            if not stat_name:
-                continue
-
-            if table_id not in stats_by_table_id:
-                stats_by_table_id[table_id] = []
-
-            stats_by_table_id[table_id].append(stat_name)
+            if table_id and stat_name:
+                stats_by_table_id.setdefault(table_id, []).append(stat_name)
 
         table_targets_by_buff_id = {}
         for table_mapping in custom_buff_tables:
             custom_buff_id = table_mapping.get('custom_buff_id')
             table_name = table_mapping.get('stat_table_name')
             table_id = table_mapping.get('stat_table_id')
-
             if not custom_buff_id or not table_name or not table_id:
                 continue
-
-            if custom_buff_id not in table_targets_by_buff_id:
-                table_targets_by_buff_id[custom_buff_id] = []
-
-            table_targets_by_buff_id[custom_buff_id].append({
+            table_targets_by_buff_id.setdefault(custom_buff_id, []).append({
                 'stat_table_name': table_name,
                 'stat_table_id': table_id,
                 'stat_names': stats_by_table_id.get(table_id, []),
@@ -206,69 +189,6 @@ class CharacterSheet:
             custom_buff['targets'] = table_targets_by_buff_id.get(custom_buff.get('id'), [])
 
         return custom_buffs
-
-    def _apply_custom_buffs(self, character, abilities_data, custom_stats, custom_buffs):
-        if not custom_buffs:
-            return
-
-        abilities_by_name = {
-            ability_data.get('ability_name'): ability_data.get('ability')
-            for ability_data in abilities_data
-        }
-        skills_by_table = {
-            f"{ability_data.get('ability_name')}_skills": ability_data.get('skills')
-            for ability_data in abilities_data
-        }
-        custom_stats_by_name = {
-            str(custom_stat.get('name') or '').strip(): custom_stat
-            for custom_stat in custom_stats
-        }
-
-        for custom_buff in custom_buffs:
-            adjustment_value = self._parse_int(custom_buff.get('value'), 0)
-            if adjustment_value == 0:
-                continue
-
-            for target_group in custom_buff.get('targets', []):
-                stat_table_name = target_group.get('stat_table_name')
-                stat_names = target_group.get('stat_names') or []
-
-                if stat_table_name == 'character' and character:
-                    for stat_name in stat_names:
-                        if stat_name not in character:
-                            continue
-                        current_value = self._parse_int(character.get(stat_name), 0)
-                        character[stat_name] = current_value + adjustment_value
-                    continue
-
-                if stat_table_name in abilities_by_name:
-                    ability_data = abilities_by_name.get(stat_table_name) or {}
-                    for stat_name in stat_names:
-                        if stat_name not in ability_data:
-                            continue
-                        current_value = self._parse_int(ability_data.get(stat_name), 0)
-                        ability_data[stat_name] = current_value + adjustment_value
-                    continue
-
-                if stat_table_name in skills_by_table:
-                    skills_data = skills_by_table.get(stat_table_name) or {}
-                    for stat_name in stat_names:
-                        if stat_name not in skills_data:
-                            continue
-                        current_value = self._parse_int(skills_data.get(stat_name), 0)
-                        skills_data[stat_name] = current_value + adjustment_value
-                    continue
-
-                if stat_table_name == 'custom_stat':
-                    for stat_name in stat_names:
-                        custom_stat = custom_stats_by_name.get(str(stat_name or '').strip())
-                        if not custom_stat:
-                            continue
-                        current_value = self._parse_int(custom_stat.get('value'), 0)
-                        custom_stat['value'] = current_value + adjustment_value
-
-        if character:
-            character['current_health_points'] = self._parse_int(character.get('health_points'), 0) + self._parse_int(character.get('temporary_hit_points'), 0)
 
     def save_custom_buff_values(self, character_id: str, request_form):
         table_name = 'custom_buff'
@@ -282,44 +202,28 @@ class CharacterSheet:
         buff_target_options = self._get_buff_target_options(custom_stats)
 
         selected_tables = []
-        table_field_prefix = f'{table_name}-table-'
         for field_name in request_form:
-            if not field_name.startswith(table_field_prefix):
-                continue
-
-            table_name_value = field_name.replace(table_field_prefix, '')
-            if table_name_value in buff_target_options:
-                selected_tables.append(table_name_value)
+            if field_name.startswith(f'{table_name}-table-'):
+                table_name_value = field_name.replace(f'{table_name}-table-', '')
+                if table_name_value in buff_target_options:
+                    selected_tables.append(table_name_value)
 
         if not selected_tables:
             return
 
         pending_table_targets = []
-
         for selected_table in selected_tables:
             selected_stats = []
             stat_field_prefix = f'{table_name}-stat-{selected_table}-'
             for field_name in request_form:
                 if not field_name.startswith(stat_field_prefix):
                     continue
-
                 stat_value = str(request_form.get(field_name) or '').strip()
-                if not stat_value:
-                    continue
-
-                if stat_value not in buff_target_options.get(selected_table, []):
-                    continue
-
-                if stat_value not in selected_stats:
+                if stat_value and stat_value in buff_target_options.get(selected_table, []) and stat_value not in selected_stats:
                     selected_stats.append(stat_value)
 
-            if not selected_stats:
-                continue
-
-            pending_table_targets.append({
-                'table_name': selected_table,
-                'stats': selected_stats,
-            })
+            if selected_stats:
+                pending_table_targets.append({'table_name': selected_table, 'stats': selected_stats})
 
         if not pending_table_targets:
             return
@@ -341,7 +245,6 @@ class CharacterSheet:
                 'stat_table_id': stat_table_id,
                 'character_id': character_id,
             })
-
             for stat_name in pending_target['stats']:
                 ggi.go_add_new('stat_table_to_stat', {
                     'id': uuid(),
@@ -350,7 +253,7 @@ class CharacterSheet:
                     'character_id': character_id,
                 })
 
-    def save_character_values(self, request_form):
+    def save_character_values(self, request_form) -> str:
         table_name = 'character'
         character_id = request_form.get(f'{table_name}-id')
         name = request_form.get(f'{table_name}-name')
@@ -358,15 +261,22 @@ class CharacterSheet:
         race = request_form.get(f'{table_name}-race')
         background = request_form.get(f'{table_name}-background')
         alignment = request_form.get(f'{table_name}-alignment')
-        armour_class = request_form.get(f'{table_name}-armour_class')
-        initiative = request_form.get(f'{table_name}-initiative')
-        speed = request_form.get(f'{table_name}-speed')
-        proficiency = request_form.get(f'{table_name}-proficiency')
-        health_points = request_form.get(f'{table_name}-health_points')
-        hit_dice = request_form.get(f'{table_name}-hit_dice')
-        passive_wisdom = request_form.get(f'{table_name}-passive_wisdom')
-        temporary_hit_points = request_form.get(f'{table_name}-temporary_hit_points')
-        xp = request_form.get(f'{table_name}-xp')
+
+        def _optional_int(field, fallback=None):
+            raw = request_form.get(f'{table_name}-{field}')
+            if raw is None or str(raw).strip() == '':
+                return fallback
+            return self._parse_int(raw, 0)
+
+        armour_class= _optional_int('armour_class')
+        initiative= _optional_int('initiative')
+        speed= _optional_int('speed')
+        proficiency= _optional_int('proficiency')
+        health_points= _optional_int('health_points')
+        passive_wisdom= _optional_int('passive_wisdom')
+        temporary_hit_points = _optional_int('temporary_hit_points')
+        xp= _optional_int('xp')
+        hit_dice= request_form.get(f'{table_name}-hit_dice')
 
         character = {
             "id": character_id,
@@ -569,6 +479,7 @@ class CharacterSheet:
             except (TypeError, ValueError):
                 parsed_updated_value = existing_custom_stat.get('value', 0)
 
+
             ggi.go_update('custom_stat', {
                 'id': custom_stat_id,
                 'name': updated_name,
@@ -604,9 +515,9 @@ class CharacterSheet:
             character_proficiency = character.get('proficiency', 0)
 
         for ability in self.ABILITY_TO_SKILL_MAPPING:
-            value = request_form.get(f'{ability}-value')
-            if value:
-                value = int(value)
+            raw_value = request_form.get(f'{ability}-value')
+            if raw_value:
+                value = int(raw_value)
             else:
                 continue
 
