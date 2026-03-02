@@ -439,6 +439,7 @@ function bindClassLevelUpdateButtons() {
                 actionBtn.setAttribute('hx-target', '#classes-section-container');
                 actionBtn.setAttribute('hx-swap', 'innerHTML');
                 actionBtn.setAttribute('hx-include', 'closest form');
+                htmx.process(actionBtn);
                 return;
             }
 
@@ -451,6 +452,7 @@ function bindClassLevelUpdateButtons() {
             actionBtn.setAttribute('hx-target', '#classes-section-container');
             actionBtn.setAttribute('hx-swap', 'innerHTML');
             actionBtn.setAttribute('hx-include', 'closest form');
+            htmx.process(actionBtn);
         };
 
         setButtonMode();
