@@ -31,6 +31,7 @@
 		{% endif %}
 	</div>
 
+	{% if not custom_buffs_at_capacity %}
 	<div class="custom-buffs-section-row custom-buffs-section-add-row">
 		<div class="custom-buffs-section-top-row">
 			<div class="custom-buffs-section-field custom-buffs-section-action-field section-action-field" id="add-custom-buff-btn-wrapper">
@@ -110,5 +111,6 @@
 			</div>
 		</div>
 	</div>
+	{% endif %}
 </div>
 <br>

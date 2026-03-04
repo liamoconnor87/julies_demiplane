@@ -1,7 +1,17 @@
 from typing import Optional
 from go_get_it.go_get_it import GoGetDB
 from functions.functions import uuid
+from functions.validators import (
+    sanitize_str, sanitize_optional_str,
+     clamp_int, parse_optional_int,
+    is_valid_uuid,
+)
 ggi = GoGetDB()
+
+INVENTORY_MAX = 50
+CUSTOM_STAT_MAX = 20
+CUSTOM_BUFF_MAX = 20
+FEAT_TRAIT_MAX = 15
 
 class CharacterSheet:
     ABILITY_TO_SKILL_MAPPING = {
@@ -130,9 +140,13 @@ class CharacterSheet:
             'class_options': class_options,
             'abilities': abilities_data,
             'feats_and_traits': feats_and_traits,
+            'feats_and_traits_at_capacity': len(feats_and_traits) >= FEAT_TRAIT_MAX,
             'inventory': inventory,
+            'inventory_at_capacity': len(inventory) >= INVENTORY_MAX,
             'custom_stats': custom_stats,
+            'custom_stats_at_capacity': len(custom_stats) >= CUSTOM_STAT_MAX,
             'custom_buffs': custom_buffs,
+            'custom_buffs_at_capacity': len(custom_buffs) >= CUSTOM_BUFF_MAX,
             'buff_target_options': buff_target_options,
         }
 
@@ -192,10 +206,13 @@ class CharacterSheet:
 
     def save_custom_buff_values(self, character_id: str, request_form):
         table_name = 'custom_buff'
-        name = str(request_form.get(f'{table_name}-name') or '').strip()
-        value = self._parse_int(request_form.get(f'{table_name}-value'), 0)
+        name = sanitize_str(request_form.get(f'{table_name}-name'), max_len=255)
+        value = clamp_int(request_form.get(f'{table_name}-value'), -999, 999, fallback=0)
 
         if not name:
+            return
+
+        if (ggi.go_get_all('custom_buff', {'character_id': character_id}, count=True) or 0) >= CUSTOM_BUFF_MAX:
             return
 
         custom_stats = ggi.go_get_all('custom_stat', {'character_id': character_id}) or []
@@ -256,17 +273,20 @@ class CharacterSheet:
     def save_character_values(self, request_form) -> str:
         table_name = 'character'
         character_id = request_form.get(f'{table_name}-id')
-        name = request_form.get(f'{table_name}-name')
+
+        # Reject a tampered/missing character id – fall through to create a new record
+        if not is_valid_uuid(character_id):
+            character_id = None
+
+        name = sanitize_optional_str(request_form.get(f'{table_name}-name'), max_len=255)
         level = 0
-        race = request_form.get(f'{table_name}-race')
-        background = request_form.get(f'{table_name}-background')
-        alignment = request_form.get(f'{table_name}-alignment')
+        race = sanitize_optional_str(request_form.get(f'{table_name}-race'), max_len=255)
+        background = sanitize_optional_str(request_form.get(f'{table_name}-background'), max_len=255)
+        alignment = sanitize_optional_str(request_form.get(f'{table_name}-alignment'), max_len=255)
 
         def _optional_int(field, fallback=None):
             raw = request_form.get(f'{table_name}-{field}')
-            if raw is None or str(raw).strip() == '':
-                return fallback
-            return self._parse_int(raw, 0)
+            return parse_optional_int(raw, fallback)
 
         armour_class= _optional_int('armour_class')
         initiative= _optional_int('initiative')
@@ -276,7 +296,7 @@ class CharacterSheet:
         passive_wisdom= _optional_int('passive_wisdom')
         temporary_hit_points = _optional_int('temporary_hit_points')
         xp= _optional_int('xp')
-        hit_dice= request_form.get(f'{table_name}-hit_dice')
+        hit_dice= sanitize_optional_str(request_form.get(f'{table_name}-hit_dice'), max_len=255)
 
         character = {
             "id": character_id,
@@ -309,36 +329,54 @@ class CharacterSheet:
         table_name = 'class_to_character'
 
         class_id = request_form.get(f'{table_name}-class_id')
-        level = request_form.get(f'{table_name}-level')
+        level_raw = request_form.get(f'{table_name}-level')
 
-        if level and class_id:
-            class_to_character = {
-                "id": uuid(),
-                "character_id": character_id,
-                "class_id": class_id,
-                "level": level,
-            }
-            ggi.go_add_new('class_to_character', class_to_character)
+        # Validate: class_id must be a known class; level must be 1-20
+        if level_raw and class_id:
+            level = clamp_int(level_raw, 1, 20, fallback=1)
+            existing_class = ggi.go_get_one('class', {'id': class_id})
+            if existing_class:
+                class_to_character = {
+                    "id": uuid(),
+                    "character_id": character_id,
+                    "class_id": class_id,
+                    "level": level,
+                }
+                ggi.go_add_new('class_to_character', class_to_character)
 
         for field_name in request_form:
             if field_name.startswith('classes-level-'):
                 class_to_character_id = field_name.replace('classes-level-', '')
-                new_level = request_form.get(field_name)
+                new_level_raw = request_form.get(field_name)
 
-                if new_level:
-                    ggi.go_update('class_to_character', {
+                if new_level_raw and is_valid_uuid(class_to_character_id):
+                    # Verify this record belongs to the current character
+                    existing = ggi.go_get_one('class_to_character', {
                         'id': class_to_character_id,
-                        'level': new_level
+                        'character_id': character_id,
                     })
+                    if existing:
+                        ggi.go_update('class_to_character', {
+                            'id': class_to_character_id,
+                            'level': clamp_int(new_level_raw, 1, 20, fallback=existing.get('level', 1))
+                        })
 
     def save_inventory_values(self, character_id: str, request_form):
         table_name = 'inventory'
-        name = request_form.get(f'{table_name}-name')
-        description = request_form.get(f'{table_name}-description')
+        name = sanitize_optional_str(request_form.get(f'{table_name}-name'), max_len=255)
+        description = sanitize_optional_str(request_form.get(f'{table_name}-description'), max_len=2000)
         quantity = request_form.get(f'{table_name}-quantity')
-        action = request_form.get('inventory-action')
+        action = sanitize_str(request_form.get('inventory-action'), max_len=20)
         update_id = request_form.get('inventory-update-id')
         step_value = request_form.get('inventory-step')
+
+        # Guard: only accept known action values
+        if action and action not in ('add', 'update', 'step'):
+            return
+
+        # Guard: update/step ids must be valid UUIDs
+        if update_id and not is_valid_uuid(update_id):
+            return
 
         def update_inventory_by_id(inventory_id: str):
             existing_inventory = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
@@ -402,11 +440,14 @@ class CharacterSheet:
             })
 
         if action == 'add' and name:
+            if (ggi.go_get_all('inventory', {'character_id': character_id}, count=True) or 0) >= INVENTORY_MAX:
+                return
+            parsed_quantity = clamp_int(quantity, 1, 9999, fallback=1)
             inventory = {
                 "id": uuid(),
                 "name": name,
                 "description": description,
-                "quantity": quantity or 1,
+                "quantity": parsed_quantity,
                 "character_id": character_id,
             }
 
@@ -417,10 +458,8 @@ class CharacterSheet:
             return
 
         if action == 'step' and update_id:
-            try:
-                parsed_step = int(step_value) if step_value is not None else 0
-            except (TypeError, ValueError):
-                parsed_step = 0
+            # Clamp step to ±100 to prevent runaway quantity changes
+            parsed_step = clamp_int(step_value, -100, 100, fallback=0)
 
             if parsed_step != 0:
                 step_inventory_by_id(update_id, parsed_step)
@@ -434,15 +473,19 @@ class CharacterSheet:
                 continue
 
             inventory_id = field_name.replace('inventory-quantity-', '')
+            if not is_valid_uuid(inventory_id):
+                continue
             update_inventory_by_id(inventory_id)
 
     def save_feat_and_trait_values(self, character_id: str, request_form):
         table_name = 'feat_and_trait'
         feat_and_trait_id = uuid()
-        name = request_form.get(f'{table_name}-name')
-        description = request_form.get(f'{table_name}-description')
+        name = sanitize_optional_str(request_form.get(f'{table_name}-name'), max_len=255)
+        description = sanitize_optional_str(request_form.get(f'{table_name}-description'), max_len=2000)
 
         if name:
+            if (ggi.go_get_all('feat_and_trait', {'character_id': character_id}, count=True) or 0) >= FEAT_TRAIT_MAX:
+                return
             feat_and_trait = {
                 "id": feat_and_trait_id,
                 "name": name,
@@ -465,20 +508,19 @@ class CharacterSheet:
                 existing_custom_stat_ids.add(field_name.replace(value_prefix, ''))
 
         for custom_stat_id in existing_custom_stat_ids:
+            if not is_valid_uuid(custom_stat_id):
+                continue
+
             existing_custom_stat = ggi.go_get_one('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
             if not existing_custom_stat:
                 continue
 
-            updated_name = request_form.get(f'{table_name}-name-{custom_stat_id}')
-            if updated_name is None or str(updated_name).strip() == '':
-                updated_name = existing_custom_stat.get('name')
+            raw_name = request_form.get(f'{table_name}-name-{custom_stat_id}')
+            updated_name_candidate = sanitize_optional_str(raw_name, max_len=255)
+            updated_name = updated_name_candidate if updated_name_candidate else existing_custom_stat.get('name')
 
             updated_value = request_form.get(f'{table_name}-value-{custom_stat_id}')
-            try:
-                parsed_updated_value = int(updated_value) if updated_value is not None and str(updated_value).strip() != '' else 0
-            except (TypeError, ValueError):
-                parsed_updated_value = existing_custom_stat.get('value', 0)
-
+            parsed_updated_value = parse_optional_int(updated_value, fallback=existing_custom_stat.get('value', 0))
 
             ggi.go_update('custom_stat', {
                 'id': custom_stat_id,
@@ -487,16 +529,16 @@ class CharacterSheet:
                 'character_id': character_id,
             })
 
-        name = request_form.get(f'{table_name}-name')
+        name = sanitize_optional_str(request_form.get(f'{table_name}-name'), max_len=255)
         value = request_form.get(f'{table_name}-value')
 
         if not name:
             return
 
-        try:
-            parsed_value = int(value) if value is not None and str(value).strip() != '' else 0
-        except (TypeError, ValueError):
-            parsed_value = 0
+        if (ggi.go_get_all('custom_stat', {'character_id': character_id}, count=True) or 0) >= CUSTOM_STAT_MAX:
+            return
+
+        parsed_value = parse_optional_int(value, fallback=0)
 
         custom_stat = {
             "id": uuid(),
@@ -516,10 +558,10 @@ class CharacterSheet:
 
         for ability in self.ABILITY_TO_SKILL_MAPPING:
             raw_value = request_form.get(f'{ability}-value')
-            if raw_value:
-                value = int(raw_value)
-            else:
+            if not raw_value or str(raw_value).strip() == '':
                 continue
+            # Ability scores are 1-30 in D&D 5e; clamp to that range
+            value = clamp_int(raw_value, 1, 30, fallback=10)
 
             modifier = math.floor((value - 10) / 2)
 

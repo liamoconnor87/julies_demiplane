@@ -1,6 +1,15 @@
 window.addEventListener("load", () => {
     initializeUiBindings();
 
+    // Inject the CSRF token into every htmx AJAX request as a header.
+    // Flask-WTF's CSRFProtect accepts tokens from the X-CSRFToken header,
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) {
+            event.detail.headers['X-CSRFToken'] = meta.getAttribute('content');
+        }
+    });
+
     document.body.addEventListener('htmx:afterSwap', (event) => {
         const target = event.target;
         if (!target || !target.id) {

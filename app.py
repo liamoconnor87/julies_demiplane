@@ -1,4 +1,5 @@
 from flask import Flask, redirect, render_template, request, url_for
+from flask_wtf.csrf import CSRFProtect
 from character_sheet.character_sheet import CharacterSheet
 from character_sheet.custom_buff import BuffProcessor
 from go_get_it.go_get_it import GoGetDB
@@ -6,6 +7,7 @@ from misc.config import DEBUG, secret_key # type: ignore
 
 app = Flask(__name__)
 app.secret_key = secret_key
+CSRFProtect(app)
 
 db = GoGetDB()
 
@@ -36,9 +38,13 @@ def character_sheet():
         class_options=character_sheet_data['class_options'],
         abilities=character_sheet_data['abilities'],
         feats_and_traits=character_sheet_data['feats_and_traits'],
+        feats_and_traits_at_capacity=character_sheet_data['feats_and_traits_at_capacity'],
         inventory=character_sheet_data['inventory'],
+        inventory_at_capacity=character_sheet_data['inventory_at_capacity'],
         custom_stats=character_sheet_data['custom_stats'],
+        custom_stats_at_capacity=character_sheet_data['custom_stats_at_capacity'],
         custom_buffs=character_sheet_data['custom_buffs'],
+        custom_buffs_at_capacity=character_sheet_data['custom_buffs_at_capacity'],
         buff_target_options=character_sheet_data['buff_target_options'],
         debug=debug
     )
@@ -66,7 +72,8 @@ def feats_traits_fragment(character_id: str):
     return render_template(
         'components/feats_traits_section.html',
         character_id=character_id,
-        feats_and_traits=data['feats_and_traits']
+        feats_and_traits=data['feats_and_traits'],
+        feats_and_traits_at_capacity=data['feats_and_traits_at_capacity']
     )
 
 @app.route('/characters/<character_id>/abilities-skills/fragment', methods=['POST'])
@@ -91,6 +98,7 @@ def inventory_fragment(character_id: str):
     return render_template(
         'components/inventory_section.html',
         inventory=data['inventory'],
+        inventory_at_capacity=data['inventory_at_capacity'],
         character_id=character_id
     )
 
@@ -103,6 +111,7 @@ def custom_stats_fragment(character_id: str):
     return render_template(
         'components/custom_stats_section.html',
         custom_stats=data['custom_stats'],
+        custom_stats_at_capacity=data['custom_stats_at_capacity'],
         character_id=character_id
     )
 
@@ -116,6 +125,7 @@ def custom_buffs_fragment(character_id: str):
     return render_template(
         'components/buff_change_response.html',
         custom_buffs=data['custom_buffs'],
+        custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
         buff_target_options=data['buff_target_options'],
         character_id=character_id,
         character=data['character'],
@@ -134,6 +144,7 @@ def remove_inventory_item(character_id: str, inventory_id: str):
     return render_template(
         'components/inventory_section.html',
         inventory=data['inventory'],
+        inventory_at_capacity=data['inventory_at_capacity'],
         character_id=character_id
     )
 
@@ -149,7 +160,8 @@ def remove_feat_and_trait_item(character_id: str, feat_and_trait_id: str):
     return render_template(
         'components/feats_traits_section.html',
         character_id=character_id,
-        feats_and_traits=data['feats_and_traits']
+        feats_and_traits=data['feats_and_traits'],
+        feats_and_traits_at_capacity=data['feats_and_traits_at_capacity']
     )
 
 
@@ -164,7 +176,8 @@ def remove_custom_stat_item(character_id: str, custom_stat_id: str):
     return render_template(
         'components/custom_stats_section.html',
         character_id=character_id,
-        custom_stats=data['custom_stats']
+        custom_stats=data['custom_stats'],
+        custom_stats_at_capacity=data['custom_stats_at_capacity']
     )
 
 
@@ -190,6 +203,7 @@ def remove_custom_buff_item(character_id: str, custom_buff_id: str):
     return render_template(
         'components/buff_change_response.html',
         custom_buffs=data['custom_buffs'],
+        custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
         buff_target_options=data['buff_target_options'],
         character_id=character_id,
         character=data['character'],

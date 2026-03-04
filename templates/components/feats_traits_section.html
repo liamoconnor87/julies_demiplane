@@ -28,6 +28,7 @@
         {% endfor %}
     {% endif %}
 
+    {% if not feats_and_traits_at_capacity %}
     <div class="feats-section-row feats-section-add-row">
         <div class="feats-section-top-row">
             <div class="feats-section-field feats-section-action-field section-action-field" id="add-feat-btn-wrapper">
@@ -62,4 +63,5 @@
                       name="feat_and_trait-description" rows="3" placeholder="Enter description" class="feats-section-input feats-section-description-input"></textarea>
         </div>
     </div>
+    {% endif %}
 </div>

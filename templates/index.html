@@ -20,6 +20,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_stats.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_buffs.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/section_action_buttons.css') }}">
+    <!-- CSRF token for htmx fragment requests -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
@@ -28,6 +30,7 @@
     {% endif %}
 
     <form action="/" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="sheet-layout">
             <div class="sheet-column sheet-column-one">
                 <div id="character-info-section-container">
