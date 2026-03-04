@@ -21,6 +21,7 @@
         {% endif %}
     </div>
 
+    {% if not custom_stats_at_capacity %}
     <div class="custom-stats-section-row custom-stats-section-add-row">
         <div class="custom-stats-section-top-row">
             <div class="custom-stats-section-field custom-stats-section-action-field section-action-field" id="add-custom-stat-btn-wrapper">
@@ -53,5 +54,6 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 <br>

@@ -1,6 +1,15 @@
 window.addEventListener("load", () => {
     initializeUiBindings();
 
+    // Inject the CSRF token into every htmx AJAX request as a header.
+    // Flask-WTF's CSRFProtect accepts tokens from the X-CSRFToken header,
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) {
+            event.detail.headers['X-CSRFToken'] = meta.getAttribute('content');
+        }
+    });
+
     document.body.addEventListener('htmx:afterSwap', (event) => {
         const target = event.target;
         if (!target || !target.id) {
@@ -33,24 +42,218 @@ window.addEventListener("load", () => {
 
         if (target.id === 'custom-stats-section-container') {
             selectCustomStatField();
+            return;
+        }
+
+        if (target.id === 'custom-buffs-section-container') {
+            selectCustomBuffField();
+            bindProficiencyToggles();
+            bindAbilitiesSectionLockToggle();
+            bindCurrentHpCalculation();
+            selectCustomStatField();
+            decorateBuffedLabels();
         }
     });
 })
 
 let featDescriptionResizeWindowBound = false;
 let inventoryDescriptionResizeWindowBound = false;
+const ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 5;
+
+function getCookieValue(name) {
+    const encodedName = encodeURIComponent(name);
+    const cookiePairs = document.cookie ? document.cookie.split('; ') : [];
+
+    for (const cookiePair of cookiePairs) {
+        const separatorIndex = cookiePair.indexOf('=');
+        if (separatorIndex < 0) {
+            continue;
+        }
+
+        const cookieName = cookiePair.slice(0, separatorIndex);
+        if (cookieName !== encodedName) {
+            continue;
+        }
+
+        const cookieValue = cookiePair.slice(separatorIndex + 1);
+        return decodeURIComponent(cookieValue);
+    }
+
+    return null;
+}
+
+function setCookieValue(name, value, maxAgeSeconds) {
+    const encodedName = encodeURIComponent(name);
+    const encodedValue = encodeURIComponent(value);
+    document.cookie = `${encodedName}=${encodedValue}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
+}
+
+function getAbilityLockCookieKey() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return null;
+    }
+
+    return `ability_skill_lock_${characterId}`;
+}
 
 function initializeUiBindings() {
     selectClassField();
     selectFeatField();
     selectInventoryField();
     selectCustomStatField();
+    selectCustomBuffField();
     bindClassLevelUpdateButtons();
     bindProficiencyToggles();
     bindAbilitiesSectionLockToggle();
     bindCurrentHpCalculation();
     bindFeatDescriptionDisplayAutoHeight();
     bindInventoryDescriptionDisplayAutoHeight();
+    decorateBuffedLabels();
+}
+
+function addBuffIndicator(el) {
+    if (el && !el.querySelector('.buff-indicator')) {
+        el.insertAdjacentHTML('beforeend', ' <span class="buff-indicator">*</span>');
+    }
+}
+
+function decorateBuffedLabels() {
+    // Clear any existing indicators first
+    document.querySelectorAll('.buff-indicator').forEach(el => el.remove());
+
+    const dataEl = document.getElementById('buff-fields-data');
+    if (!dataEl) return;
+
+    let buffFields;
+    try {
+        buffFields = JSON.parse(dataEl.textContent);
+    } catch (e) {
+        return;
+    }
+
+    if (!buffFields || !buffFields.length) return;
+
+    buffFields.forEach(({ table, stat }) => {
+        if (table === 'custom_stat') {
+            // Match label by name text on custom_stat-value-* inputs
+            document.querySelectorAll('label.custom-stats-section-label').forEach(label => {
+                if (
+                    label.textContent.trim() === stat &&
+                    label.htmlFor &&
+                    label.htmlFor.startsWith('custom_stat-value-')
+                ) {
+                    addBuffIndicator(label);
+                }
+            });
+            return;
+        }
+
+        const key = `${table}-${stat}`;
+
+        // Try input (character stats, ability values)
+        const input = document.querySelector(`input[name="${key}"]`);
+        if (input && input.id) {
+            const label = document.querySelector(`label[for="${input.id}"]`);
+            if (label) {
+                addBuffIndicator(label);
+                return;
+            }
+        }
+
+        // Try display div (modifier, saving throw, skills)
+        const displayDiv = document.getElementById(key);
+        if (displayDiv) {
+            const labelDiv = displayDiv.closest('.abilities-section-secondary-field, .abilities-section-skills-item')?.querySelector('.abilities-section-display-label');
+            if (labelDiv) {
+                addBuffIndicator(labelDiv);
+            }
+        }
+    });
+}
+
+function selectCustomBuffField() {
+    const addCustomBuffBtn = document.getElementById('add-custom-buff-btn');
+    const addCustomBuffBtnWrapper = document.getElementById('add-custom-buff-btn-wrapper');
+    const addCustomBuffFieldsWrapper = document.getElementById('add-custom-buff-fields-wrapper');
+    const addCustomBuffSubmitBtnWrapper = document.getElementById('add-custom-buff-submit-btn-wrapper');
+    const closeCustomBuffBtnWrapper = document.getElementById('close-custom-buff-btn-wrapper');
+    const closeCustomBuffFieldXBtn = document.getElementById('close-custom-buff-field-x-btn');
+    const targetColumnsField = document.getElementById('add-custom-buff-target-columns-field');
+
+    if (!addCustomBuffBtn || !addCustomBuffBtnWrapper || !addCustomBuffFieldsWrapper || !addCustomBuffSubmitBtnWrapper || !closeCustomBuffBtnWrapper || !closeCustomBuffFieldXBtn) {
+        return;
+    }
+
+    const tableCheckboxes = document.querySelectorAll('.custom-buffs-table-checkbox');
+
+    const updateTableStatGroups = () => {
+        let hasSelectedTable = false;
+
+        tableCheckboxes.forEach((tableCheckbox) => {
+            const tableName = tableCheckbox.dataset.tableName;
+            if (!tableName) {
+                return;
+            }
+
+            const statGroup = document.querySelector(`.custom-buffs-table-stat-group[data-table-name="${tableName}"]`);
+            if (!statGroup) {
+                return;
+            }
+
+            if (tableCheckbox.checked) {
+                hasSelectedTable = true;
+                statGroup.classList.add('is-active');
+                return;
+            }
+
+            statGroup.classList.remove('is-active');
+            const groupCheckboxes = statGroup.querySelectorAll('.custom-buffs-stat-checkbox');
+            groupCheckboxes.forEach((groupCheckbox) => {
+                groupCheckbox.checked = false;
+            });
+        });
+
+        if (targetColumnsField) {
+            targetColumnsField.style.display = hasSelectedTable ? 'flex' : 'none';
+        }
+    };
+
+    if (addCustomBuffBtn.dataset.bound !== 'true') {
+        addCustomBuffBtn.addEventListener('click', () => {
+            addCustomBuffBtnWrapper.style.display = 'none';
+            addCustomBuffFieldsWrapper.style.display = 'flex';
+            addCustomBuffSubmitBtnWrapper.style.display = 'flex';
+            closeCustomBuffBtnWrapper.style.display = 'flex';
+            updateTableStatGroups();
+        });
+        addCustomBuffBtn.dataset.bound = 'true';
+    }
+
+    if (closeCustomBuffFieldXBtn.dataset.bound !== 'true') {
+        closeCustomBuffFieldXBtn.addEventListener('click', () => {
+            addCustomBuffBtnWrapper.style.display = 'flex';
+            addCustomBuffFieldsWrapper.style.display = 'none';
+            addCustomBuffSubmitBtnWrapper.style.display = 'none';
+            closeCustomBuffBtnWrapper.style.display = 'none';
+        });
+        closeCustomBuffFieldXBtn.dataset.bound = 'true';
+    }
+
+    tableCheckboxes.forEach((tableCheckbox) => {
+        if (tableCheckbox.dataset.bound === 'true') {
+            return;
+        }
+
+        tableCheckbox.addEventListener('change', () => {
+            updateTableStatGroups();
+        });
+
+        tableCheckbox.dataset.bound = 'true';
+    });
+
+    updateTableStatGroups();
 }
 
 function selectCustomStatField() {
@@ -245,6 +448,7 @@ function bindClassLevelUpdateButtons() {
                 actionBtn.setAttribute('hx-target', '#classes-section-container');
                 actionBtn.setAttribute('hx-swap', 'innerHTML');
                 actionBtn.setAttribute('hx-include', 'closest form');
+                htmx.process(actionBtn);
                 return;
             }
 
@@ -257,6 +461,7 @@ function bindClassLevelUpdateButtons() {
             actionBtn.setAttribute('hx-target', '#classes-section-container');
             actionBtn.setAttribute('hx-swap', 'innerHTML');
             actionBtn.setAttribute('hx-include', 'closest form');
+            htmx.process(actionBtn);
         };
 
         setButtonMode();
@@ -436,7 +641,12 @@ function bindAbilitiesSectionLockToggle() {
         return;
     }
 
-    if (!section.dataset.locked) {
+    const cookieKey = getAbilityLockCookieKey();
+    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
+
+    if (persistedLockState === 'true' || persistedLockState === 'false') {
+        section.dataset.locked = persistedLockState;
+    } else if (!section.dataset.locked) {
         section.dataset.locked = 'false';
     }
 
@@ -453,6 +663,9 @@ function bindAbilitiesSectionLockToggle() {
         lockToggle.addEventListener('click', () => {
             const isLocked = section.dataset.locked === 'true';
             section.dataset.locked = isLocked ? 'false' : 'true';
+            if (cookieKey) {
+                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+            }
             syncLockText();
         });
 
@@ -461,6 +674,9 @@ function bindAbilitiesSectionLockToggle() {
                 event.preventDefault();
                 const isLocked = section.dataset.locked === 'true';
                 section.dataset.locked = isLocked ? 'false' : 'true';
+                if (cookieKey) {
+                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+                }
                 syncLockText();
             }
         });

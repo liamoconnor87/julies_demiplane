@@ -22,7 +22,9 @@
 
             {% if field_type == "select" %}
                 <select id="{{ table_name }}-{{ field }}" name="{{ table_name }}-{{ field }}" style="{{ input_styles }}">
-                    {{ field_data.get('options', '') | safe }}
+                    {% for option in field_data.get('options', []) %}
+                        <option value="{{ option.value }}">{{ option.label }}</option>
+                    {% endfor %}
                 </select>
             {% else %}
                 <input

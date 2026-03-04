@@ -33,14 +33,17 @@
 
                 </div>
 
-                <div class="inventory-section-field inventory-section-description-field">
-                    <label for="inventory-description-{{ item.id }}" class="inventory-section-label">Description</label>
-                    <div id="inventory-description-{{ item.id }}" class="inventory-section-description-display">{{ item.description }}</div>
-                </div>
+                {% if item.description %}
+                    <div class="inventory-section-field inventory-section-description-field">
+                        <label for="inventory-description-{{ item.id }}" class="inventory-section-label">Description</label>
+                        <div id="inventory-description-{{ item.id }}" class="inventory-section-description-display">{{ item.description }}</div>
+                    </div>
+                {% endif %}
             </div>
         {% endfor %}
     {% endif %}
 
+    {% if not inventory_at_capacity %}
     <div class="inventory-section-row inventory-section-add-row">
         <div class="inventory-section-top-row">
             <div class="inventory-section-field inventory-section-action-field section-action-field" id="add-inventory-btn-wrapper">
@@ -80,4 +83,5 @@
             <textarea id="inventory-description" name="inventory-description" rows="2" placeholder="Enter description" class="inventory-section-input inventory-section-description-input"></textarea>
         </div>
     </div>
+    {% endif %}
 </div>

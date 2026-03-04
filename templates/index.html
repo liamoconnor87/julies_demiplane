@@ -18,7 +18,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/feats_traits.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_stats.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_buffs.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/section_action_buttons.css') }}">
+    <!-- CSRF token for htmx fragment requests -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
@@ -27,32 +30,45 @@
     {% endif %}
 
     <form action="/" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="sheet-layout">
-            <div class="sheet-main-column">
-                {% include 'components/character_info.html' %}
+            <div class="sheet-column sheet-column-one">
+                <div id="character-info-section-container">
+                    {% include 'components/character_info.html' %}
+                </div>
 
                 <div id="custom-stats-section-container">
                     {% include 'components/custom_stats_section.html' %}
                 </div>
 
-                <div id="abilities-section-container">
-                    {% include 'components/abilities_section.html' %}
-                </div>
-
-                <div id="inventory-section-container">
-                    {% include 'components/inventory_section.html' %}
-                </div>
-            </div>
-
-            <div class="sheet-right-column">
                 <div id="classes-section-container">
                     {% include 'components/classes_section.html' %}
                 </div>
 
-                {% include 'components/combat_stats.html' %}
+                <div id="custom-buffs-section-container">
+                    {% include 'components/custom_buffs_section.html' %}
+                </div>
+            </div>
 
+            <div class="sheet-column sheet-column-two">
+                <div id="combat-stats-section-container">
+                    {% include 'components/combat_stats.html' %}
+                </div>
+
+                <div id="abilities-section-container">
+                    {% include 'components/abilities_section.html' %}
+                </div>
+            </div>
+
+            <div class="sheet-column sheet-column-three">
                 <div id="feats-section-container">
                     {% include 'components/feats_traits_section.html' %}
+                </div>
+            </div>
+
+            <div class="sheet-column sheet-column-four">
+                <div id="inventory-section-container">
+                    {% include 'components/inventory_section.html' %}
                 </div>
             </div>
         </div>

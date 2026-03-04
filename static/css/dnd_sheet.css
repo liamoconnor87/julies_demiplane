@@ -8,6 +8,18 @@
     --text-colour-three: rgb(255, 255, 255);
 }
 
+.buff-indicator {
+    color: var(--text-colour-one);
+    font-weight: bold;
+    pointer-events: none;
+    user-select: none;
+}
+
+.buff-title-indicator {
+    color: var(--text-colour-one);
+    font-weight: bold;
+}
+
 html {
     font-size: 17px;
 }
@@ -18,26 +30,27 @@ body {
 }
 
 .sheet-layout {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.75rem;
 }
 
-.sheet-main-column,
-.sheet-right-column {
+.sheet-column {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-}
-
-.sheet-main-column {
-    flex: 1 1 0;
     min-width: 0;
 }
 
-.sheet-right-column {
-    flex: 0 0 auto;
+.sheet-column-three,
+.sheet-column-four {
+    min-width: 0;
+}
+
+#feats-section-container,
+#inventory-section-container {
+    width: 100%;
+    min-width: 0;
 }
 
 /* Ensure form labels are always above fields */
@@ -432,9 +445,69 @@ body {
     }
 }
 
+@media (max-width: 1900px) {
+    .sheet-layout {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sheet-column-one {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .sheet-column-two {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .sheet-column-three {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .sheet-column-four {
+        grid-column: 1;
+        grid-row: 2;
+    }
+}
+
+@media (max-width: 1500px) {
+    .sheet-layout {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sheet-column-one {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .sheet-column-two {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .sheet-column-three {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .sheet-column-four {
+        grid-column: 2;
+        grid-row: 2;
+    }
+}
+
 @media (max-width: 1000px) {
     .sheet-layout {
-        flex-direction: column;
+        grid-template-columns: minmax(0, 1fr);
         gap: 0;
+    }
+
+    .sheet-column-one,
+    .sheet-column-two,
+    .sheet-column-three,
+    .sheet-column-four {
+        grid-column: 1;
+        grid-row: auto;
     }
 }
