@@ -11,6 +11,10 @@
     flex-wrap: nowrap;
 }
 
+.classes-section-row:last-child {
+    margin-top: 0.25rem;
+}
+
 .classes-section-field {
     display: flex;
     flex-direction: column;
@@ -142,6 +146,10 @@
 }
 
 @media (max-width: 499px) {
+    .classes-section {
+        padding: 0 0.25rem;
+    }
+
     #add-class-field-dropdown.classes-section-name-field {
         max-width: calc(120px - 3.31rem);
     }

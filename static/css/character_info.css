@@ -223,3 +223,36 @@
         flex: 0 0 auto;
     }
 }
+
+@media (max-width: 499px) {
+    /* Reduce section padding */
+    .character-info-section {
+        padding: 0 0.25rem;
+    }
+
+    /* Shrink name field to match race/alignment/background */
+    .character-info-name-field {
+        max-width: 10.85rem;
+    }
+
+    .character-info-input {
+        max-width: 100%;
+    }
+
+    .character-info-label {
+        max-width: 100%;
+    }
+
+    /* Reduce XP field size */
+    .character-info-xp-field {
+        max-width: 8rem;
+    }
+
+    .character-info-xp-field .character-info-input {
+        width: 8rem;
+    }
+
+    .character-info-xp-field .character-info-label {
+        width: 8rem;
+    }
+}

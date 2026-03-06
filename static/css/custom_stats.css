@@ -227,6 +227,11 @@
 }
 
 @media (max-width: 499px) {
+    /* Match padding with character-info section */
+    .custom-stats-section {
+        padding: 0 0.25rem;
+    }
+
     .custom-stats-section-top-row {
         flex-wrap: wrap;
     }

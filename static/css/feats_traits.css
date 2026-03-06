@@ -194,12 +194,35 @@
 
     .feats-section-top-row {
         flex-wrap: nowrap;
+        max-width: 19.75rem;
     }
 
+    /* Fluid name field — stretches to fill, pushing action btn */
+    .feats-section-name-field {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+    }
+
+    #add-feat-field-name {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+    }
+
+    /* Fluid description — full width up to large-screen max */
     .feats-section-description-field {
         width: 100%;
         min-width: 0;
-        max-width: var(--feats-total-width);
+        max-width: 19.75rem;
+    }
+
+    #add-feat-field-description {
+        width: 100%;
+        min-width: 0;
+        max-width: 19.75rem;
     }
 
     .feats-section-field {
@@ -218,6 +241,12 @@
     .feats-section-label,
     .feats-section-action-field .feats-section-label {
         width: 100%;
+    }
+}
+
+@media (max-width: 499px) {
+    .feats-section {
+        padding: 0 0.25rem;
     }
 }
 

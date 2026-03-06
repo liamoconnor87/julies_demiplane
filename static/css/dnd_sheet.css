@@ -91,6 +91,12 @@ body {
     }
 }
 
+@media (max-width: 499px) {
+    .page-container {
+        padding: 0;
+    }
+}
+
 .sheet-layout {
     display: grid;
     width: 100%;

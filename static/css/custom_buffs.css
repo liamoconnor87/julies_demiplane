@@ -341,3 +341,9 @@
 		min-width: 0;
 	}
 }
+
+@media (max-width: 499px) {
+	.custom-buffs-section {
+		padding: 0 0.25rem;
+	}
+}
