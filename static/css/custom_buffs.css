@@ -344,19 +344,11 @@
 		min-width: 0;
 	}
 }
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
 
 @media (max-width: 499px) {
 	.custom-buffs-section {
 		padding: 0 0.25rem;
 	}
-<<<<<<< Updated upstream
-}
-=======
 
 	.custom-buffs-value-field {
 		width: 4rem;
@@ -364,5 +356,3 @@
 		max-width: 4rem;
 	}
 }
->>>>>>> Stashed changes
->>>>>>> Stashed changes

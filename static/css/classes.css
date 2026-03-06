@@ -154,3 +154,9 @@
         max-width: calc(135px - 3.31rem);
     }
 }
+
+@media (max-width: 350px) {
+    .classes-section-row:has(#close-class-btn-wrapper) {
+        flex-wrap: wrap;
+    }
+}
