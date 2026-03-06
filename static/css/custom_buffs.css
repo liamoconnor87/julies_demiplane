@@ -79,6 +79,19 @@
 	line-height: 1.25;
 }
 
+.custom-buffs-section[data-locked='true'] [data-buff-remove],
+[data-buff-remove]:disabled {
+	color: var(--secondary-color-dark);
+}
+
+.buffs-lock-toggle {
+	display: flex;
+	align-self: flex-end;
+	margin-right: 0.25rem;
+	margin-bottom: 0.25rem;
+	margin-left: 0;
+}
+
 .custom-buffs-remove-btn {
 	position: absolute;
 	top: 0.15rem;
@@ -326,5 +339,11 @@
 	.custom-buffs-card {
 		width: 100%;
 		min-width: 0;
+	}
+}
+
+@media (max-width: 499px) {
+	.custom-buffs-section {
+		padding: 0 0.25rem;
 	}
 }

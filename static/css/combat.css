@@ -157,13 +157,19 @@
 }
 
 @media (max-width: 499px) {
+    /* Reduce section padding */
+    .combat-section {
+        padding: 0 0.25rem;
+    }
+
+    /* Keep row layout — override previous column stacking */
     .combat-section-layout-row {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: stretch;
     }
 
     .combat-section-col-one {
-        margin-right: 0;
-        margin-bottom: 0.3rem;
+        margin-right: 0.3rem;
+        margin-bottom: 0;
     }
 }

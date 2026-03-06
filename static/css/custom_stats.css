@@ -102,6 +102,20 @@
     z-index: 1;
 }
 
+.custom-stats-section[data-locked='true'] .custom-stats-remove-btn,
+.custom-stats-remove-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.custom-stats-lock-toggle {
+    display: flex;
+    align-self: flex-end;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+    margin-left: 0;
+}
+
 .custom-stats-stat-card .custom-stats-square-field {
     margin-right: 0;
     margin-bottom: 0;
@@ -213,6 +227,11 @@
 }
 
 @media (max-width: 499px) {
+    /* Match padding with character-info section */
+    .custom-stats-section {
+        padding: 0 0.25rem;
+    }
+
     .custom-stats-section-top-row {
         flex-wrap: wrap;
     }

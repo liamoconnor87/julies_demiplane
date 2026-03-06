@@ -20,6 +20,9 @@
                 {% set display_checkbox_checked = skills[skill_name ~ '_proficient'] == 1 %}
                 {% include 'components/abilities_display_field.html' %}
             {% endfor %}
+            {% if skill_list | length == 1 %}
+                <div class="abilities-section-skills-item abilities-section-skills-placeholder" aria-hidden="true"></div>
+            {% endif %}
         </div>
     {% endif %}
 </div>

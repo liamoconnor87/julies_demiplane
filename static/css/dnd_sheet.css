@@ -6,6 +6,7 @@
     --text-colour-one: rgb(255, 0, 200);
     --text-colour-two: rgb(0, 191, 255);
     --text-colour-three: rgb(255, 255, 255);
+    --navbar-height: 3rem;
 }
 
 .buff-indicator {
@@ -20,6 +21,13 @@
     font-weight: bold;
 }
 
+.section-lock-toggle {
+    color: var(--secondary-color);
+    font-size: 1rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+}
+
 html {
     font-size: 17px;
 }
@@ -27,12 +35,91 @@ html {
 body {
     background-color: var(--primary-color);
     color: var(--text-colour-three);
+    margin: 0;
+    padding-top: calc(var(--navbar-height) + env(safe-area-inset-top));
+}
+
+.page-container {
+    width: 100%;
+    max-width: 1850px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    box-sizing: border-box;
+}
+
+.site-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    min-height: var(--navbar-height);
+    background: var(--primary-color-transparent);
+    border-bottom: 1px solid var(--secondary-color-dark);
+    z-index: 1000;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top);
+}
+
+.site-navbar .page-container {
+    display: flex;
+    align-items: center;
+    min-height: var(--navbar-height);
+}
+
+.site-navbar-title {
+    color: var(--secondary-color);
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 0;
+}
+
+.sheet-page-content {
+    width: 100%;
+    max-width: 100%;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+}
+
+.sheet-page-content form {
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (max-width: 600px) {
+    .page-container {
+        padding: 0 0.75rem;
+    }
+}
+
+@media (max-width: 499px) {
+    .page-container {
+        padding: 0;
+    }
 }
 
 .sheet-layout {
     display: grid;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.75rem;
+}
+
+.sheet-column-one {
+    grid-column: 1;
+}
+
+.sheet-column-two {
+    grid-column: 2;
+}
+
+.sheet-column-three {
+    grid-column: 3;
+}
+
+.sheet-column-four {
+    grid-column: 4;
 }
 
 .sheet-column {
@@ -51,6 +138,22 @@ body {
 #inventory-section-container {
     width: 100%;
     min-width: 0;
+}
+
+#character-custom-section-container {
+    width: 100%;
+    min-width: 0;
+}
+
+.sheet-column > div[id$="-section-container"] {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+    box-sizing: border-box;
+}
+
+.sheet-column > div[id$="-section-container"]:last-child {
+    margin-bottom: 0;
 }
 
 /* Ensure form labels are always above fields */

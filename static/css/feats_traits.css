@@ -3,9 +3,15 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 0 1rem;
-    --feats-name-width: 12.35rem;
     --feats-action-width: 3rem;
     --feats-field-gap: 0.25rem;
+    --feats-total-width: 19.75rem;
+    --feats-name-width: calc(var(--feats-total-width) - var(--feats-action-width) - var(--feats-field-gap));
+}
+
+.feats-section[data-locked='true'] [data-feat-remove],
+[data-feat-remove]:disabled {
+    color: var(--secondary-color-dark);
 }
 
 .feats-section-row {
@@ -49,9 +55,9 @@
 }
 
 .feats-section-description-field {
-    width: calc(var(--feats-name-width) + var(--feats-action-width) + var(--feats-field-gap));
-    min-width: calc(var(--feats-name-width) + var(--feats-action-width) + var(--feats-field-gap));
-    max-width: calc(var(--feats-name-width) + var(--feats-action-width) + var(--feats-field-gap));
+    width: var(--feats-total-width);
+    min-width: var(--feats-total-width);
+    max-width: var(--feats-total-width);
 }
 
 .feats-section-action-field {
@@ -163,7 +169,9 @@
 }
 
 #add-feat-field-description {
-    min-width: calc(var(--feats-name-width) + var(--feats-action-width) + var(--feats-field-gap));
+    width: var(--feats-total-width);
+    min-width: var(--feats-total-width);
+    max-width: var(--feats-total-width);
 }
 
 #add-feat-field-description .feats-section-description-input {
@@ -174,12 +182,71 @@
 @media (max-width: 900px) {
     .feats-section {
         width: 100%;
+        --feats-action-width: 2.5rem;
+        --feats-field-gap: 0.2rem;
+        --feats-total-width: min(100%, 13.5rem);
     }
 
+    .feats-section-row,
+    .feats-section-top-row {
+        width: 100%;
+    }
+
+    .feats-section-top-row {
+        flex-wrap: nowrap;
+        max-width: 19.75rem;
+    }
+
+    /* Fluid name field — stretches to fill, pushing action btn */
+    .feats-section-name-field {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+    }
+
+    #add-feat-field-name {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+    }
+
+    /* Fluid description — full width up to large-screen max */
     .feats-section-description-field {
         width: 100%;
         min-width: 0;
-        max-width: calc(var(--feats-name-width) + var(--feats-action-width) + var(--feats-field-gap));
+        max-width: 19.75rem;
+    }
+
+    #add-feat-field-description {
+        width: 100%;
+        min-width: 0;
+        max-width: 19.75rem;
+    }
+
+    .feats-section-field {
+        margin-right: var(--feats-field-gap);
+    }
+
+    .feats-section-field:last-child {
+        margin-right: 0;
+    }
+
+    .feats-section-btn {
+        width: var(--feats-action-width);
+        min-width: var(--feats-action-width);
+    }
+
+    .feats-section-label,
+    .feats-section-action-field .feats-section-label {
+        width: 100%;
+    }
+}
+
+@media (max-width: 499px) {
+    .feats-section {
+        padding: 0 0.25rem;
     }
 }
 
