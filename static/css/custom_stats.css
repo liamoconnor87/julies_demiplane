@@ -236,12 +236,19 @@
         flex-wrap: wrap;
     }
 
-    .custom-stats-section-name-field,
-    .custom-stats-section-value-field,
-    .custom-stats-section-action-field {
-        width: 100%;
+    .custom-stats-section-name-field {
+        flex: 1 1 0;
         min-width: 0;
-        max-width: 100%;
+    }
+
+    .custom-stats-section-add-row .custom-stats-section-name-field {
+        min-width: calc(100% - 7rem);
+    }
+
+    .custom-stats-section-add-row .custom-stats-section-value-field {
+        width: 4rem;
+        min-width: 4rem;
+        max-width: 4rem;
     }
 
     .custom-stats-section-action-field .custom-stats-section-label {

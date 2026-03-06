@@ -23,9 +23,9 @@
 }
 
 .classes-section-name-field {
-    width: 120px;
-    min-width: 120px;
-    max-width: 120px;
+    width: 135px;
+    min-width: 135px;
+    max-width: 135px;
     flex: 0 0 auto;
     margin-right: 0.3rem;
 }
@@ -151,6 +151,6 @@
     }
 
     #add-class-field-dropdown.classes-section-name-field {
-        max-width: calc(120px - 3.31rem);
+        max-width: calc(135px - 3.31rem);
     }
 }

@@ -327,7 +327,6 @@
 
 @media (max-width: 760px) {
 	.custom-buffs-name-field,
-	.custom-buffs-value-field,
 	.custom-buffs-target-fields-column,
 	.custom-buffs-target-tables-field,
 	.custom-buffs-target-columns-field {
@@ -336,14 +335,34 @@
 		max-width: 100%;
 	}
 
+	.custom-buffs-basic-fields-row {
+		flex-wrap: nowrap;
+	}
+
 	.custom-buffs-card {
 		width: 100%;
 		min-width: 0;
 	}
 }
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 
 @media (max-width: 499px) {
 	.custom-buffs-section {
 		padding: 0 0.25rem;
 	}
+<<<<<<< Updated upstream
 }
+=======
+
+	.custom-buffs-value-field {
+		width: 4rem;
+		min-width: 4rem;
+		max-width: 4rem;
+	}
+}
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
