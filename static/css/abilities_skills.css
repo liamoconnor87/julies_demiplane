@@ -198,7 +198,7 @@
     border-color: transparent !important;
 }
 
-@media (max-width: 499px) {
+@media (max-width: 515px) {
     /* Reduce section padding */
     .abilities-section {
         padding: 0 0.25rem;
