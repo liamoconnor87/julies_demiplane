@@ -1,5 +1,8 @@
 <div class="feats-section">
-    <h4>Feats & Traits</h4>
+    <h4>
+        Feats & Traits
+        <span id="feats-lock-toggle" class="section-lock-toggle" role="button" tabindex="0" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
+    </h4>
     {% if feats_and_traits %}
         {% for feat in feats_and_traits %}
             <div class="feats-section-row feats-section-saved-row">
@@ -11,7 +14,7 @@
                     </div>
 
                     <div class="feats-section-field feats-section-action-field section-action-field">
-                        <button type="button" id="feat-and-trait-delete-{{ feat.id }}" class="feats-section-btn section-action-btn"
+                        <button type="button" id="feat-and-trait-delete-{{ feat.id }}" class="feats-section-btn section-action-btn" data-feat-remove="true"
                                 hx-post="/characters/{{ character_id }}/feat-and-trait/{{ feat.id }}/remove"
                                 hx-target="#feats-section-container"
                             hx-swap="innerHTML"

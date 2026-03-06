@@ -25,55 +25,65 @@
 </head>
 
 <body>
+
+    <nav class="site-navbar">
+        <div class="page-container">
+            <div class="site-navbar-title">Julies Demiplane</div>
+        </div>
+    </nav>
     {% if debug %}
         ## {{ debug }} ##
     {% endif %}
 
-    <form action="/" method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="sheet-layout">
-            <div class="sheet-column sheet-column-one">
-                <div id="character-info-section-container">
-                    {% include 'components/character_info.html' %}
+    <main class="page-container sheet-page-content">
+        <form action="/" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="sheet-layout">
+                <div class="sheet-column sheet-column-one">
+                    <div id="character-custom-section-container">
+                        <div id="character-info-section-container">
+                            {% include 'components/character_info.html' %}
+                        </div>
+
+                        <div id="custom-stats-section-container">
+                            {% include 'components/custom_stats_section.html' %}
+                        </div>
+                    </div>
+
+                    <div id="classes-section-container">
+                        {% include 'components/classes_section.html' %}
+                    </div>
+
+                    <div id="custom-buffs-section-container">
+                        {% include 'components/custom_buffs_section.html' %}
+                    </div>
                 </div>
 
-                <div id="custom-stats-section-container">
-                    {% include 'components/custom_stats_section.html' %}
+                <div class="sheet-column sheet-column-two">
+                    <div id="combat-stats-section-container">
+                        {% include 'components/combat_stats.html' %}
+                    </div>
+
+                    <div id="abilities-section-container">
+                        {% include 'components/abilities_section.html' %}
+                    </div>
                 </div>
 
-                <div id="classes-section-container">
-                    {% include 'components/classes_section.html' %}
+                <div class="sheet-column sheet-column-three">
+                    <div id="feats-section-container">
+                        {% include 'components/feats_traits_section.html' %}
+                    </div>
                 </div>
 
-                <div id="custom-buffs-section-container">
-                    {% include 'components/custom_buffs_section.html' %}
+                <div class="sheet-column sheet-column-four">
+                    <div id="inventory-section-container">
+                        {% include 'components/inventory_section.html' %}
+                    </div>
                 </div>
             </div>
-
-            <div class="sheet-column sheet-column-two">
-                <div id="combat-stats-section-container">
-                    {% include 'components/combat_stats.html' %}
-                </div>
-
-                <div id="abilities-section-container">
-                    {% include 'components/abilities_section.html' %}
-                </div>
-            </div>
-
-            <div class="sheet-column sheet-column-three">
-                <div id="feats-section-container">
-                    {% include 'components/feats_traits_section.html' %}
-                </div>
-            </div>
-
-            <div class="sheet-column sheet-column-four">
-                <div id="inventory-section-container">
-                    {% include 'components/inventory_section.html' %}
-                </div>
-            </div>
-        </div>
-        <button type="submit">Update</button>
-    </form>
+            <button type="submit">Update</button>
+        </form>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"

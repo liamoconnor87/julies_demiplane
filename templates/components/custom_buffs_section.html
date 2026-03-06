@@ -15,9 +15,9 @@
 			{% for buff in custom_buffs %}
 				<div class="custom-buffs-card">
 					<div class="custom-buffs-card-main-field">
-						<div class="custom-buffs-card-value">{{ buff.value }}</div>
+						<div class="custom-buffs-card-value">{% if (buff.value | int) == 0 %}--{% else %}{{ buff.value }}{% endif %}</div>
 						<div class="custom-buffs-card-title">{{ buff.name }}</div>
-						<button type="button" class="custom-buffs-remove-btn"
+						<button type="button" class="custom-buffs-remove-btn" data-buff-remove="true"
 							data-buff-value="{{ buff.value }}"
 							data-buff-targets='{{ buff.targets | tojson | forceescape }}'
 							hx-post="/characters/{{ character_id }}/custom-buff/{{ buff.id }}/remove"
@@ -28,6 +28,8 @@
 					</div>
 				</div>
 			{% endfor %}
+			<span id="buffs-lock-toggle" class="section-lock-toggle buffs-lock-toggle" role="button" tabindex="0" aria-pressed="false"
+				aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
 		{% endif %}
 	</div>
 

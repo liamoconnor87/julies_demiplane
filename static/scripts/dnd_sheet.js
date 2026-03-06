@@ -25,6 +25,7 @@ window.addEventListener("load", () => {
         if (target.id === 'feats-section-container') {
             selectFeatField();
             bindFeatDescriptionDisplayAutoHeight();
+            bindFeatsLockToggle();
             return;
         }
 
@@ -37,11 +38,13 @@ window.addEventListener("load", () => {
         if (target.id === 'inventory-section-container') {
             selectInventoryField();
             bindInventoryDescriptionDisplayAutoHeight();
+            bindInventoryLockToggle();
             return;
         }
 
         if (target.id === 'custom-stats-section-container') {
             selectCustomStatField();
+            bindCustomStatsLockToggle();
             return;
         }
 
@@ -51,6 +54,8 @@ window.addEventListener("load", () => {
             bindAbilitiesSectionLockToggle();
             bindCurrentHpCalculation();
             selectCustomStatField();
+            bindCustomStatsLockToggle();
+            bindBuffsLockToggle();
             decorateBuffedLabels();
         }
     });
@@ -108,9 +113,309 @@ function initializeUiBindings() {
     bindProficiencyToggles();
     bindAbilitiesSectionLockToggle();
     bindCurrentHpCalculation();
+    bindCustomStatsLockToggle();
+    bindFeatsLockToggle();
+    bindInventoryLockToggle();
+    bindBuffsLockToggle();
     bindFeatDescriptionDisplayAutoHeight();
     bindInventoryDescriptionDisplayAutoHeight();
     decorateBuffedLabels();
+}
+
+function getCustomStatsLockCookieKey() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return null;
+    }
+
+    return `custom_stats_lock_${characterId}`;
+}
+
+function bindCustomStatsLockToggle() {
+    const section = document.querySelector('.custom-stats-section');
+    const lockToggle = document.getElementById('custom-stats-lock-toggle');
+
+    if (!section || !lockToggle) {
+        return;
+    }
+
+    const cookieKey = getCustomStatsLockCookieKey();
+    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
+
+    if (persistedLockState === 'true' || persistedLockState === 'false') {
+        section.dataset.locked = persistedLockState;
+    } else if (!section.dataset.locked) {
+        section.dataset.locked = 'false';
+    }
+
+    const syncRemoveButtons = () => {
+        const isLocked = section.dataset.locked === 'true';
+        const removeButtons = section.querySelectorAll('[data-custom-stat-remove="true"]');
+        removeButtons.forEach((button) => {
+            button.disabled = isLocked;
+            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+        });
+    };
+
+    const syncLockText = () => {
+        const isLocked = section.dataset.locked === 'true';
+        lockToggle.innerHTML = isLocked
+            ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
+            : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
+        lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
+        lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
+        syncRemoveButtons();
+    };
+
+    if (lockToggle.dataset.bound !== 'true') {
+        lockToggle.addEventListener('click', () => {
+            const isLocked = section.dataset.locked === 'true';
+            section.dataset.locked = isLocked ? 'false' : 'true';
+            if (cookieKey) {
+                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+            }
+            syncLockText();
+        });
+
+        lockToggle.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                const isLocked = section.dataset.locked === 'true';
+                section.dataset.locked = isLocked ? 'false' : 'true';
+                if (cookieKey) {
+                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+                }
+                syncLockText();
+            }
+        });
+
+        lockToggle.dataset.bound = 'true';
+    }
+
+    syncLockText();
+}
+
+function getBuffsLockCookieKey() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return null;
+    }
+
+    return `buffs_lock_${characterId}`;
+}
+
+function bindBuffsLockToggle() {
+    const section = document.querySelector('.custom-buffs-section');
+    const lockToggle = document.getElementById('buffs-lock-toggle');
+
+    if (!section || !lockToggle) {
+        return;
+    }
+
+    const cookieKey = getBuffsLockCookieKey();
+    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
+
+    if (persistedLockState === 'true' || persistedLockState === 'false') {
+        section.dataset.locked = persistedLockState;
+    } else if (!section.dataset.locked) {
+        section.dataset.locked = 'false';
+    }
+
+    const syncRemoveButtons = () => {
+        const isLocked = section.dataset.locked === 'true';
+        const removeButtons = section.querySelectorAll('[data-buff-remove="true"]');
+        removeButtons.forEach((button) => {
+            button.disabled = isLocked;
+            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+        });
+    };
+
+    const syncLockText = () => {
+        const isLocked = section.dataset.locked === 'true';
+        lockToggle.innerHTML = isLocked
+            ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
+            : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
+        lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
+        lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
+        syncRemoveButtons();
+    };
+
+    if (lockToggle.dataset.bound !== 'true') {
+        lockToggle.addEventListener('click', () => {
+            const isLocked = section.dataset.locked === 'true';
+            section.dataset.locked = isLocked ? 'false' : 'true';
+            if (cookieKey) {
+                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+            }
+            syncLockText();
+        });
+
+        lockToggle.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                const isLocked = section.dataset.locked === 'true';
+                section.dataset.locked = isLocked ? 'false' : 'true';
+                if (cookieKey) {
+                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+                }
+                syncLockText();
+            }
+        });
+
+        lockToggle.dataset.bound = 'true';
+    }
+
+    syncLockText();
+}
+
+function getFeatsLockCookieKey() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return null;
+    }
+
+    return `feats_lock_${characterId}`;
+}
+
+function bindFeatsLockToggle() {
+    const section = document.querySelector('.feats-section');
+    const lockToggle = document.getElementById('feats-lock-toggle');
+
+    if (!section || !lockToggle) {
+        return;
+    }
+
+    const cookieKey = getFeatsLockCookieKey();
+    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
+
+    if (persistedLockState === 'true' || persistedLockState === 'false') {
+        section.dataset.locked = persistedLockState;
+    } else if (!section.dataset.locked) {
+        section.dataset.locked = 'false';
+    }
+
+    const syncRemoveButtons = () => {
+        const isLocked = section.dataset.locked === 'true';
+        const removeButtons = section.querySelectorAll('[data-feat-remove="true"]');
+        removeButtons.forEach((button) => {
+            button.disabled = isLocked;
+            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+        });
+    };
+
+    const syncLockText = () => {
+        const isLocked = section.dataset.locked === 'true';
+        lockToggle.innerHTML = isLocked
+            ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
+            : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
+        lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
+        lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
+        syncRemoveButtons();
+    };
+
+    if (lockToggle.dataset.bound !== 'true') {
+        lockToggle.addEventListener('click', () => {
+            const isLocked = section.dataset.locked === 'true';
+            section.dataset.locked = isLocked ? 'false' : 'true';
+            if (cookieKey) {
+                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+            }
+            syncLockText();
+        });
+
+        lockToggle.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                const isLocked = section.dataset.locked === 'true';
+                section.dataset.locked = isLocked ? 'false' : 'true';
+                if (cookieKey) {
+                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+                }
+                syncLockText();
+            }
+        });
+
+        lockToggle.dataset.bound = 'true';
+    }
+
+    syncLockText();
+}
+
+function getInventoryLockCookieKey() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return null;
+    }
+
+    return `inventory_lock_${characterId}`;
+}
+
+function bindInventoryLockToggle() {
+    const section = document.querySelector('.inventory-section');
+    const lockToggle = document.getElementById('inventory-lock-toggle');
+
+    if (!section || !lockToggle) {
+        return;
+    }
+
+    const cookieKey = getInventoryLockCookieKey();
+    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
+
+    if (persistedLockState === 'true' || persistedLockState === 'false') {
+        section.dataset.locked = persistedLockState;
+    } else if (!section.dataset.locked) {
+        section.dataset.locked = 'false';
+    }
+
+    const syncRemoveButtons = () => {
+        const isLocked = section.dataset.locked === 'true';
+        const removeButtons = section.querySelectorAll('[data-inventory-remove="true"]');
+        removeButtons.forEach((button) => {
+            button.disabled = isLocked;
+            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+        });
+    };
+
+    const syncLockText = () => {
+        const isLocked = section.dataset.locked === 'true';
+        lockToggle.innerHTML = isLocked
+            ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
+            : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
+        lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
+        lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
+        syncRemoveButtons();
+    };
+
+    if (lockToggle.dataset.bound !== 'true') {
+        lockToggle.addEventListener('click', () => {
+            const isLocked = section.dataset.locked === 'true';
+            section.dataset.locked = isLocked ? 'false' : 'true';
+            if (cookieKey) {
+                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+            }
+            syncLockText();
+        });
+
+        lockToggle.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                const isLocked = section.dataset.locked === 'true';
+                section.dataset.locked = isLocked ? 'false' : 'true';
+                if (cookieKey) {
+                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+                }
+                syncLockText();
+            }
+        });
+
+        lockToggle.dataset.bound = 'true';
+    }
+
+    syncLockText();
 }
 
 function addBuffIndicator(el) {

@@ -10,6 +10,11 @@
     --inventory-field-gap: 0.25rem;
 }
 
+.inventory-section[data-locked='true'] [data-inventory-remove],
+[data-inventory-remove]:disabled {
+    color: var(--secondary-color-dark);
+}
+
 .inventory-section-row {
     display: flex;
     flex-direction: column;
@@ -225,12 +230,50 @@
 @media (max-width: 900px) {
     .inventory-section {
         width: 100%;
+        --inventory-name-width: 6rem;
+        --inventory-quantity-width: 2.4rem;
+        --inventory-action-width: 2.4rem;
+        --inventory-quantity-control-width: 5.4rem;
+        --inventory-field-gap: 0.2rem;
+    }
+
+    .inventory-section-row,
+    .inventory-section-top-row {
+        width: 100%;
+    }
+
+    .inventory-section-top-row {
+        flex-wrap: nowrap;
     }
 
     .inventory-section-description-field {
         width: 100%;
         min-width: 0;
         max-width: calc(var(--inventory-name-width) + var(--inventory-quantity-width) + (var(--inventory-action-width) * 2) + (var(--inventory-field-gap) * 3));
+    }
+
+    .inventory-section-field {
+        margin-right: var(--inventory-field-gap);
+    }
+
+    .inventory-section-field:last-child {
+        margin-right: 0;
+    }
+
+    .inventory-section-btn {
+        width: var(--inventory-action-width);
+        min-width: var(--inventory-action-width);
+    }
+
+    .inventory-section-label,
+    .inventory-section-action-field .inventory-section-label {
+        width: 100%;
+    }
+
+    .inventory-section-saved-row .inventory-section-quantity-field .inventory-section-label {
+        width: var(--inventory-quantity-control-width);
+        min-width: var(--inventory-quantity-control-width);
+        max-width: var(--inventory-quantity-control-width);
     }
 }
 
