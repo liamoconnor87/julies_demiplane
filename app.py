@@ -17,18 +17,12 @@ def _build_character_sheet_data(character_id: str):
     BuffProcessor(character_id).transform_out(data)
     return sheet, data
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def character_sheet():
     character_id = request.args.get('character_id') or "01964ee7cdcc1641bd25fe601c157a58" # debug purposes
     debug = character_id
 
-    character_sheet, character_sheet_data = _build_character_sheet_data(character_id)
-
-
-    if request.method == 'POST':
-        request_form = BuffProcessor(character_id).transform_in(request.form)
-        character_id = character_sheet.process_form(request_form)
-        return redirect(url_for('character_sheet', character_id=character_id))
+    _, character_sheet_data = _build_character_sheet_data(character_id)
 
     return render_template(
         'index.html',
@@ -47,6 +41,20 @@ def character_sheet():
         custom_buffs_at_capacity=character_sheet_data['custom_buffs_at_capacity'],
         buff_target_options=character_sheet_data['buff_target_options'],
         debug=debug
+    )
+
+@app.route('/characters/<character_id>/character-info/fragment', methods=['POST'])
+def character_info_fragment(character_id: str):
+    sheet = CharacterSheet(character_id=character_id)
+    request_form = BuffProcessor(character_id).transform_in(request.form)
+    sheet.save_character_values(request_form)
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/character_info_change_response.html',
+        character_id=character_id,
+        character=data['character'],
+        abilities=data['abilities'],
     )
 
 @app.route('/characters/<character_id>/classes/fragment', methods=['POST'])
@@ -109,9 +117,12 @@ def custom_stats_fragment(character_id: str):
 
     _, data = _build_character_sheet_data(character_id)
     return render_template(
-        'components/custom_stats_section.html',
+        'components/custom_stats_change_response.html',
         custom_stats=data['custom_stats'],
         custom_stats_at_capacity=data['custom_stats_at_capacity'],
+        custom_buffs=data['custom_buffs'],
+        custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
+        buff_target_options=data['buff_target_options'],
         character_id=character_id
     )
 
@@ -131,6 +142,7 @@ def custom_buffs_fragment(character_id: str):
         character=data['character'],
         abilities=data['abilities'],
         custom_stats=data['custom_stats'],
+        custom_stats_at_capacity=data['custom_stats_at_capacity'],
     )
 
 @app.route('/characters/<character_id>/inventory/<inventory_id>/remove', methods=['POST'])
@@ -174,10 +186,13 @@ def remove_custom_stat_item(character_id: str, custom_stat_id: str):
 
     _, data = _build_character_sheet_data(character_id)
     return render_template(
-        'components/custom_stats_section.html',
+        'components/custom_stats_change_response.html',
         character_id=character_id,
         custom_stats=data['custom_stats'],
-        custom_stats_at_capacity=data['custom_stats_at_capacity']
+        custom_stats_at_capacity=data['custom_stats_at_capacity'],
+        custom_buffs=data['custom_buffs'],
+        custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
+        buff_target_options=data['buff_target_options'],
     )
 
 
@@ -209,6 +224,7 @@ def remove_custom_buff_item(character_id: str, custom_buff_id: str):
         character=data['character'],
         abilities=data['abilities'],
         custom_stats=data['custom_stats'],
+        custom_stats_at_capacity=data['custom_stats_at_capacity'],
     )
 
 

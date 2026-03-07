@@ -16,6 +16,15 @@ window.addEventListener("load", () => {
             return;
         }
 
+        if (target.id === 'character-info-section-container') {
+            bindCurrentHpCalculation();
+            bindProficiencyToggles();
+            bindAbilitiesSectionLockToggle();
+            decorateBuffedLabels();
+            bindCharacterInfoChangeDetection();
+            return;
+        }
+
         if (target.id === 'classes-section-container') {
             selectClassField();
             bindClassLevelUpdateButtons();
@@ -32,6 +41,7 @@ window.addEventListener("load", () => {
         if (target.id === 'abilities-section-container') {
             bindProficiencyToggles();
             bindAbilitiesSectionLockToggle();
+            decorateBuffedLabels();
             return;
         }
 
@@ -45,6 +55,9 @@ window.addEventListener("load", () => {
         if (target.id === 'custom-stats-section-container') {
             selectCustomStatField();
             bindCustomStatsLockToggle();
+            selectCustomBuffField();
+            bindBuffsLockToggle();
+            decorateBuffedLabels();
             return;
         }
 
@@ -64,6 +77,7 @@ window.addEventListener("load", () => {
 let featDescriptionResizeWindowBound = false;
 let inventoryDescriptionResizeWindowBound = false;
 const ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 5;
+const CURRENT_HP_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 function getCookieValue(name) {
     const encodedName = encodeURIComponent(name);
@@ -120,6 +134,37 @@ function initializeUiBindings() {
     bindFeatDescriptionDisplayAutoHeight();
     bindInventoryDescriptionDisplayAutoHeight();
     decorateBuffedLabels();
+    bindCharacterInfoChangeDetection();
+}
+
+function bindCharacterInfoChangeDetection() {
+    const section = document.querySelector('.character-info-section');
+    if (!section) {
+        return;
+    }
+
+    section.dataset.unsaved = 'false';
+
+    const inputs = section.querySelectorAll('input:not([type="hidden"]):not([disabled])');
+    const originalValues = new Map();
+
+    inputs.forEach((input) => {
+        originalValues.set(input, input.value);
+    });
+
+    const checkForChanges = () => {
+        let hasChanges = false;
+        inputs.forEach((input) => {
+            if (input.value !== originalValues.get(input)) {
+                hasChanges = true;
+            }
+        });
+        section.dataset.unsaved = hasChanges ? 'true' : 'false';
+    };
+
+    inputs.forEach((input) => {
+        input.addEventListener('input', checkForChanges);
+    });
 }
 
 function getCustomStatsLockCookieKey() {
@@ -796,6 +841,23 @@ function bindCurrentHpCalculation() {
         return;
     }
 
+    const getCharacterId = () => {
+        const characterIdField = document.getElementById('character-id');
+        return characterIdField ? String(characterIdField.value || '').trim() : '';
+    };
+
+    const getCurrentHpCookieKey = () => {
+        const characterId = getCharacterId();
+        return characterId ? `current_hp_${characterId}` : null;
+    };
+
+    const saveCurrentHpToCookie = () => {
+        const cookieKey = getCurrentHpCookieKey();
+        if (cookieKey && currentHpField.value !== '') {
+            setCookieValue(cookieKey, currentHpField.value, CURRENT_HP_COOKIE_MAX_AGE_SECONDS);
+        }
+    };
+
     const parseNumberOrZero = (value) => {
         const parsed = Number.parseInt(value, 10);
         return Number.isNaN(parsed) ? 0 : parsed;
@@ -807,6 +869,15 @@ function bindCurrentHpCalculation() {
         return Math.max(0, healthPoints + tempHp);
     };
 
+    // Restore from cookie on initial bind
+    const cookieKey = getCurrentHpCookieKey();
+    const savedHp = cookieKey ? getCookieValue(cookieKey) : null;
+    if (savedHp !== null && savedHp !== '') {
+        const maxCurrentHp = getMaxCurrentHp();
+        const restoredHp = Math.min(maxCurrentHp, Math.max(0, parseNumberOrZero(savedHp)));
+        currentHpField.value = restoredHp;
+    }
+
     let previousMaxCurrentHp = getMaxCurrentHp();
 
     const adjustCurrentHp = (delta) => {
@@ -815,12 +886,14 @@ function bindCurrentHpCalculation() {
 
         if (delta > 0) {
             currentHpField.value = Math.min(maxCurrentHp, currentHp + delta);
+            saveCurrentHpToCookie();
             return;
         }
 
         if (delta < 0) {
             if (currentHp <= 0) {
                 currentHpField.value = 0;
+                saveCurrentHpToCookie();
                 return;
             }
 
@@ -830,6 +903,7 @@ function bindCurrentHpCalculation() {
             }
 
             currentHpField.value = Math.max(0, currentHp + delta);
+            saveCurrentHpToCookie();
         }
     };
 
@@ -837,6 +911,7 @@ function bindCurrentHpCalculation() {
         if (healthPointsField.value === '' && tempHpField.value === '') {
             currentHpField.value = '';
             previousMaxCurrentHp = 0;
+            saveCurrentHpToCookie();
             return;
         }
 
@@ -845,6 +920,7 @@ function bindCurrentHpCalculation() {
         if (currentHpField.value === '') {
             currentHpField.value = maxCurrentHp;
             previousMaxCurrentHp = maxCurrentHp;
+            saveCurrentHpToCookie();
             return;
         }
 
@@ -854,6 +930,7 @@ function bindCurrentHpCalculation() {
 
         currentHpField.value = Math.min(maxCurrentHp, Math.max(0, adjustedCurrentHp));
         previousMaxCurrentHp = maxCurrentHp;
+        saveCurrentHpToCookie();
     };
 
     healthPointsField.addEventListener('input', calculateCurrentHp);
@@ -875,6 +952,7 @@ function bindCurrentHpCalculation() {
         const currentHp = parseNumberOrZero(currentHpField.value);
         const maxCurrentHp = getMaxCurrentHp();
         currentHpField.value = Math.min(maxCurrentHp, Math.max(0, currentHp));
+        saveCurrentHpToCookie();
     });
 
     calculateCurrentHp();

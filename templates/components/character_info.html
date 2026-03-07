@@ -86,5 +86,15 @@
         {% set stat_label = 'XP' %}
         {% set stat_value = character.xp %}
         {% include 'components/character_info_xp_stat_field.html' %}
+
+        {# Save Button #}
+        <div class="character-info-stat-field character-info-action-field section-action-field">
+            <button type="button" id="character-info-save-btn" class="character-info-save-btn section-action-btn"
+                hx-post="/characters/{{ character_id }}/character-info/fragment"
+                hx-target="#character-info-section-container"
+                hx-swap="innerHTML"
+                hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+            <label for="character-info-save-btn" class="character-info-label section-action-label">Save</label>
+        </div>
     </div>
 </div>

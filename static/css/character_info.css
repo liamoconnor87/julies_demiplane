@@ -180,6 +180,44 @@
     padding-right: 0.5rem;
 }
 
+.character-info-action-field {
+    max-width: 3rem;
+    min-width: 3rem;
+    flex: 0 0 auto;
+    align-items: center;
+    align-self: flex-end;
+}
+
+.character-info-section[data-unsaved='false'] .character-info-save-btn,
+.character-info-section[data-unsaved='false'] .character-info-action-field .character-info-label {
+    color: var(--secondary-color-dark);
+}
+
+.character-info-save-btn {
+    cursor: pointer;
+    text-align: center;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    border: none;
+    font-size: 1.5rem;
+    box-sizing: border-box;
+    height: 2.65rem;
+    width: 3rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.character-info-action-field .character-info-label {
+    min-width: 0;
+    text-align: center;
+    width: 3rem;
+    font-size: 0.5rem;
+    padding: 0.25rem 0;
+}
+
 @media (min-width: 500px) {
     .character-info-main-row {
         flex-direction: row;
