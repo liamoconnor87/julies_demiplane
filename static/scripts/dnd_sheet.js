@@ -26,7 +26,7 @@ window.addEventListener("load", () => {
         }
 
         if (target.id === 'classes-section-container') {
-            selectClassField();
+            bindAddActionButtons();
             bindClassLevelUpdateButtons();
             return;
         }
@@ -53,7 +53,7 @@ window.addEventListener("load", () => {
         }
 
         if (target.id === 'custom-stats-section-container') {
-            selectCustomStatField();
+            bindAddActionButtons();
             bindCustomStatsLockToggle();
             selectCustomBuffField();
             bindBuffsLockToggle();
@@ -66,7 +66,7 @@ window.addEventListener("load", () => {
             bindProficiencyToggles();
             bindAbilitiesSectionLockToggle();
             bindCurrentHpCalculation();
-            selectCustomStatField();
+            bindCombatFieldAutoSave();
             bindCustomStatsLockToggle();
             bindBuffsLockToggle();
             decorateBuffedLabels();
@@ -118,15 +118,15 @@ function getAbilityLockCookieKey() {
 }
 
 function initializeUiBindings() {
-    selectClassField();
+    bindAddActionButtons();
     selectFeatField();
     selectInventoryField();
-    selectCustomStatField();
     selectCustomBuffField();
     bindClassLevelUpdateButtons();
     bindProficiencyToggles();
     bindAbilitiesSectionLockToggle();
     bindCurrentHpCalculation();
+    bindCombatFieldAutoSave();
     bindCustomStatsLockToggle();
     bindFeatsLockToggle();
     bindInventoryLockToggle();
@@ -606,66 +606,64 @@ function selectCustomBuffField() {
     updateTableStatGroups();
 }
 
-function selectCustomStatField() {
+function bindAddActionButtons() {
+    const addClassBtn = document.getElementById('add-class-btn');
+    const addClassBtnWrapper = document.getElementById('add-class-btn-wrapper');
     const addCustomStatBtn = document.getElementById('add-custom-stat-btn');
     const addCustomStatBtnWrapper = document.getElementById('add-custom-stat-btn-wrapper');
-    const addCustomStatFieldName = document.getElementById('add-custom-stat-field-name');
-    const addCustomStatFieldValue = document.getElementById('add-custom-stat-field-value');
-    const addCustomStatSubmitBtnWrapper = document.getElementById('add-custom-stat-submit-btn-wrapper');
-    const closeCustomStatBtnWrapper = document.getElementById('close-custom-stat-btn-wrapper');
-    const closeCustomStatFieldXBtn = document.getElementById('close-custom-stat-field-x-btn');
 
-    if (!addCustomStatBtn || !addCustomStatBtnWrapper || !addCustomStatFieldName || !addCustomStatFieldValue || !addCustomStatSubmitBtnWrapper || !closeCustomStatBtnWrapper || !closeCustomStatFieldXBtn) {
-        return;
-    }
-
-    addCustomStatBtn.addEventListener('click', () => {
-        addCustomStatBtnWrapper.style.display = 'none';
-        addCustomStatFieldName.style.display = 'flex';
-        addCustomStatFieldValue.style.display = 'flex';
-        addCustomStatSubmitBtnWrapper.style.display = 'flex';
-        closeCustomStatBtnWrapper.style.display = 'flex';
-    });
-
-    closeCustomStatFieldXBtn.addEventListener('click', () => {
-        addCustomStatBtnWrapper.style.display = 'flex';
-        addCustomStatFieldName.style.display = 'none';
-        addCustomStatFieldValue.style.display = 'none';
-        addCustomStatSubmitBtnWrapper.style.display = 'none';
-        closeCustomStatBtnWrapper.style.display = 'none';
-    });
-}
-
-function selectClassField() {
-    const addClassBtn = document.getElementById('add-class-btn');
-    const closeClassFieldXBtn = document.getElementById('close-class-field-x-btn');
-    const closeBtnWrapper = document.getElementById('close-class-btn-wrapper');
     const addClassFieldDropdown = document.getElementById('add-class-field-dropdown');
     const addClassFieldLevel = document.getElementById('add-class-field-level');
     const addClassSubmitBtn = document.getElementById('add-class-submit-btn');
 
-    // Add null check to prevent errors if elements don't exist
-    if (!addClassBtn || !closeClassFieldXBtn || !addClassFieldDropdown || !addClassFieldLevel || !closeBtnWrapper || !addClassSubmitBtn) {
-        return;
+    const addCustomStatFieldName = document.getElementById('add-custom-stat-field-name');
+    const addCustomStatFieldValue = document.getElementById('add-custom-stat-field-value');
+    const addCustomStatSubmitBtnWrapper = document.getElementById('add-custom-stat-submit-btn-wrapper');
+
+    const closeBtn = document.getElementById('close-add-action-field-x-btn');
+    const closeBtnWrapper = document.getElementById('close-add-action-btn-wrapper');
+
+    const showElement = (el) => { if (el) el.style.display = 'flex'; };
+    const showBlockElement = (el) => { if (el) el.style.display = 'block'; };
+    const hideElement = (el) => { if (el) el.style.display = 'none'; };
+
+    const hideAllForms = () => {
+        showElement(addClassBtnWrapper);
+        showElement(addCustomStatBtnWrapper);
+        hideElement(addClassFieldDropdown);
+        hideElement(addClassFieldLevel);
+        hideElement(addClassSubmitBtn);
+        hideElement(addCustomStatFieldName);
+        hideElement(addCustomStatFieldValue);
+        hideElement(addCustomStatSubmitBtnWrapper);
+        hideElement(closeBtnWrapper);
+    };
+
+    if (addClassBtn) {
+        addClassBtn.addEventListener('click', () => {
+            hideElement(addClassBtnWrapper);
+            hideElement(addCustomStatBtnWrapper);
+            showBlockElement(addClassFieldDropdown);
+            showElement(addClassFieldLevel);
+            showElement(addClassSubmitBtn);
+            showElement(closeBtnWrapper);
+        });
     }
 
-    addClassBtn.addEventListener("click", () => {
-        // Hide the + button, show close button and input fields
-        addClassBtn.parentElement.style.display = 'none';
-        closeBtnWrapper.style.display = 'flex';
-        addClassFieldDropdown.style.display = 'block';
-        addClassFieldLevel.style.display = 'flex';
-        addClassSubmitBtn.style.display = 'flex';
-    });
+    if (addCustomStatBtn) {
+        addCustomStatBtn.addEventListener('click', () => {
+            hideElement(addClassBtnWrapper);
+            hideElement(addCustomStatBtnWrapper);
+            showElement(addCustomStatFieldName);
+            showElement(addCustomStatFieldValue);
+            showElement(addCustomStatSubmitBtnWrapper);
+            showElement(closeBtnWrapper);
+        });
+    }
 
-    closeClassFieldXBtn.addEventListener("click", () => {
-        // Show the + button, hide close button and input fields
-        addClassBtn.parentElement.style.display = 'flex';
-        closeBtnWrapper.style.display = 'none';
-        addClassFieldDropdown.style.display = 'none';
-        addClassFieldLevel.style.display = 'none';
-        addClassSubmitBtn.style.display = 'none';
-    });
+    if (closeBtn) {
+        closeBtn.addEventListener('click', hideAllForms);
+    }
 }
 
 function selectFeatField() {
@@ -841,6 +839,14 @@ function bindCurrentHpCalculation() {
         return;
     }
 
+    // Guard against duplicate listener binding — combat fields survive
+    // across character-info and custom-buffs swaps, so listeners accumulate
+    // without this check.
+    if (currentHpField.dataset.hpCalcBound === 'true') {
+        return;
+    }
+    currentHpField.dataset.hpCalcBound = 'true';
+
     const getCharacterId = () => {
         const characterIdField = document.getElementById('character-id');
         return characterIdField ? String(characterIdField.value || '').trim() : '';
@@ -859,8 +865,13 @@ function bindCurrentHpCalculation() {
     };
 
     const parseNumberOrZero = (value) => {
+        if (value === '--' || value === '') return 0;
         const parsed = Number.parseInt(value, 10);
         return Number.isNaN(parsed) ? 0 : parsed;
+    };
+
+    const displayTempHp = (numericValue) => {
+        tempHpField.value = numericValue > 0 ? numericValue : '--';
     };
 
     const getMaxCurrentHp = () => {
@@ -899,7 +910,8 @@ function bindCurrentHpCalculation() {
 
             const tempHp = parseNumberOrZero(tempHpField.value);
             if (tempHp > 0) {
-                tempHpField.value = tempHp - 1;
+                displayTempHp(tempHp - 1);
+                tempHpField.dispatchEvent(new Event('input', { bubbles: true }));
             }
 
             currentHpField.value = Math.max(0, currentHp + delta);
@@ -936,6 +948,16 @@ function bindCurrentHpCalculation() {
     healthPointsField.addEventListener('input', calculateCurrentHp);
     tempHpField.addEventListener('input', calculateCurrentHp);
 
+    tempHpField.addEventListener('focus', () => {
+        if (tempHpField.value === '--') {
+            tempHpField.value = '';
+        }
+    });
+
+    tempHpField.addEventListener('blur', () => {
+        displayTempHp(parseNumberOrZero(tempHpField.value));
+    });
+
     if (decreaseCurrentHpBtn) {
         decreaseCurrentHpBtn.addEventListener('click', () => {
             adjustCurrentHp(-1);
@@ -956,6 +978,45 @@ function bindCurrentHpCalculation() {
     });
 
     calculateCurrentHp();
+}
+
+let combatAutoSaveTimer = null;
+
+function bindCombatFieldAutoSave() {
+    const healthPointsField = document.getElementById('character-health_points');
+    const tempHpField = document.getElementById('character-temporary_hit_points');
+    const hitDiceField = document.getElementById('character-hit_dice');
+    const characterIdField = document.getElementById('character-id');
+
+    if (!healthPointsField || !tempHpField || !hitDiceField || !characterIdField) {
+        return;
+    }
+
+    const characterId = characterIdField.value;
+    const form = healthPointsField.closest('form');
+    if (!form || !characterId) {
+        return;
+    }
+
+    const triggerAutoSave = () => {
+        if (combatAutoSaveTimer) {
+            clearTimeout(combatAutoSaveTimer);
+        }
+        combatAutoSaveTimer = setTimeout(() => {
+            combatAutoSaveTimer = null;
+            htmx.ajax('POST', `/characters/${characterId}/character-info/fragment`, {
+                source: form,
+                target: '#character-info-section-container',
+                swap: 'innerHTML'
+            });
+        }, 1000);
+    };
+
+    [healthPointsField, tempHpField, hitDiceField].forEach((field) => {
+        if (field.dataset.autoSaveBound === 'true') return;
+        field.dataset.autoSaveBound = 'true';
+        field.addEventListener('input', triggerAutoSave);
+    });
 }
 
 function bindProficiencyToggles() {

@@ -11,10 +11,6 @@
     flex-wrap: nowrap;
 }
 
-.classes-section-row:last-child {
-    margin-top: 0.25rem;
-}
-
 .classes-section-field {
     display: flex;
     flex-direction: column;
@@ -23,18 +19,18 @@
 }
 
 .classes-section-name-field {
-    width: 135px;
-    min-width: 135px;
-    max-width: 135px;
+    width: 8rem;
+    min-width: 8rem;
+    max-width: 8rem;
     flex: 0 0 auto;
-    margin-right: 0.3rem;
+    margin-right: 0.25rem;
 }
 
 .classes-section-level-field {
     max-width: 3rem;
     min-width: 3rem;
     align-items: center;
-    margin-right: 0.3rem;
+    margin-right: 0.25rem;
 }
 
 .classes-section-action-field,
@@ -42,7 +38,7 @@
     max-width: 3.0rem;
     min-width: 3.0rem;
     flex: 0 0 auto;
-    margin-right: 0.31rem;
+    margin-right: 0.25rem;
 }
 
 .classes-section-input {
@@ -138,25 +134,8 @@
     padding: 0.25rem 0;
 }
 
-#close-class-btn-wrapper,
-#add-class-field-dropdown,
-#add-class-field-level,
-#add-class-submit-btn {
-    display: none;
-}
-
 @media (max-width: 499px) {
     .classes-section {
         padding: 0 0.25rem;
-    }
-
-    #add-class-field-dropdown.classes-section-name-field {
-        max-width: calc(135px - 3.31rem);
-    }
-}
-
-@media (max-width: 350px) {
-    .classes-section-row:has(#close-class-btn-wrapper) {
-        flex-wrap: wrap;
     }
 }

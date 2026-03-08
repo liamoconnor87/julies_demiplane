@@ -1,0 +1,174 @@
+.add-actions-section {
+    display: flex;
+    flex-direction: column;
+    padding: 0 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.add-actions-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin-top: 0.25rem;
+}
+
+.add-actions-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.add-actions-field.section-action-field {
+    max-width: 3rem;
+    min-width: 3rem;
+    flex: 0 0 auto;
+}
+
+.add-actions-name-field {
+    width: 8rem;
+    min-width: 8rem;
+    max-width: 8rem;
+    flex: 0 0 auto;
+}
+
+.add-actions-level-field {
+    max-width: 3rem;
+    min-width: 3rem;
+    align-items: center;
+}
+
+.add-actions-stat-name-field {
+    width: 9.75rem;
+    min-width: 9.75rem;
+    max-width: 9.75rem;
+}
+
+.add-actions-stat-value-field {
+    width: 8rem;
+    min-width: 8rem;
+    max-width: 8rem;
+}
+
+.add-actions-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    font-size: 1.05rem;
+    transition: background 0.2s;
+    display: block;
+    height: 2.58rem;
+}
+
+.add-actions-name-field select.add-actions-input {
+    height: 2.58rem;
+}
+
+.add-actions-level-field .add-actions-input {
+    text-align: center;
+    padding: 0.5rem 0;
+    width: 100%;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.add-actions-level-field .add-actions-input::-webkit-outer-spin-button,
+.add-actions-level-field .add-actions-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.add-actions-stat-value-field .add-actions-input {
+    font-size: 0.8rem;
+    height: 2.55rem;
+}
+
+.add-actions-label {
+    background: var(--primary-color-transparent);
+    color: var(--secondary-color);
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    margin-bottom: 0;
+    display: block;
+    font-size: 0.6rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background 0.2s;
+    line-height: 1;
+    text-align: left;
+    overflow-wrap: break-word;
+    padding-left: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+.add-actions-level-field .add-actions-label {
+    text-align: center;
+    padding-left: 0;
+    width: 100%;
+}
+
+.add-actions-btn {
+    cursor: pointer;
+    text-align: center;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    border: none;
+    font-size: 1.5rem;
+    box-sizing: border-box;
+    height: 2.65rem;
+    width: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.add-actions-field.section-action-field .add-actions-label {
+    min-width: 0;
+    text-align: center;
+    width: 3rem;
+    font-size: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+#add-class-field-dropdown,
+#add-class-field-level,
+#add-class-submit-btn,
+#add-custom-stat-field-name,
+#add-custom-stat-field-value,
+#add-custom-stat-submit-btn-wrapper,
+#close-add-action-btn-wrapper {
+    display: none;
+}
+
+@media (max-width: 499px) {
+    .add-actions-section {
+        padding: 0 0.25rem;
+    }
+
+    .add-actions-name-field {
+        max-width: calc(8rem - 3.25rem);
+    }
+
+    .add-actions-stat-name-field {
+        flex: 1 1 0;
+        min-width: 0;
+        min-width: calc(100% - 7rem);
+    }
+
+    .add-actions-stat-value-field {
+        width: 4rem;
+        min-width: 4rem;
+        max-width: 4rem;
+    }
+}

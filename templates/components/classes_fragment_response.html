@@ -3,3 +3,7 @@
     <input type="number" id="character-level" name="character-level" value="{{ character.level or '' }}" disabled class="character-info-input">
     <label for="character-level" class="character-info-label">Level</label>
 </div>
+
+<div id="add-actions-container" hx-swap-oob="innerHTML">
+    {% include 'components/add_actions.html' %}
+</div>

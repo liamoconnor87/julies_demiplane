@@ -24,15 +24,9 @@
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: flex-start;
-    margin-bottom: 0.25rem;
     max-width: 100%;
     width: auto;
     min-width: 0;
-}
-
-.custom-stats-section-add-row {
-    width: 100%;
-    margin-bottom: 0.5rem;
 }
 
 .custom-stats-section-saved-row {
@@ -42,21 +36,12 @@
     margin-bottom: 0.25rem;
 }
 
-.custom-stats-section-top-row {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    max-width: 100%;
-}
-
 .custom-stats-section-field {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     margin-right: 0.25rem;
     margin-bottom: 0.25rem;
-    --custom-stats-field-input-height: 2.55rem;
 }
 
 .custom-stats-section-name-field {
@@ -141,10 +126,6 @@
     display: block;
 }
 
-.custom-stats-section-field .custom-stats-section-input {
-    height: var(--custom-stats-field-input-height);
-}
-
 .custom-stats-square-field .custom-stats-section-label,
 .custom-stats-square-field .custom-stats-section-input {
     min-width: 0;
@@ -214,43 +195,9 @@
     padding: 0.25rem 0;
 }
 
-#add-custom-stat-field-name,
-#add-custom-stat-field-value,
-#add-custom-stat-submit-btn-wrapper,
-#close-custom-stat-btn-wrapper {
-    display: none;
-}
-
-.custom-stats-section-add-row {
-    margin-top: 0.5rem;
-}
-
 @media (max-width: 499px) {
     /* Match padding with character-info section */
     .custom-stats-section {
         padding: 0 0.25rem;
-    }
-
-    .custom-stats-section-top-row {
-        flex-wrap: wrap;
-    }
-
-    .custom-stats-section-name-field {
-        flex: 1 1 0;
-        min-width: 0;
-    }
-
-    .custom-stats-section-add-row .custom-stats-section-name-field {
-        min-width: calc(100% - 7rem);
-    }
-
-    .custom-stats-section-add-row .custom-stats-section-value-field {
-        width: 4rem;
-        min-width: 4rem;
-        max-width: 4rem;
-    }
-
-    .custom-stats-section-action-field .custom-stats-section-label {
-        width: 100%;
     }
 }

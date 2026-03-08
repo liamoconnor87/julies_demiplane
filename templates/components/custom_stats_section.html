@@ -21,40 +21,4 @@
             <span id="custom-stats-lock-toggle" class="section-lock-toggle custom-stats-lock-toggle" role="button" tabindex="0" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
         {% endif %}
     </div>
-
-    {% if not custom_stats_at_capacity %}
-    <div class="custom-stats-section-row custom-stats-section-add-row">
-        <div class="custom-stats-section-top-row">
-            <div class="custom-stats-section-field custom-stats-section-action-field section-action-field" id="add-custom-stat-btn-wrapper">
-                <button type="button" id="add-custom-stat-btn" class="custom-stats-section-btn section-action-btn">+</button>
-                <label for="add-custom-stat-btn" class="custom-stats-section-label section-action-label">Add Stat</label>
-            </div>
-
-            <div class="custom-stats-section-field custom-stats-section-name-field" id="add-custom-stat-field-name">
-                <label for="custom_stat-name" class="custom-stats-section-label">Stat Name</label>
-                <input type="text" id="custom_stat-name" name="custom_stat-name" placeholder="Enter name" class="custom-stats-section-input">
-            </div>
-
-            <div class="custom-stats-section-field custom-stats-section-value-field" id="add-custom-stat-field-value">
-                <label for="custom_stat-value" class="custom-stats-section-label">Value</label>
-                <input type="number" id="custom_stat-value" name="custom_stat-value" value="0" class="custom-stats-section-input">
-            </div>
-
-            <div class="custom-stats-section-field custom-stats-section-action-field section-action-field" id="add-custom-stat-submit-btn-wrapper">
-                <button type="button" id="custom-stat-add" class="custom-stats-section-btn section-action-btn"
-                    hx-post="/characters/{{ character_id }}/custom-stats/fragment"
-                    hx-target="#custom-stats-section-container"
-                    hx-swap="innerHTML"
-                    hx-include="closest form"><i class="bi bi-check-lg"></i></button>
-                <label for="custom-stat-add" class="custom-stats-section-label section-action-label">Add</label>
-            </div>
-
-            <div class="custom-stats-section-field custom-stats-section-action-field section-action-field" id="close-custom-stat-btn-wrapper">
-                <button type="button" id="close-custom-stat-field-x-btn" class="custom-stats-section-btn section-action-btn">×</button>
-                <label for="close-custom-stat-field-x-btn" class="custom-stats-section-label section-action-label">Close</label>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 </div>
-<br>

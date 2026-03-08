@@ -68,7 +68,8 @@ def classes_fragment(character_id: str):
         character_id=character_id,
         classes=data['classes'],
         class_options=data['class_options'],
-        character=data['character']
+        character=data['character'],
+        custom_stats_at_capacity=data['custom_stats_at_capacity'],
     )
 
 @app.route('/characters/<character_id>/feats-traits/fragment', methods=['POST'])
@@ -123,6 +124,7 @@ def custom_stats_fragment(character_id: str):
         custom_buffs=data['custom_buffs'],
         custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
         buff_target_options=data['buff_target_options'],
+        class_options=data['class_options'],
         character_id=character_id
     )
 
@@ -193,6 +195,7 @@ def remove_custom_stat_item(character_id: str, custom_stat_id: str):
         custom_buffs=data['custom_buffs'],
         custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
         buff_target_options=data['buff_target_options'],
+        class_options=data['class_options'],
     )
 
 
@@ -241,7 +244,8 @@ def remove_class(character_id: str, class_id: str):
         character_id=character_id,
         classes=data['classes'],
         class_options=data['class_options'],
-        character=data['character']
+        character=data['character'],
+        custom_stats_at_capacity=data['custom_stats_at_capacity'],
     )
 
 

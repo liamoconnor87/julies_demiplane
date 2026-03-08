@@ -10,7 +10,7 @@
 
             <div class="combat-section-col-one-field">
                 <label for="character-temporary_hit_points" class="combat-section-label">Temp HP</label>
-                <input type="number" id="character-temporary_hit_points" name="character-temporary_hit_points" value="{{ character.temporary_hit_points or '' }}" class="combat-section-input">
+                <input type="text" id="character-temporary_hit_points" name="character-temporary_hit_points" value="{{ character.temporary_hit_points if character.temporary_hit_points else '--' }}" class="combat-section-input">
             </div>
 
             <div class="combat-section-col-one-field">
@@ -30,4 +30,3 @@
         </div>
     </div>
 </div>
-<br>

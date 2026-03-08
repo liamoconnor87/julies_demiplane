@@ -1,0 +1,71 @@
+<div class="add-actions-section">
+    <div class="add-actions-row">
+        {# Add Class Button - shown by default #}
+        {% if class_options %}
+        <div class="add-actions-field section-action-field" id="add-class-btn-wrapper">
+            <button type="button" id="add-class-btn" class="add-actions-btn section-action-btn">+</button>
+            <label for="add-class-btn" class="add-actions-label section-action-label">Add Class</label>
+        </div>
+        {% endif %}
+
+        {# Add Stat Button - shown by default #}
+        {% if not custom_stats_at_capacity %}
+        <div class="add-actions-field section-action-field" id="add-custom-stat-btn-wrapper">
+            <button type="button" id="add-custom-stat-btn" class="add-actions-btn section-action-btn">+</button>
+            <label for="add-custom-stat-btn" class="add-actions-label section-action-label">Add Stat</label>
+        </div>
+        {% endif %}
+
+        {# ---- Add Class form fields (hidden by default) ---- #}
+        {% if class_options %}
+        <div class="add-actions-field add-actions-name-field" id="add-class-field-dropdown">
+            <label for="class_to_character-class_id" class="add-actions-label">Select Class</label>
+            <select id="class_to_character-class_id" name="class_to_character-class_id" class="add-actions-input">
+                <option value="" disabled selected>Classes</option>
+                {% for class_option in class_options %}
+                    <option value="{{ class_option.id }}">{{ class_option.name | title() }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="add-actions-field add-actions-level-field" id="add-class-field-level">
+            <label for="class_to_character-level" class="add-actions-label">Level</label>
+            <input type="number" id="class_to_character-level"
+                name="class_to_character-level" placeholder="1" class="add-actions-input">
+        </div>
+        <div class="add-actions-field section-action-field" id="add-class-submit-btn">
+            <button type="button" id="add-class-submit" class="add-actions-btn section-action-btn"
+                    hx-post="/characters/{{ character_id }}/classes/fragment"
+                    hx-target="#classes-section-container"
+                    hx-swap="innerHTML"
+                    hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+            <label for="add-class-submit" class="add-actions-label section-action-label">Add</label>
+        </div>
+        {% endif %}
+
+        {# ---- Add Stat form fields (hidden by default) ---- #}
+        {% if not custom_stats_at_capacity %}
+        <div class="add-actions-field add-actions-stat-name-field" id="add-custom-stat-field-name">
+            <label for="custom_stat-name" class="add-actions-label">Stat Name</label>
+            <input type="text" id="custom_stat-name" name="custom_stat-name" placeholder="Enter name" class="add-actions-input">
+        </div>
+        <div class="add-actions-field add-actions-stat-value-field" id="add-custom-stat-field-value">
+            <label for="custom_stat-value" class="add-actions-label">Value</label>
+            <input type="number" id="custom_stat-value" name="custom_stat-value" value="0" class="add-actions-input">
+        </div>
+        <div class="add-actions-field section-action-field" id="add-custom-stat-submit-btn-wrapper">
+            <button type="button" id="custom-stat-add" class="add-actions-btn section-action-btn"
+                hx-post="/characters/{{ character_id }}/custom-stats/fragment"
+                hx-target="#custom-stats-section-container"
+                hx-swap="innerHTML"
+                hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+            <label for="custom-stat-add" class="add-actions-label section-action-label">Add</label>
+        </div>
+        {% endif %}
+
+        {# ---- Shared Close button (hidden by default) ---- #}
+        <div class="add-actions-field section-action-field" id="close-add-action-btn-wrapper">
+            <button type="button" id="close-add-action-field-x-btn" class="add-actions-btn section-action-btn">×</button>
+            <label for="close-add-action-field-x-btn" class="add-actions-label section-action-label">Close</label>
+        </div>
+    </div>
+</div>
