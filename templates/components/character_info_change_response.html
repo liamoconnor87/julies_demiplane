@@ -3,3 +3,9 @@
 <div id="abilities-section-container" hx-swap-oob="innerHTML">
     {% include 'components/abilities_section.html' %}
 </div>
+
+<a id="char-tab-{{ character_id }}" hx-swap-oob="true"
+   href="/?character_id={{ character_id }}"
+   class="character-bar-tab active">
+    {{ character.name or 'New Character' }}
+</a>

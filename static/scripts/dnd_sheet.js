@@ -1,5 +1,6 @@
 window.addEventListener("load", () => {
     initializeUiBindings();
+    bindDeleteCharacterDropdown();
 
     // Inject the CSRF token into every htmx AJAX request as a header.
     // Flask-WTF's CSRFProtect accepts tokens from the X-CSRFToken header,
@@ -16,12 +17,43 @@ window.addEventListener("load", () => {
             return;
         }
 
+        // Re-open the auth dropdown if a validation error was returned
+        if (target.id === 'auth-dropdown') {
+            if (target.querySelector('.auth-error')) {
+                const toggle = target.querySelector('.dropdown-toggle');
+                if (toggle) {
+                    const dropdown = new bootstrap.Dropdown(toggle);
+                    dropdown.show();
+                }
+            }
+            return;
+        }
+
+        // After a validation-error swap on the delete dropdown, re-bind the
+        // input listener so the confirm button toggles properly, and keep
+        // the dropdown visible.
+        if (target.id === 'delete-character-dropdown') {
+            bindDeleteConfirmInput();
+            target.classList.remove('d-none');
+            return;
+        }
+
         if (target.id === 'character-info-section-container') {
             bindCurrentHpCalculation();
             bindProficiencyToggles();
             bindAbilitiesSectionLockToggle();
             decorateBuffedLabels();
             bindCharacterInfoChangeDetection();
+
+            // When a new character is saved for the first time, reveal the
+            // rest of the sheet sections that were hidden during creation.
+            const sheetContent = document.getElementById('sheet-content');
+            if (sheetContent && sheetContent.dataset.isNew === 'true') {
+                sheetContent.dataset.isNew = 'false';
+                document.querySelectorAll('.new-char-hidden').forEach(el => {
+                    el.classList.remove('new-char-hidden');
+                });
+            }
             return;
         }
 
@@ -115,6 +147,57 @@ function getAbilityLockCookieKey() {
     }
 
     return `ability_skill_lock_${characterId}`;
+}
+
+// ── Delete-character dropdown ────────────────────────────────────────────────
+
+/**
+ * Wire up the toggle button to show/hide the confirmation dropdown,
+ * and close it when clicking outside.
+ */
+function bindDeleteCharacterDropdown() {
+    const toggle = document.getElementById('delete-character-toggle');
+    const dropdown = document.getElementById('delete-character-dropdown');
+    if (!toggle || !dropdown) return;
+
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('d-none');
+        // Focus the input when opening
+        if (!dropdown.classList.contains('d-none')) {
+            const input = dropdown.querySelector('#delete-confirm-input');
+            if (input) input.focus();
+        }
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && e.target !== toggle) {
+            dropdown.classList.add('d-none');
+        }
+    });
+
+    // Prevent clicks inside the dropdown from closing it
+    dropdown.addEventListener('click', (e) => e.stopPropagation());
+
+    bindDeleteConfirmInput();
+}
+
+/**
+ * Enable the confirm button only when the input value is exactly "DELETE".
+ */
+function bindDeleteConfirmInput() {
+    const input = document.getElementById('delete-confirm-input');
+    const btn = document.getElementById('delete-confirm-btn');
+    if (!input || !btn) return;
+
+    input.addEventListener('input', () => {
+        if (input.value.trim() === 'DELETE') {
+            btn.removeAttribute('disabled');
+        } else {
+            btn.setAttribute('disabled', '');
+        }
+    });
 }
 
 function initializeUiBindings() {

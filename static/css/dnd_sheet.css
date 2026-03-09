@@ -7,6 +7,8 @@
     --text-colour-two: rgb(0, 191, 255);
     --text-colour-three: rgb(255, 255, 255);
     --navbar-height: 3rem;
+    --character-bar-height: 2rem;
+    --total-header-height: calc(var(--navbar-height) + var(--character-bar-height));
 }
 
 .buff-indicator {
@@ -36,7 +38,7 @@ body {
     background-color: var(--primary-color);
     color: var(--text-colour-three);
     margin: 0;
-    padding-top: calc(var(--navbar-height) + env(safe-area-inset-top));
+    padding-top: calc(var(--total-header-height) + env(safe-area-inset-top));
 }
 
 .page-container {
@@ -63,7 +65,17 @@ body {
 .site-navbar .page-container {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     min-height: var(--navbar-height);
+    max-width: none;
+}
+
+/* ── Auth empty state ───────────────────────────────────────────────────── */
+.auth-empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--secondary-color-dark);
+    font-size: 1.1rem;
 }
 
 .site-navbar-title {

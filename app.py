@@ -1,8 +1,12 @@
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, abort, make_response, redirect, render_template, request, url_for
 from flask_wtf.csrf import CSRFProtect
+from flask_login import current_user, login_required
 from character_sheet.character_sheet import CharacterSheet
 from character_sheet.custom_buff import BuffProcessor
 from go_get_it.go_get_it import GoGetDB
+from functions.functions import uuid as generate_uuid
+from auth import setup_auth
+from auth.models import User
 from misc.config import DEBUG, secret_key # type: ignore
 
 app = Flask(__name__)
@@ -10,6 +14,7 @@ app.secret_key = secret_key
 CSRFProtect(app)
 
 db = GoGetDB()
+setup_auth(app, db)
 
 def _build_character_sheet_data(character_id: str):
     sheet = CharacterSheet(character_id=character_id)
@@ -19,13 +24,54 @@ def _build_character_sheet_data(character_id: str):
 
 @app.route('/', methods=['GET'])
 def character_sheet():
-    character_id = request.args.get('character_id') or "01964ee7cdcc1641bd25fe601c157a58" # debug purposes
-    debug = character_id
+    # Base template context — always available
+    characters = []
+    active_character_id = None
+    at_character_limit = False
+
+    if not current_user.is_authenticated:
+        return render_template(
+            'index.html',
+            characters=characters,
+            active_character_id=active_character_id,
+            at_character_limit=at_character_limit,
+            character=None,
+        )
+
+    characters = User.get_characters(db, current_user.id)
+    at_character_limit = User.at_character_limit(db, current_user.id)
+    character_id = request.args.get('character_id')
+
+    # If no character_id specified, default to first owned character
+    if not character_id and characters:
+        character_id = characters[0]['id']
+
+    # Verify ownership
+    if character_id and not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+
+    active_character_id = character_id
+
+    if not character_id:
+        return render_template(
+            'index.html',
+            characters=characters,
+            active_character_id=active_character_id,
+            at_character_limit=at_character_limit,
+            character=None,
+        )
 
     _, character_sheet_data = _build_character_sheet_data(character_id)
 
+    # Detect if this is a brand-new character (no name set yet)
+    is_new_character = not character_sheet_data['character'].get('name')
+
     return render_template(
         'index.html',
+        characters=characters,
+        active_character_id=active_character_id,
+        at_character_limit=at_character_limit,
+        is_new_character=is_new_character,
         character_id=character_id,
         character=character_sheet_data['character'],
         classes=character_sheet_data['classes'],
@@ -40,11 +86,63 @@ def character_sheet():
         custom_buffs=character_sheet_data['custom_buffs'],
         custom_buffs_at_capacity=character_sheet_data['custom_buffs_at_capacity'],
         buff_target_options=character_sheet_data['buff_target_options'],
-        debug=debug
     )
 
+
+@app.route('/characters/new', methods=['POST'])
+@login_required
+def create_character():
+    # Check character limit
+    if User.at_character_limit(db, current_user.id):
+        abort(403)
+
+    # Create a blank character row
+    character_id = generate_uuid()
+    db.go_add_new('character', {
+        'id': character_id,
+        'name': None,
+        'level': 0,
+    })
+
+    # Link to user
+    db.go_add_new('user_to_character', {
+        'id': generate_uuid(),
+        'user_id': current_user.id,
+        'character_id': character_id,
+    })
+
+    # Redirect to the new character's sheet
+    resp = make_response('', 200)
+    resp.headers['HX-Redirect'] = f'/?character_id={character_id}'
+    return resp
+
+@app.route('/characters/<character_id>/delete', methods=['DELETE'])
+@login_required
+def delete_character(character_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+
+    confirmation = request.form.get('confirmation', '')
+    if confirmation != 'DELETE':
+        char = db.go_get_one('character', {'id': character_id})
+        return render_template(
+            'components/delete_character_dropdown.html',
+            character_id=character_id,
+            character=char,
+            error='You must type DELETE to confirm.',
+        ), 200
+
+    User.delete_character(db, current_user.id, character_id)
+
+    resp = make_response('', 200)
+    resp.headers['HX-Redirect'] = '/'
+    return resp
+
 @app.route('/characters/<character_id>/character-info/fragment', methods=['POST'])
+@login_required
 def character_info_fragment(character_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     sheet = CharacterSheet(character_id=character_id)
     request_form = BuffProcessor(character_id).transform_in(request.form)
     sheet.save_character_values(request_form)
@@ -58,7 +156,10 @@ def character_info_fragment(character_id: str):
     )
 
 @app.route('/characters/<character_id>/classes/fragment', methods=['POST'])
+@login_required
 def classes_fragment(character_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     sheet = CharacterSheet(character_id=character_id)
     sheet.save_class_to_character_values(character_id, request.form)
 
@@ -73,7 +174,10 @@ def classes_fragment(character_id: str):
     )
 
 @app.route('/characters/<character_id>/feats-traits/fragment', methods=['POST'])
+@login_required
 def feats_traits_fragment(character_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     sheet = CharacterSheet(character_id=character_id)
     sheet.save_feat_and_trait_values(character_id, request.form)
 
@@ -86,7 +190,10 @@ def feats_traits_fragment(character_id: str):
     )
 
 @app.route('/characters/<character_id>/abilities-skills/fragment', methods=['POST'])
+@login_required
 def abilities_skills_fragment(character_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     sheet = CharacterSheet(character_id=character_id)
     transformed_form = BuffProcessor(character_id).transform_in(request.form)
     sheet.save_ability_values(character_id, transformed_form)
@@ -99,7 +206,10 @@ def abilities_skills_fragment(character_id: str):
     )
 
 @app.route('/characters/<character_id>/inventory/fragment', methods=['POST'])
+@login_required
 def inventory_fragment(character_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     sheet = CharacterSheet(character_id=character_id)
     sheet.save_inventory_values(character_id, request.form)
 
@@ -112,7 +222,10 @@ def inventory_fragment(character_id: str):
     )
 
 @app.route('/characters/<character_id>/custom-stats/fragment', methods=['POST'])
+@login_required
 def custom_stats_fragment(character_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     sheet = CharacterSheet(character_id=character_id)
     sheet.save_custom_stat_values(character_id, request.form)
 
@@ -130,7 +243,10 @@ def custom_stats_fragment(character_id: str):
 
 
 @app.route('/characters/<character_id>/custom-buffs/fragment', methods=['POST'])
+@login_required
 def custom_buffs_fragment(character_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     sheet = CharacterSheet(character_id=character_id)
     sheet.save_custom_buff_values(character_id, request.form)
 
@@ -148,7 +264,10 @@ def custom_buffs_fragment(character_id: str):
     )
 
 @app.route('/characters/<character_id>/inventory/<inventory_id>/remove', methods=['POST'])
+@login_required
 def remove_inventory_item(character_id: str, inventory_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     if not character_id or not inventory_id or not db.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id}):
         return redirect(url_for('character_sheet'))
 
@@ -164,7 +283,10 @@ def remove_inventory_item(character_id: str, inventory_id: str):
 
 
 @app.route('/characters/<character_id>/feat-and-trait/<feat_and_trait_id>/remove', methods=['POST'])
+@login_required
 def remove_feat_and_trait_item(character_id: str, feat_and_trait_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     if not character_id or not feat_and_trait_id or not db.go_get_one('feat_and_trait', {'id': feat_and_trait_id, 'character_id': character_id}):
         return redirect(url_for('character_sheet'))
 
@@ -180,7 +302,10 @@ def remove_feat_and_trait_item(character_id: str, feat_and_trait_id: str):
 
 
 @app.route('/characters/<character_id>/custom-stat/<custom_stat_id>/remove', methods=['POST'])
+@login_required
 def remove_custom_stat_item(character_id: str, custom_stat_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     if not character_id or not custom_stat_id or not db.go_get_one('custom_stat', {'id': custom_stat_id, 'character_id': character_id}):
         return redirect(url_for('character_sheet'))
 
@@ -200,7 +325,10 @@ def remove_custom_stat_item(character_id: str, custom_stat_id: str):
 
 
 @app.route('/characters/<character_id>/custom-buff/<custom_buff_id>/remove', methods=['POST'])
+@login_required
 def remove_custom_buff_item(character_id: str, custom_buff_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     if not character_id or not custom_buff_id or not db.go_get_one('custom_buff', {'id': custom_buff_id, 'character_id': character_id}):
         return redirect(url_for('character_sheet'))
 
@@ -232,7 +360,10 @@ def remove_custom_buff_item(character_id: str, custom_buff_id: str):
 
 
 @app.route('/characters/<character_id>/class/<class_id>/remove', methods=['POST'])
+@login_required
 def remove_class(character_id: str, class_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
     if not character_id or not class_id or not db.go_get_one('class_to_character', {'id': class_id, 'character_id': character_id}):
         return redirect(url_for('character_sheet'))
 
@@ -252,6 +383,8 @@ def remove_class(character_id: str, class_id: str):
 if __name__ == '__main__':
     # Create the database
     db.go_create_db()
+    # Sync the database schema
+    db.go_sync_schema()
     # Seed the database
     db.go_seed_db()
     # Run the Flask app on port 8888

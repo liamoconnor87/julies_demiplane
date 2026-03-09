@@ -21,50 +21,56 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_buffs.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/add_actions.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/section_action_buttons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
     <!-- CSRF token for htmx fragment requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
 
+    <div id="auth-area">
     <nav class="site-navbar">
         <div class="page-container">
             <div class="site-navbar-title">Julies Demiplane</div>
+            {% include 'components/auth_dropdown.html' %}
         </div>
     </nav>
+    {% include 'components/character_bar.html' %}
+    </div>
     {% if debug %}
         ## {{ debug }} ##
     {% endif %}
 
     <main class="page-container sheet-page-content">
+    {% if current_user.is_authenticated and character %}
         <form action="/" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="sheet-layout">
+            <div id="sheet-content" class="sheet-layout" data-is-new="{{ 'true' if is_new_character else 'false' }}">
                 <div class="sheet-column sheet-column-one">
                     <div id="character-custom-section-container">
                         <div id="character-info-section-container">
                             {% include 'components/character_info.html' %}
                         </div>
 
-                        <div id="classes-section-container">
+                        <div id="classes-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
                             {% include 'components/classes_section.html' %}
                         </div>
 
-                        <div id="custom-stats-section-container">
+                        <div id="custom-stats-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
                             {% include 'components/custom_stats_section.html' %}
                         </div>
 
-                        <div id="add-actions-container">
+                        <div id="add-actions-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
                             {% include 'components/add_actions.html' %}
                         </div>
                     </div>
 
-                    <div id="custom-buffs-section-container">
+                    <div id="custom-buffs-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
                         {% include 'components/custom_buffs_section.html' %}
                     </div>
                 </div>
 
-                <div class="sheet-column sheet-column-two">
+                <div class="sheet-column sheet-column-two{% if is_new_character %} new-char-hidden{% endif %}">
                     <div id="combat-stats-section-container">
                         {% include 'components/combat_stats.html' %}
                     </div>
@@ -74,19 +80,28 @@
                     </div>
                 </div>
 
-                <div class="sheet-column sheet-column-three">
+                <div class="sheet-column sheet-column-three{% if is_new_character %} new-char-hidden{% endif %}">
                     <div id="feats-section-container">
                         {% include 'components/feats_traits_section.html' %}
                     </div>
                 </div>
 
-                <div class="sheet-column sheet-column-four">
+                <div class="sheet-column sheet-column-four{% if is_new_character %} new-char-hidden{% endif %}">
                     <div id="inventory-section-container">
                         {% include 'components/inventory_section.html' %}
                     </div>
                 </div>
             </div>
         </form>
+    {% elif current_user.is_authenticated %}
+        <div class="auth-empty-state">
+            <p>You don't have any characters yet.</p>
+        </div>
+    {% else %}
+        <div class="auth-empty-state">
+            <p>Please log in or sign up to view your character sheets.</p>
+        </div>
+    {% endif %}
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

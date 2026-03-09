@@ -195,5 +195,16 @@ TABLES = {
         "stat_table_id": _fk,
         "stat_name": _text(),
         "character_id": _fk,
-    }
+    },
+    "user": {
+        "id": _id,
+        "username": _text(30),
+        "password_hash": _text(256),
+        "created_at": _text(),
+    },
+    "user_to_character": {
+        "id": _id,
+        "user_id": _fk,
+        "character_id": _fk,
+    },
 }

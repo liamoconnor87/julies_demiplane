@@ -6,7 +6,12 @@
 
     {# Ability Value #}
     <div class="abilities-section-name-field">
-        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="abilities-section-name-input">
+        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="abilities-section-name-input"
+            hx-post="/characters/{{ character_id }}/abilities-skills/fragment"
+            hx-target="#abilities-section-container"
+            hx-swap="innerHTML"
+            hx-include="closest form"
+            hx-trigger="change">
         <label for="{{ ability_name }}-value" class="abilities-section-name-label">{{ ability_name | title }}</label>
     </div>
 

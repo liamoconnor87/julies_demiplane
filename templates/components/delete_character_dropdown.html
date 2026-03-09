@@ -1,0 +1,23 @@
+{# Inner content for the delete-character confirmation dropdown. #}
+<p class="delete-character-warning">
+    Type <strong>DELETE</strong> to permanently remove this character: <strong>{{ character.name }}</strong>.
+</p>
+{% if error is defined and error %}
+    <p class="delete-character-error">{{ error }}</p>
+{% endif %}
+<input type="text"
+       id="delete-confirm-input"
+       name="confirmation"
+       class="delete-character-input"
+       placeholder="Type DELETE"
+       autocomplete="off">
+<button type="button"
+        id="delete-confirm-btn"
+        class="delete-character-confirm-btn"
+        hx-delete="/characters/{{ character_id or active_character_id }}/delete"
+        hx-target="#delete-character-dropdown"
+        hx-swap="innerHTML"
+        hx-include="#delete-confirm-input"
+        disabled>
+    Confirm
+</button>
