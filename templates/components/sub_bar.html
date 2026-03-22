@@ -1,0 +1,20 @@
+{# Sub-bar — tab buttons that extend downward off the character bar.
+   Only shown for authenticated users who have a character open. #}
+{% if current_user.is_authenticated and active_character_id %}
+<div class="sub-bar" id="sub-bar">
+    <div class="page-container">
+        <button class="sub-bar-tab" id="sub-tab-info" data-tab="info" type="button">Info</button>
+        <button class="sub-bar-tab" id="sub-tab-inventory" data-tab="inventory" type="button">Inventory</button>
+        <button class="sub-bar-tab" id="sub-tab-trackers" data-tab="trackers" type="button">Trackers</button>
+        {# Delete tab — right-aligned #}
+        {% if not (is_unsaved is defined and is_unsaved) %}
+        <div class="character-bar-delete-wrapper">
+            <button class="sub-bar-tab-delete" id="delete-character-toggle" title="Delete Character" type="button">Delete</button>
+            <div id="delete-character-dropdown" class="delete-character-dropdown d-none">
+                {% include 'components/delete_character_dropdown.html' %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

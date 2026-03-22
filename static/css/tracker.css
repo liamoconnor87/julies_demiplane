@@ -1,0 +1,308 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   tracker.css — sub-bar navigation tabs + tracker page styles
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Sub-bar (tab extensions below the character bar) ──────────────────────── */
+
+.sub-bar {
+    position: fixed;
+    top: calc(var(--navbar-height) + var(--character-bar-height));
+    left: 0;
+    right: 0;
+    z-index: 997;
+    background: transparent;
+    pointer-events: none;
+}
+
+.sub-bar .page-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding-top: 0;
+    pointer-events: none;
+    max-width: none;
+}
+
+.sub-bar-tab {
+    pointer-events: all;
+    background: var(--primary-color-transparent);
+    border: 1px solid var(--secondary-color-dark);
+    border-top: none;
+    color: var(--secondary-color-dark);
+    font-size: 0.78rem;
+    padding: 0.2rem 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 2px;
+    transition: color 0.15s, background 0.15s;
+}
+
+.sub-bar-tab:hover {
+    color: var(--secondary-color);
+}
+
+.sub-bar-tab.active {
+    background: var(--primary-color);
+    color: var(--secondary-color);
+}
+
+.sub-bar-tab-delete {
+    pointer-events: all;
+    background: var(--primary-color-transparent);
+    border: 1px solid rgba(255, 80, 80, 0.4);
+    border-top: none;
+    color: rgba(255, 80, 80, 0.7);
+    font-size: 0.78rem;
+    padding: 0.2rem 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.sub-bar-tab-delete:hover {
+    color: rgb(255, 80, 80);
+    border-color: rgba(255, 80, 80, 0.7);
+    background: rgba(255, 80, 80, 0.08);
+}
+
+/* ── Sub-pages (shown/hidden by JS tab switching) ──────────────────────────── */
+
+.sub-page {
+    width: 100%;
+}
+
+/* ── Tracker page (inline full-width tracker section) ──────────────────────── */
+
+.tracker-page {
+    max-width: 600px;
+    padding: 0.5rem;
+}
+
+/* ── Tracker toggle boxes ───────────────────────────────────────────────────── */
+
+.tracker-toggle {
+    display: inline-block;
+    width: 0.9rem;
+    height: 0.9rem;
+    border: 1px solid var(--secondary-color-dark);
+    background: transparent;
+    cursor: pointer;
+    vertical-align: middle;
+    flex-shrink: 0;
+    transition: background 0.12s, border-color 0.12s;
+    box-sizing: border-box;
+}
+
+.tracker-toggle.checked {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* ── Tracker list ──────────────────────────────────────────────────────────── */
+
+.tracker-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.tracker-item {
+    border: 1px solid var(--secondary-color-dark);
+    padding: 0.6rem 0.75rem;
+    position: relative;
+}
+
+.tracker-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+}
+
+.tracker-item-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.tracker-item-delete-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 80, 80, 0.7);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0 0.2rem;
+    transition: color 0.15s;
+}
+
+.tracker-item-delete-btn:hover {
+    color: rgb(255, 80, 80);
+}
+
+/* ── Entry rows inside a tracker ───────────────────────────────────────────── */
+
+.tracker-entry-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.4rem;
+}
+
+.tracker-entry-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+}
+
+.tracker-entry-row-name {
+    color: var(--text-colour-three);
+    min-width: 5rem;
+    flex: 0 0 auto;
+}
+
+.tracker-entry-toggles {
+    display: flex;
+    gap: 0.2rem;
+    align-items: center;
+}
+
+/* Larger toggles on the tracker page */
+.tracker-page .tracker-toggle {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.tracker-entry-delete-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 80, 80, 0.6);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0 0.15rem;
+    margin-left: auto;
+    transition: color 0.15s;
+}
+
+.tracker-entry-delete-btn:hover {
+    color: rgb(255, 80, 80);
+}
+
+/* ── Add entry form (hidden by default) ────────────────────────────────────── */
+
+.tracker-add-entry-form {
+    display: none;
+    flex-direction: row;
+    gap: 0.35rem;
+    align-items: flex-end;
+    margin-top: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.tracker-add-entry-form.visible {
+    display: flex;
+}
+
+.tracker-add-entry-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.tracker-add-entry-label {
+    font-size: 0.55rem;
+    color: var(--secondary-color);
+    font-weight: bold;
+    padding-left: 0.25rem;
+}
+
+.tracker-add-entry-input {
+    background: var(--primary-color-transparent);
+    border: none;
+    border-bottom: 1px solid var(--secondary-color-dark);
+    color: var(--text-colour-three);
+    font-size: 0.8rem;
+    padding: 0.25rem 0.4rem;
+    outline: none;
+    width: 8rem;
+}
+
+.tracker-add-entry-input[type='number'] {
+    width: 3.5rem;
+    text-align: center;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.tracker-add-entry-input[type='number']::-webkit-outer-spin-button,
+.tracker-add-entry-input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.tracker-add-entry-btn {
+    background: var(--primary-color-transparent);
+    border: none;
+    color: var(--text-colour-three);
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0.15rem 0.5rem;
+    line-height: 1;
+    align-self: flex-end;
+}
+
+.tracker-add-entry-btn:hover {
+    color: var(--secondary-color);
+}
+
+.tracker-add-entry-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--secondary-color-dark);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0.1rem 0;
+    transition: color 0.15s;
+}
+
+.tracker-add-entry-toggle-btn:hover {
+    color: var(--secondary-color);
+}
+
+/* ── Add tracker form ──────────────────────────────────────────────────────── */
+
+.tracker-add-tracker-form {
+    display: flex;
+    flex-direction: row;
+    gap: 0.35rem;
+    align-items: flex-end;
+    border-top: 1px solid var(--secondary-color-dark);
+    padding-top: 0.65rem;
+    margin-top: 0.25rem;
+}
+
+.tracker-add-tracker-input {
+    background: var(--primary-color-transparent);
+    border: none;
+    border-bottom: 1px solid var(--secondary-color-dark);
+    color: var(--text-colour-three);
+    font-size: 0.8rem;
+    padding: 0.25rem 0.4rem;
+    outline: none;
+    flex: 1 1 auto;
+}
+
+.tracker-add-tracker-btn {
+    background: var(--primary-color-transparent);
+    border: none;
+    color: var(--secondary-color);
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0.15rem 0.5rem;
+    line-height: 1;
+}
+
+.tracker-add-tracker-btn:hover {
+    opacity: 0.7;
+}

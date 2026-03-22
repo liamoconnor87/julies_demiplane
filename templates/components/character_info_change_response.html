@@ -9,3 +9,7 @@
    class="character-bar-tab active">
     {{ character.name or 'New Character' }}
 </a>
+
+<div id="delete-character-dropdown" class="delete-character-dropdown d-none" hx-swap-oob="true">
+    {% include 'components/delete_character_dropdown.html' %}
+</div>

@@ -188,9 +188,8 @@
     align-self: flex-end;
 }
 
-.character-info-section[data-unsaved='false'] .character-info-save-btn,
-.character-info-section[data-unsaved='false'] .character-info-action-field .character-info-label {
-    color: var(--secondary-color-dark);
+.character-info-new-save {
+    align-self: flex-end;
 }
 
 .character-info-save-btn {

@@ -1,6 +1,7 @@
 window.addEventListener("load", () => {
     initializeUiBindings();
     bindDeleteCharacterDropdown();
+    bindSubBarTabs();
 
     // Inject the CSRF token into every htmx AJAX request as a header.
     // Flask-WTF's CSRFProtect accepts tokens from the X-CSRFToken header,
@@ -43,7 +44,7 @@ window.addEventListener("load", () => {
             bindProficiencyToggles();
             bindAbilitiesSectionLockToggle();
             decorateBuffedLabels();
-            bindCharacterInfoChangeDetection();
+            bindCharacterInfoAutoSave();
 
             // When a new character is saved for the first time, reveal the
             // rest of the sheet sections that were hidden during creation.
@@ -59,7 +60,8 @@ window.addEventListener("load", () => {
 
         if (target.id === 'classes-section-container') {
             bindAddActionButtons();
-            bindClassLevelUpdateButtons();
+            bindClassLevelAutoSave();
+            bindClassesAndStatsLockToggle();
             return;
         }
 
@@ -84,9 +86,16 @@ window.addEventListener("load", () => {
             return;
         }
 
+        if (target.id === 'tracker-page-container') {
+            bindTrackerToggles();
+            bindTrackerAddEntryToggles();
+            return;
+        }
+
         if (target.id === 'custom-stats-section-container') {
             bindAddActionButtons();
-            bindCustomStatsLockToggle();
+            bindClassesAndStatsLockToggle();
+            bindCustomStatAutoSave();
             selectCustomBuffField();
             bindBuffsLockToggle();
             decorateBuffedLabels();
@@ -99,7 +108,7 @@ window.addEventListener("load", () => {
             bindAbilitiesSectionLockToggle();
             bindCurrentHpCalculation();
             bindCombatFieldAutoSave();
-            bindCustomStatsLockToggle();
+            bindClassesAndStatsLockToggle();
             bindBuffsLockToggle();
             decorateBuffedLabels();
         }
@@ -205,48 +214,61 @@ function initializeUiBindings() {
     selectFeatField();
     selectInventoryField();
     selectCustomBuffField();
-    bindClassLevelUpdateButtons();
+    bindClassLevelAutoSave();
+    bindCustomStatAutoSave();
     bindProficiencyToggles();
     bindAbilitiesSectionLockToggle();
     bindCurrentHpCalculation();
     bindCombatFieldAutoSave();
-    bindCustomStatsLockToggle();
+    bindClassesAndStatsLockToggle();
     bindFeatsLockToggle();
     bindInventoryLockToggle();
     bindBuffsLockToggle();
     bindFeatDescriptionDisplayAutoHeight();
     bindInventoryDescriptionDisplayAutoHeight();
     decorateBuffedLabels();
-    bindCharacterInfoChangeDetection();
+    bindCharacterInfoAutoSave();
 }
 
-function bindCharacterInfoChangeDetection() {
+let characterInfoAutoSaveTimer = null;
+
+function bindCharacterInfoAutoSave() {
     const section = document.querySelector('.character-info-section');
     if (!section) {
         return;
     }
 
-    section.dataset.unsaved = 'false';
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return;
+    }
+
+    const form = section.closest('form');
+    if (!form) {
+        return;
+    }
 
     const inputs = section.querySelectorAll('input:not([type="hidden"]):not([disabled])');
-    const originalValues = new Map();
 
-    inputs.forEach((input) => {
-        originalValues.set(input, input.value);
-    });
-
-    const checkForChanges = () => {
-        let hasChanges = false;
-        inputs.forEach((input) => {
-            if (input.value !== originalValues.get(input)) {
-                hasChanges = true;
-            }
-        });
-        section.dataset.unsaved = hasChanges ? 'true' : 'false';
+    const triggerAutoSave = () => {
+        if (characterInfoAutoSaveTimer) {
+            clearTimeout(characterInfoAutoSaveTimer);
+        }
+        characterInfoAutoSaveTimer = setTimeout(() => {
+            characterInfoAutoSaveTimer = null;
+            htmx.ajax('POST', `/characters/${characterId}/character-info/fragment`, {
+                source: form,
+                target: '#character-info-section-container',
+                swap: 'innerHTML'
+            });
+        }, 1000);
     };
 
     inputs.forEach((input) => {
-        input.addEventListener('input', checkForChanges);
+        if (input.dataset.autoSaveBound === 'true') return;
+        input.dataset.autoSaveBound = 'true';
+        input.addEventListener('input', triggerAutoSave);
     });
 }
 
@@ -260,68 +282,156 @@ function getCustomStatsLockCookieKey() {
     return `custom_stats_lock_${characterId}`;
 }
 
-function bindCustomStatsLockToggle() {
-    const section = document.querySelector('.custom-stats-section');
-    const lockToggle = document.getElementById('custom-stats-lock-toggle');
+let classLevelAutoSaveTimer = null;
 
-    if (!section || !lockToggle) {
+function bindClassLevelAutoSave() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return;
+    }
+
+    const classesSection = document.querySelector('.classes-section');
+    if (!classesSection) {
+        return;
+    }
+
+    const form = classesSection.closest('form');
+    if (!form) {
+        return;
+    }
+
+    const inputs = classesSection.querySelectorAll('.class-level-input');
+
+    const triggerAutoSave = () => {
+        if (classLevelAutoSaveTimer) {
+            clearTimeout(classLevelAutoSaveTimer);
+        }
+        classLevelAutoSaveTimer = setTimeout(() => {
+            classLevelAutoSaveTimer = null;
+            htmx.ajax('POST', `/characters/${characterId}/classes/fragment`, {
+                source: form,
+                target: '#classes-section-container',
+                swap: 'innerHTML'
+            });
+        }, 1000);
+    };
+
+    inputs.forEach((input) => {
+        if (input.dataset.autoSaveBound === 'true') return;
+        input.dataset.autoSaveBound = 'true';
+        input.addEventListener('input', triggerAutoSave);
+    });
+}
+
+let customStatAutoSaveTimer = null;
+
+function bindCustomStatAutoSave() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return;
+    }
+
+    const statsSection = document.querySelector('.custom-stats-section');
+    if (!statsSection) {
+        return;
+    }
+
+    const form = statsSection.closest('form');
+    if (!form) {
+        return;
+    }
+
+    const inputs = statsSection.querySelectorAll('.custom-stats-section-input[type="number"]');
+
+    const triggerAutoSave = () => {
+        if (customStatAutoSaveTimer) {
+            clearTimeout(customStatAutoSaveTimer);
+        }
+        customStatAutoSaveTimer = setTimeout(() => {
+            customStatAutoSaveTimer = null;
+            htmx.ajax('POST', `/characters/${characterId}/custom-stats/fragment`, {
+                source: form,
+                target: '#custom-stats-section-container',
+                swap: 'innerHTML'
+            });
+        }, 1000);
+    };
+
+    inputs.forEach((input) => {
+        if (input.dataset.autoSaveBound === 'true') return;
+        input.dataset.autoSaveBound = 'true';
+        input.addEventListener('input', triggerAutoSave);
+    });
+}
+
+function bindClassesAndStatsLockToggle() {
+    const lockToggle = document.getElementById('custom-stats-lock-toggle');
+    if (!lockToggle) {
         return;
     }
 
     const cookieKey = getCustomStatsLockCookieKey();
     const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
 
+    // Read persisted state; default to unlocked
+    let currentLocked;
     if (persistedLockState === 'true' || persistedLockState === 'false') {
-        section.dataset.locked = persistedLockState;
-    } else if (!section.dataset.locked) {
-        section.dataset.locked = 'false';
+        currentLocked = persistedLockState;
+    } else {
+        currentLocked = 'false';
     }
 
-    const syncRemoveButtons = () => {
-        const isLocked = section.dataset.locked === 'true';
-        const removeButtons = section.querySelectorAll('[data-custom-stat-remove="true"]');
-        removeButtons.forEach((button) => {
-            button.disabled = isLocked;
-            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
-        });
-    };
+    const syncAll = () => {
+        const isLocked = currentLocked === 'true';
 
-    const syncLockText = () => {
-        const isLocked = section.dataset.locked === 'true';
+        // Update lock icon
         lockToggle.innerHTML = isLocked
             ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
             : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
         lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
         lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
-        syncRemoveButtons();
+
+        // Sync custom stat remove buttons
+        document.querySelectorAll('[data-custom-stat-remove="true"]').forEach((button) => {
+            button.disabled = isLocked;
+            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+        });
+
+        // Sync class remove buttons
+        document.querySelectorAll('[data-class-remove="true"]').forEach((button) => {
+            button.disabled = isLocked;
+            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+        });
+
+        // Apply locked state to custom-stats-section for CSS
+        const statsSection = document.querySelector('.custom-stats-section');
+        if (statsSection) {
+            statsSection.dataset.locked = currentLocked;
+        }
+    };
+
+    const toggle = () => {
+        currentLocked = currentLocked === 'true' ? 'false' : 'true';
+        if (cookieKey) {
+            setCookieValue(cookieKey, currentLocked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+        }
+        syncAll();
     };
 
     if (lockToggle.dataset.bound !== 'true') {
-        lockToggle.addEventListener('click', () => {
-            const isLocked = section.dataset.locked === 'true';
-            section.dataset.locked = isLocked ? 'false' : 'true';
-            if (cookieKey) {
-                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
-            }
-            syncLockText();
-        });
-
+        lockToggle.addEventListener('click', toggle);
         lockToggle.addEventListener('keydown', (event) => {
             if (event.key === ' ' || event.key === 'Enter') {
                 event.preventDefault();
-                const isLocked = section.dataset.locked === 'true';
-                section.dataset.locked = isLocked ? 'false' : 'true';
-                if (cookieKey) {
-                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
-                }
-                syncLockText();
+                toggle();
             }
         });
-
         lockToggle.dataset.bound = 'true';
     }
 
-    syncLockText();
+    syncAll();
 }
 
 function getBuffsLockCookieKey() {
@@ -769,7 +879,7 @@ function selectFeatField() {
         addFeatSubmitBtnWrapper.style.display = 'flex';
         closeFeatBtnWrapper.style.display = 'flex';
 
-        const addDescriptionField = addFeatFieldDescription.querySelector('.feats-section-description-input');
+        const addDescriptionField = addFeatFieldDescription.querySelector('.card-item-description-input');
         if (addDescriptionField) {
             addDescriptionField.style.height = '';
             resizeFeatDescriptionField(addDescriptionField);
@@ -807,7 +917,7 @@ function selectInventoryField() {
         addInventorySubmitBtnWrapper.style.display = 'flex';
         closeInventoryBtnWrapper.style.display = 'flex';
 
-        const addDescriptionField = addInventoryFieldDescription.querySelector('.inventory-section-description-input');
+        const addDescriptionField = addInventoryFieldDescription.querySelector('.card-item-description-input');
         if (addDescriptionField) {
             addDescriptionField.style.height = '';
             resizeInventoryDescriptionField(addDescriptionField);
@@ -848,57 +958,6 @@ function resizeInventoryDescriptionField(field) {
     const minHeight = Number.parseFloat(computedStyles.minHeight) || field.clientHeight || 0;
     const targetHeight = Math.max(field.scrollHeight, minHeight);
     field.style.height = `${targetHeight}px`;
-}
-
-function bindClassLevelUpdateButtons() {
-    const classLevelInputs = document.querySelectorAll('.class-level-input');
-
-    classLevelInputs.forEach((input) => {
-        const classId = input.dataset.charClassId;
-        const actionBtn = document.getElementById(`classes-action-${classId}`);
-        const actionLabel = document.getElementById(`classes-action-label-${classId}`);
-
-        if (!actionBtn || !actionLabel) {
-            return;
-        }
-
-        const setButtonMode = () => {
-            const currentValue = input.value.trim();
-            const originalValue = (input.dataset.originalValue || '').trim();
-            const hasChanged = currentValue !== originalValue;
-            const updateUrl = actionBtn.dataset.htmxUpdateUrl;
-            const removeUrl = actionBtn.dataset.removeUrl;
-
-            if (hasChanged) {
-                actionBtn.type = 'button';
-                actionBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
-                actionLabel.textContent = 'Update';
-                if (updateUrl) {
-                    actionBtn.setAttribute('hx-post', updateUrl);
-                }
-                actionBtn.setAttribute('hx-target', '#classes-section-container');
-                actionBtn.setAttribute('hx-swap', 'innerHTML');
-                actionBtn.setAttribute('hx-include', 'closest form');
-                htmx.process(actionBtn);
-                return;
-            }
-
-            actionBtn.type = 'button';
-            actionBtn.textContent = '−';
-            actionLabel.textContent = 'Remove';
-            if (removeUrl) {
-                actionBtn.setAttribute('hx-post', removeUrl);
-            }
-            actionBtn.setAttribute('hx-target', '#classes-section-container');
-            actionBtn.setAttribute('hx-swap', 'innerHTML');
-            actionBtn.setAttribute('hx-include', 'closest form');
-            htmx.process(actionBtn);
-        };
-
-        setButtonMode();
-        input.addEventListener('input', setButtonMode);
-        input.addEventListener('change', setButtonMode);
-    });
 }
 
 // Function to update inventory item quantity
@@ -1215,7 +1274,7 @@ function bindAbilitiesSectionLockToggle() {
 }
 
 function bindFeatDescriptionDisplayAutoHeight() {
-    const descriptionFields = document.querySelectorAll('.feats-section-description-input');
+    const descriptionFields = document.querySelectorAll('.feats-section .card-item-description-input');
 
     if (!descriptionFields.length) {
         return;
@@ -1236,7 +1295,7 @@ function bindFeatDescriptionDisplayAutoHeight() {
 
     if (!featDescriptionResizeWindowBound) {
         window.addEventListener('resize', () => {
-            const activeDescriptionFields = document.querySelectorAll('.feats-section-description-input');
+            const activeDescriptionFields = document.querySelectorAll('.feats-section .card-item-description-input');
             activeDescriptionFields.forEach((field) => {
                 if (field.offsetParent === null) {
                     return;
@@ -1250,7 +1309,7 @@ function bindFeatDescriptionDisplayAutoHeight() {
 }
 
 function bindInventoryDescriptionDisplayAutoHeight() {
-    const descriptionFields = document.querySelectorAll('.inventory-section-description-input');
+    const descriptionFields = document.querySelectorAll('.inventory-section .card-item-description-input');
 
     if (!descriptionFields.length) {
         return;
@@ -1271,7 +1330,7 @@ function bindInventoryDescriptionDisplayAutoHeight() {
 
     if (!inventoryDescriptionResizeWindowBound) {
         window.addEventListener('resize', () => {
-            const activeDescriptionFields = document.querySelectorAll('.inventory-section-description-input');
+            const activeDescriptionFields = document.querySelectorAll('.inventory-section .card-item-description-input');
             activeDescriptionFields.forEach((field) => {
                 if (field.offsetParent === null) {
                     return;
@@ -1282,4 +1341,142 @@ function bindInventoryDescriptionDisplayAutoHeight() {
         });
         inventoryDescriptionResizeWindowBound = true;
     }
+}
+
+// ── Tracker toggles ──────────────────────────────────────────────────────────
+
+function getTrackerToggleCookieKey(characterId, trackerId, entryId) {
+    return `tracker_state_${characterId}_${trackerId}_${entryId}`;
+}
+
+function bindTrackerToggles() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+
+    document.querySelectorAll('.tracker-toggle').forEach((toggle) => {
+        if (toggle.dataset.bound === 'true') return;
+        toggle.dataset.bound = 'true';
+
+        const trackerId = toggle.dataset.trackerId;
+        const entryId = toggle.dataset.entryId;
+        const index = parseInt(toggle.dataset.index, 10);
+
+        // Restore state from cookie
+        if (characterId && trackerId && entryId) {
+            const cookieKey = getTrackerToggleCookieKey(characterId, trackerId, entryId);
+            const raw = getCookieValue(cookieKey);
+            if (raw) {
+                try {
+                    const checkedIndices = JSON.parse(raw);
+                    if (Array.isArray(checkedIndices) && checkedIndices.includes(index)) {
+                        toggle.classList.add('checked');
+                        toggle.setAttribute('aria-checked', 'true');
+                    }
+                } catch (_) { /* ignore */ }
+            }
+        }
+
+        const saveState = () => {
+            if (!characterId || !trackerId || !entryId) return;
+            const cookieKey = getTrackerToggleCookieKey(characterId, trackerId, entryId);
+            const allToggles = document.querySelectorAll(
+                `.tracker-toggle[data-tracker-id="${trackerId}"][data-entry-id="${entryId}"]`
+            );
+            const checkedIndices = [];
+            allToggles.forEach((t) => {
+                if (t.classList.contains('checked')) {
+                    checkedIndices.push(parseInt(t.dataset.index, 10));
+                }
+            });
+            setCookieValue(cookieKey, JSON.stringify(checkedIndices), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+        };
+
+        const doToggle = () => {
+            const isChecked = toggle.classList.contains('checked');
+            toggle.classList.toggle('checked', !isChecked);
+            toggle.setAttribute('aria-checked', String(!isChecked));
+            saveState();
+        };
+
+        toggle.addEventListener('click', doToggle);
+        toggle.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                doToggle();
+            }
+        });
+    });
+}
+
+function bindTrackerAddEntryToggles() {
+    document.querySelectorAll('.tracker-add-entry-toggle-btn').forEach((btn) => {
+        if (btn.dataset.bound === 'true') return;
+        btn.dataset.bound = 'true';
+        btn.addEventListener('click', () => {
+            const trackerId = btn.dataset.trackerId;
+            const form = document.getElementById(`add-entry-form-${trackerId}`);
+            if (form) {
+                form.classList.toggle('visible');
+            }
+        });
+    });
+}
+
+// ── Sub-bar tab navigation ───────────────────────────────────────────────────
+
+function bindSubBarTabs() {
+    const tabs = document.querySelectorAll('.sub-bar-tab');
+    if (!tabs.length) return;
+
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+
+    const pages = {
+        'info':      document.getElementById('sheet-page-info'),
+        'inventory': document.getElementById('sheet-page-inventory'),
+        'trackers':  document.getElementById('sheet-page-trackers'),
+    };
+
+    const cookieKey = characterId ? `sub_bar_tab_${characterId}` : null;
+    const savedTab = cookieKey ? getCookieValue(cookieKey) : null;
+    const validTabs = ['info', 'inventory', 'trackers'];
+    const initialTab = (savedTab && validTabs.includes(savedTab)) ? savedTab : 'info';
+
+    const switchTo = (tabName) => {
+        // Update active class on tab buttons
+        tabs.forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+
+        // Show/hide sub-pages
+        Object.entries(pages).forEach(([name, el]) => {
+            if (!el) return;
+            el.classList.toggle('d-none', name !== tabName);
+        });
+
+        // Persist choice
+        if (cookieKey) {
+            setCookieValue(cookieKey, tabName, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+        }
+
+        // Re-bind sub-section bindings when switching into it
+        if (tabName === 'trackers') {
+            bindTrackerToggles();
+            bindTrackerAddEntryToggles();
+        } else if (tabName === 'inventory') {
+            selectInventoryField();
+            bindInventoryDescriptionDisplayAutoHeight();
+            bindInventoryLockToggle();
+        }
+    };
+
+    // Bind click handlers (guard against double-binding)
+    tabs.forEach((btn) => {
+        if (btn.dataset.bound === 'true') return;
+        btn.dataset.bound = 'true';
+        btn.addEventListener('click', () => switchTo(btn.dataset.tab));
+    });
+
+    // Apply saved/default tab on load
+    switchTo(initialTab);
 }

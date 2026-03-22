@@ -12,7 +12,19 @@
         {% set field_value = character.name %}
         {% include 'components/character_info_name_field.html' %}
 
-        {# Level (calculated, disabled) #}
+        {% if is_new_character %}
+        {# Inline save button shown only for new characters (name-only view) #}
+        <div class="character-info-stat-field character-info-action-field character-info-new-save section-action-field">
+            <button type="button" id="character-info-save-btn" class="character-info-save-btn section-action-btn"
+                hx-post="{% if is_unsaved is defined and is_unsaved %}/characters/first-save{% else %}/characters/{{ character_id }}/character-info/fragment{% endif %}"
+                hx-target="#character-info-section-container"
+                hx-swap="{% if is_unsaved is defined and is_unsaved %}none{% else %}innerHTML{% endif %}"
+                hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+            <label for="character-info-save-btn" class="character-info-label section-action-label">Save</label>
+        </div>
+        {% endif %}
+
+        {# Level (calculated, disabled) — hidden until a class is added #}
         {% set field_id = 'character-level' %}
         {% set field_name = 'character-level' %}
         {% set field_label = 'Level' %}
@@ -20,7 +32,7 @@
         {% include 'components/character_info_level_field.html' %}
     </div>
 
-    <div class="character-info-secondary-row">
+    <div class="character-info-secondary-row{% if is_new_character %} new-char-hidden{% endif %}">
 
         {# Race #}
         {% set field_id = 'character-race' %}
@@ -44,7 +56,7 @@
         {% include 'components/character_info_text_field.html' %}
     </div>
 
-    <div class="character-info-stats-row">
+    <div class="character-info-stats-row{% if is_new_character %} new-char-hidden{% endif %}">
         {# Armour Class #}
         {% set stat_id = 'character-armour_class' %}
         {% set stat_name = 'character-armour_class' %}
@@ -86,15 +98,5 @@
         {% set stat_label = 'XP' %}
         {% set stat_value = character.xp %}
         {% include 'components/character_info_xp_stat_field.html' %}
-
-        {# Save Button #}
-        <div class="character-info-stat-field character-info-action-field section-action-field">
-            <button type="button" id="character-info-save-btn" class="character-info-save-btn section-action-btn"
-                hx-post="/characters/{{ character_id }}/character-info/fragment"
-                hx-target="#character-info-section-container"
-                hx-swap="innerHTML"
-                hx-include="closest form"><i class="bi bi-check-lg"></i></button>
-            <label for="character-info-save-btn" class="character-info-label section-action-label">Save</label>
-        </div>
     </div>
 </div>

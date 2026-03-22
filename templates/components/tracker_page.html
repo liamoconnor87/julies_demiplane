@@ -1,0 +1,76 @@
+{# Tracker page — inline full-page tracker management (no modal). #}
+<div class="tracker-page">
+    <div class="tracker-list" id="tracker-list">
+    {% if trackers %}
+        {% for tracker in trackers %}
+        <div class="tracker-item" data-tracker-id="{{ tracker.id }}">
+            <div class="tracker-item-header">
+                <span class="tracker-item-name">{{ tracker.name }}</span>
+                <button type="button" class="tracker-item-delete-btn"
+                        hx-post="/characters/{{ character_id }}/tracker/{{ tracker.id }}/remove"
+                        hx-target="#tracker-page-container"
+                        hx-swap="innerHTML"
+                        aria-label="Delete tracker">&#x2715;</button>
+            </div>
+
+            <div class="tracker-entry-list">
+            {% for entry in tracker.entries %}
+                <div class="tracker-entry-row" data-entry-id="{{ entry.id }}">
+                    <span class="tracker-entry-row-name">{{ entry.name }}</span>
+                    <div class="tracker-entry-toggles">
+                        {% for i in range(entry.value) %}
+                        <span class="tracker-toggle"
+                              data-tracker-id="{{ tracker.id }}"
+                              data-entry-id="{{ entry.id }}"
+                              data-index="{{ loop.index0 }}"
+                              role="checkbox"
+                              tabindex="0"
+                              aria-checked="false"
+                              aria-label="{{ entry.name }} {{ loop.index }}"></span>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="tracker-entry-delete-btn"
+                            hx-post="/characters/{{ character_id }}/tracker/{{ tracker.id }}/entry/{{ entry.id }}/remove"
+                            hx-target="#tracker-page-container"
+                            hx-swap="innerHTML"
+                            aria-label="Delete entry">&#x2715;</button>
+                </div>
+            {% endfor %}
+            </div>
+
+            {# Add entry form #}
+            <button type="button" class="tracker-add-entry-toggle-btn" data-tracker-id="{{ tracker.id }}">+ add entry</button>
+            <div class="tracker-add-entry-form" id="add-entry-form-{{ tracker.id }}">
+                <div class="tracker-add-entry-field">
+                    <label class="tracker-add-entry-label">Entry Name</label>
+                    <input type="text" class="tracker-add-entry-input" id="entry-name-{{ tracker.id }}" name="entry-name-{{ tracker.id }}" placeholder="e.g. Pass" maxlength="40">
+                </div>
+                <div class="tracker-add-entry-field">
+                    <label class="tracker-add-entry-label">Value</label>
+                    <input type="number" class="tracker-add-entry-input" id="entry-value-{{ tracker.id }}" name="entry-value-{{ tracker.id }}" value="3" min="1" max="20">
+                </div>
+                <button type="button" class="tracker-add-entry-btn"
+                        data-tracker-id="{{ tracker.id }}"
+                        hx-post="/characters/{{ character_id }}/tracker/{{ tracker.id }}/entry/add"
+                        hx-target="#tracker-page-container"
+                        hx-swap="innerHTML"
+                        hx-include="[id='entry-name-{{ tracker.id }}'], [id='entry-value-{{ tracker.id }}']"
+                        aria-label="Add entry">&#x2713;</button>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+    </div>
+
+    {# Add tracker form #}
+    <div class="tracker-add-tracker-form">
+        <input type="text" class="tracker-add-tracker-input" id="add-tracker-name-input" name="add-tracker-name-input" placeholder="New tracker name…" maxlength="60">
+        <button type="button" class="tracker-add-tracker-btn"
+                id="add-tracker-submit-btn"
+                hx-post="/characters/{{ character_id }}/tracker/add"
+                hx-target="#tracker-page-container"
+                hx-swap="innerHTML"
+                hx-include="#add-tracker-name-input"
+                aria-label="Add tracker">&#x2713;</button>
+    </div>
+</div>

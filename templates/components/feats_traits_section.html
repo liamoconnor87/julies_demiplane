@@ -1,69 +1,68 @@
-<div class="feats-section">
+<div class="card-item-section feats-section">
     <h4>
         Feats & Traits
         <span id="feats-lock-toggle" class="section-lock-toggle" role="button" tabindex="0" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
     </h4>
     {% if feats_and_traits %}
         {% for feat in feats_and_traits %}
-            <div class="feats-section-row feats-section-saved-row">
-                <div class="feats-section-top-row">
-                    <div class="feats-section-field feats-section-name-field">
-                        <label for="feat_and_trait-name-{{ feat.id }}" class="feats-section-label">Feat/Trait</label>
+            <div class="card-item-row card-item-saved-row">
+                <div class="card-item-top-row">
+                    <div class="card-item-field card-item-name-field">
+                        <label for="feat_and_trait-name-{{ feat.id }}" class="card-item-label">Feat/Trait</label>
                         <input type="text" id="feat_and_trait-name-{{ feat.id }}"
-                               name="feat_and_trait-name-{{ feat.id }}" value="{{ feat.name }}" readonly class="feats-section-input">
+                               name="feat_and_trait-name-{{ feat.id }}" value="{{ feat.name }}" readonly class="card-item-input">
                     </div>
 
-                    <div class="feats-section-field feats-section-action-field section-action-field">
-                        <button type="button" id="feat-and-trait-delete-{{ feat.id }}" class="feats-section-btn section-action-btn" data-feat-remove="true"
+                    <div class="card-item-field card-item-action-field section-action-field">
+                        <button type="button" id="feat-and-trait-delete-{{ feat.id }}" class="card-item-btn section-action-btn" data-feat-remove="true"
                                 hx-post="/characters/{{ character_id }}/feat-and-trait/{{ feat.id }}/remove"
                                 hx-target="#feats-section-container"
                             hx-swap="innerHTML"
                                 hx-include="closest form">−</button>
-                        <label for="feat-and-trait-delete-{{ feat.id }}" class="feats-section-label section-action-label">Remove</label>
+                        <label for="feat-and-trait-delete-{{ feat.id }}" class="card-item-label section-action-label">Remove</label>
                     </div>
                 </div>
 
-                <div class="feats-section-field feats-section-description-field">
-                    <label for="feat_and_trait-description-{{ feat.id }}" class="feats-section-label">Description</label>
-                    <div id="feat_and_trait-description-{{ feat.id }}" class="feats-section-description-display">{{ feat.description }}</div>
+                <div class="card-item-field card-item-description-field">
+                    <div id="feat_and_trait-description-{{ feat.id }}" class="card-item-description-display">{{ feat.description }}</div>
                 </div>
             </div>
         {% endfor %}
     {% endif %}
 
     {% if not feats_and_traits_at_capacity %}
-    <div class="feats-section-row feats-section-add-row">
-        <div class="feats-section-top-row">
-            <div class="feats-section-field feats-section-action-field section-action-field" id="add-feat-btn-wrapper">
-                <button type="button" id="add-feat-btn" class="feats-section-btn section-action-btn">+</button>
-                <label for="add-feat-btn" class="feats-section-label section-action-label">Add Feat</label>
+    <div class="card-item-row card-item-add-row">
+        <div class="card-item-top-row">
+            <div class="card-item-field card-item-action-field section-action-field" id="add-feat-btn-wrapper">
+                <button type="button" id="add-feat-btn" class="card-item-btn section-action-btn">+</button>
+                <label for="add-feat-btn" class="card-item-label section-action-label">Add Feat</label>
             </div>
 
-            <div class="feats-section-field feats-section-name-field" id="add-feat-field-name">
-                <label for="feat_and_trait-name" class="feats-section-label">New Feat/Trait</label>
+            <div class="card-item-field card-item-name-field" id="add-feat-field-name">
+                <label for="feat_and_trait-name" class="card-item-label">New Feat/Trait</label>
                 <input type="text" id="feat_and_trait-name"
-                       name="feat_and_trait-name" placeholder="Enter name" class="feats-section-input">
+                       name="feat_and_trait-name" placeholder="Enter name" class="card-item-input">
             </div>
 
-            <div class="feats-section-field feats-section-action-field section-action-field" id="add-feat-submit-btn-wrapper">
-                <button type="button" id="feat-and-trait-add" class="feats-section-btn section-action-btn"
+            <div class="card-item-field card-item-action-field section-action-field" id="add-feat-submit-btn-wrapper">
+                <button type="button" id="feat-and-trait-add" class="card-item-btn section-action-btn"
                         hx-post="/characters/{{ character_id }}/feats-traits/fragment"
                         hx-target="#feats-section-container"
                     hx-swap="innerHTML"
                         hx-include="closest form"><i class="bi bi-check-lg"></i></button>
-                <label for="feat-and-trait-add" class="feats-section-label section-action-label">Add</label>
+                <label for="feat-and-trait-add" class="card-item-label section-action-label">Add</label>
             </div>
 
-            <div class="feats-section-field feats-section-action-field section-action-field" id="close-feat-btn-wrapper">
-                <button type="button" id="close-feat-field-x-btn" class="feats-section-btn section-action-btn">×</button>
-                <label for="close-feat-field-x-btn" class="feats-section-label section-action-label">Close</label>
+            <div class="card-item-field card-item-action-field section-action-field" id="close-feat-btn-wrapper">
+                <button type="button" id="close-feat-field-x-btn" class="card-item-btn section-action-btn">×</button>
+                <label for="close-feat-field-x-btn" class="card-item-label section-action-label">Close</label>
             </div>
         </div>
 
-        <div class="feats-section-field feats-section-description-field" id="add-feat-field-description">
-            <label for="feat_and_trait-description" class="feats-section-label">Description</label>
+        <div class="card-item-field card-item-description-field" id="add-feat-field-description">
+            <label for="feat_and_trait-description" class="card-item-label">Description</label>
             <textarea id="feat_and_trait-description"
-                      name="feat_and_trait-description" rows="3" placeholder="Enter description" class="feats-section-input feats-section-description-input"></textarea>
+                      name="feat_and_trait-description" rows="3" placeholder="Enter description" class="card-item-input card-item-description-input"></textarea>
         </div>
     </div>
     {% endif %}

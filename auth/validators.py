@@ -28,3 +28,16 @@ def validate_passwords_match(password: str, confirm: str):
     if password != confirm:
         return False, 'Passwords do not match.'
     return True, None
+
+def generate_captcha_image(challenge: str):
+    """
+    Generate the base64 encoded captcha image
+    """
+    import base64
+
+    from captcha.image import ImageCaptcha
+
+    image = ImageCaptcha(width=240, height=50)
+
+    data = image.generate(challenge)
+    return base64.b64encode(data.getvalue()).decode("utf-8")

@@ -1,10 +1,11 @@
-from flask import Blueprint, current_app, make_response, render_template, request
+from flask import Blueprint, current_app, make_response, render_template, request, session
 from flask_login import login_user, logout_user
 
 from typing import Optional
 
 from auth.models import User
 from auth.validators import validate_username, validate_password, validate_passwords_match
+from character_sheet import guest_character as guest
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -39,6 +40,12 @@ def signup():
     password = request.form.get('password') or ''
     confirm = request.form.get('confirm_password') or ''
 
+    # Validate CAPTCHA
+    captcha_input = (request.form.get('captcha') or '').strip().upper()
+    expected = (session.pop('captcha_answer', '') or '').upper()
+    if not captcha_input or captcha_input != expected:
+        return _auth_error_response('CAPTCHA is incorrect.', active_tab='signup')
+
     # Validate
     ok, err = validate_username(username)
     if not ok:
@@ -59,6 +66,12 @@ def signup():
     # Create and log in
     user = User.create(db, username, password)
     login_user(user)
+
+    # Migrate guest character to the new user account
+    migrated_character_id = guest.persist_guest_to_db(db, user.id)
+    if migrated_character_id:
+        return _redirect(f'/?character_id={migrated_character_id}')
+
     return _redirect('/')
 
 
@@ -73,6 +86,9 @@ def login():
         return _auth_error_response('Invalid username or password.')
 
     login_user(user)
+
+    # Discard any guest data when logging in to an existing account
+    guest.clear_guest()
 
     # Redirect to first character if user has any
     characters = User.get_characters(db, user.id)

@@ -22,11 +22,15 @@
         {# ── Logged-out state ── #}
         <button class="btn auth-dropdown-toggle dropdown-toggle" type="button"
                 data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-            <i class="bi bi-person"></i>
-            Account
+            Login/Sign up
         </button>
         <div class="dropdown-menu dropdown-menu-end auth-dropdown-menu">
             <div class="auth-dropdown-body">
+                {% if is_guest|default(false) %}
+                <div class="alert alert-success py-1 px-2 mb-2 small">
+                    <i class="bi bi-shield-check me-1"></i>Sign up to save your character permanently
+                </div>
+                {% endif %}
                 {# Tab toggles #}
                 {% set tab = active_tab|default('login') %}
                 <ul class="nav nav-pills auth-tabs mb-3" role="tablist">
@@ -79,6 +83,14 @@
                                 <input type="password" name="confirm_password" class="form-control auth-input"
                                        placeholder="Confirm Password" required autocomplete="new-password">
                             </div>
+                            {% if captcha_image %}
+                            <div class="mb-2 captcha-group">
+                                <img src="data:image/png;base64,{{ captcha_image }}" alt="CAPTCHA" class="captcha-img">
+                                <input type="text" name="captcha" class="form-control auth-input mt-1"
+                                       placeholder="Enter the text above" required autocomplete="off"
+                                       maxlength="5">
+                            </div>
+                            {% endif %}
                             <button type="submit" class="btn auth-btn auth-btn-primary w-100">Sign Up</button>
                         </form>
                     </div>

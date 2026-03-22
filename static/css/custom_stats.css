@@ -89,7 +89,8 @@
 
 .custom-stats-section[data-locked='true'] .custom-stats-remove-btn,
 .custom-stats-remove-btn:disabled {
-    opacity: 0.45;
+    opacity: 0;
+    cursor: default;
 }
 
 .custom-stats-lock-toggle {

@@ -2,3 +2,7 @@ Flask
 timeflake
 flask-wtf
 flask-login
+Flask-Session
+Flask-Limiter
+Flask-Talisman
+captcha

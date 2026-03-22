@@ -19,18 +19,43 @@
 }
 
 .classes-section-name-field {
-    width: 8rem;
-    min-width: 8rem;
-    max-width: 8rem;
+    width: 11.25rem;
+    min-width: 11.25rem;
+    max-width: 11.25rem;
     flex: 0 0 auto;
     margin-right: 0.25rem;
+    position: relative;
+}
+
+.classes-section-name-wrapper {
+    display: flex;
+    align-items: stretch;
+}
+
+.classes-section-name-wrapper .classes-section-input {
+    flex: 1;
+    padding-right: 1.5rem;
+}
+
+.classes-section-remove-x {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.1rem 0.25rem;
+    transition: opacity 0.15s;
 }
 
 .classes-section-level-field {
     max-width: 3rem;
     min-width: 3rem;
     align-items: center;
-    margin-right: 0.25rem;
+    margin-right: 0;
 }
 
 .classes-section-action-field,
@@ -50,7 +75,7 @@
     border: none;
     border-radius: 0;
     outline: none;
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     transition: background 0.2s;
     display: block;
 }
@@ -132,6 +157,17 @@
     width: 3.0rem;
     font-size: 0.5rem;
     padding: 0.25rem 0;
+}
+
+.classes-section-row .custom-stats-lock-toggle {
+    align-self: flex-end;
+    margin-left: 0;
+    margin-bottom: 0.25rem;
+}
+
+.classes-section-remove-x[data-class-remove]:disabled {
+    opacity: 0;
+    cursor: default;
 }
 
 @media (max-width: 499px) {

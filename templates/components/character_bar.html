@@ -1,8 +1,15 @@
 {# Character selection bar — thin strip below the main navbar. #}
-<nav id="character-bar" class="character-bar{% if not current_user.is_authenticated %} d-none{% endif %}">
+<nav id="character-bar" class="character-bar{% if not current_user.is_authenticated and not is_guest %} d-none{% endif %}">
     <div class="page-container">
         <ul class="character-bar-list">
-            {% if current_user.is_authenticated and characters %}
+            {% if is_guest %}
+                {# Guest: show single character tab #}
+                <li>
+                    <span class="character-bar-tab">
+                        Sign up to save your character permanently!
+                    </span>
+                </li>
+            {% elif current_user.is_authenticated and characters %}
                 {% for char in characters %}
                     <li>
                         <a id="char-tab-{{ char.id }}"
@@ -13,7 +20,13 @@
                     </li>
                 {% endfor %}
             {% endif %}
+            {% if is_unsaved is defined and is_unsaved %}
+                <li>
+                    <span class="character-bar-tab active">Untitled</span>
+                </li>
+            {% endif %}
             {% if current_user.is_authenticated and not at_character_limit %}
+                {% if not (is_unsaved is defined and is_unsaved) %}
                 <li>
                     <button class="character-bar-tab character-bar-add-btn"
                             hx-post="/characters/new"
@@ -22,21 +35,8 @@
                         <i class="bi bi-plus-lg"></i>
                     </button>
                 </li>
+                {% endif %}
             {% endif %}
         </ul>
-
-        {# Delete button — right-aligned, only when a character is active #}
-        {% if current_user.is_authenticated and active_character_id %}
-            <div class="character-bar-delete-wrapper">
-                <button class="character-bar-tab character-bar-delete-btn"
-                        id="delete-character-toggle"
-                        title="Delete Character">
-                    <i class="bi bi-trash3"></i>
-                </button>
-                <div id="delete-character-dropdown" class="delete-character-dropdown d-none">
-                    {% include 'components/delete_character_dropdown.html' %}
-                </div>
-            </div>
-        {% endif %}
     </div>
 </nav>

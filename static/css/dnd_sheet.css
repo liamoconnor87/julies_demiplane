@@ -8,7 +8,8 @@
     --text-colour-three: rgb(255, 255, 255);
     --navbar-height: 3rem;
     --character-bar-height: 2rem;
-    --total-header-height: calc(var(--navbar-height) + var(--character-bar-height));
+    --sub-bar-height: 1.7rem;
+    --total-header-height: calc(var(--navbar-height) + var(--character-bar-height) + var(--sub-bar-height));
 }
 
 .buff-indicator {

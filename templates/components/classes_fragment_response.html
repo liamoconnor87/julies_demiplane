@@ -1,5 +1,8 @@
 {% include 'components/classes_section.html' %}
-<div id="character-level-field-container" class="character-info-main-field character-info-square-field character-info-level-field" hx-swap-oob="outerHTML">
+<div id="custom-stats-section-container" hx-swap-oob="innerHTML">
+    {% include 'components/custom_stats_section.html' %}
+</div>
+<div id="character-level-field-container" class="character-info-main-field character-info-square-field character-info-level-field{% if not character.level %} d-none{% endif %}" hx-swap-oob="outerHTML">
     <input type="number" id="character-level" name="character-level" value="{{ character.level or '' }}" disabled class="character-info-input">
     <label for="character-level" class="character-info-label">Level</label>
 </div>

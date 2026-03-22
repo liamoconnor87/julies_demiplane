@@ -18,7 +18,9 @@
                     <input type="hidden" id="custom_stat-name-{{ stat.id }}" name="custom_stat-name-{{ stat.id }}" value="{{ stat.name }}">
                 </div>
             {% endfor %}
+            {% if not classes %}
             <span id="custom-stats-lock-toggle" class="section-lock-toggle custom-stats-lock-toggle" role="button" tabindex="0" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
+            {% endif %}
         {% endif %}
     </div>
 </div>

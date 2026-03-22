@@ -15,12 +15,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classes.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/combat.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/abilities_skills.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/feats_traits.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/card_item.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_stats.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_buffs.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/add_actions.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/section_action_buttons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tracker.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
     <!-- CSRF token for htmx fragment requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -36,70 +36,107 @@
         </div>
     </nav>
     {% include 'components/character_bar.html' %}
+    {% include 'components/sub_bar.html' %}
     </div>
     {% if debug %}
         ## {{ debug }} ##
     {% endif %}
 
     <main class="page-container sheet-page-content">
-    {% if current_user.is_authenticated and character %}
-        <form action="/" method="POST">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div id="sheet-content" class="sheet-layout" data-is-new="{{ 'true' if is_new_character else 'false' }}">
-                <div class="sheet-column sheet-column-one">
-                    <div id="character-custom-section-container">
-                        <div id="character-info-section-container">
-                            {% include 'components/character_info.html' %}
-                        </div>
+    {% if (current_user.is_authenticated or is_guest) and character %}
 
-                        <div id="classes-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                            {% include 'components/classes_section.html' %}
-                        </div>
-
-                        <div id="custom-stats-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                            {% include 'components/custom_stats_section.html' %}
-                        </div>
-
-                        <div id="add-actions-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                            {% include 'components/add_actions.html' %}
-                        </div>
-                    </div>
-
-                    <div id="custom-buffs-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                        {% include 'components/custom_buffs_section.html' %}
-                    </div>
-                </div>
-
-                <div class="sheet-column sheet-column-two{% if is_new_character %} new-char-hidden{% endif %}">
-                    <div id="combat-stats-section-container">
-                        {% include 'components/combat_stats.html' %}
-                    </div>
-
-                    <div id="abilities-section-container">
-                        {% include 'components/abilities_section.html' %}
-                    </div>
-                </div>
-
-                <div class="sheet-column sheet-column-three{% if is_new_character %} new-char-hidden{% endif %}">
-                    <div id="feats-section-container">
-                        {% include 'components/feats_traits_section.html' %}
-                    </div>
-                </div>
-
-                <div class="sheet-column sheet-column-four{% if is_new_character %} new-char-hidden{% endif %}">
-                    <div id="inventory-section-container">
-                        {% include 'components/inventory_section.html' %}
-                    </div>
-                </div>
+        {# ── Info tab ─────────────────────────────────────────────────────── #}
+        <div id="sheet-page-info" class="sub-page">
+            {% if is_guest and is_new_character %}
+            <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+                <i class="bi bi-info-circle me-1"></i>
+                Here's a quick character sheet you can use — don't worry it will save to the browser you are using :)
+                There are slightly more if you sign up.
+                Thanks for entering <strong>Julie's Demiplane</strong>!
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </form>
+            {% endif %}
+            <form action="/" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div id="sheet-content" class="sheet-layout" data-is-new="{{ 'true' if is_new_character else 'false' }}">
+                    <div class="sheet-column sheet-column-one">
+                        <div id="character-custom-section-container">
+                            <div id="character-info-section-container">
+                                {% include 'components/character_info.html' %}
+                            </div>
+
+                            <div id="classes-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                                {% include 'components/classes_section.html' %}
+                            </div>
+
+                            <div id="custom-stats-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                                {% include 'components/custom_stats_section.html' %}
+                            </div>
+
+                            <div id="add-actions-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                                {% include 'components/add_actions.html' %}
+                            </div>
+                        </div>
+
+                        {% if not is_guest %}
+                        {# custom-buffs moved to column 4 #}
+                        {% endif %}
+                    </div>
+
+                    <div class="sheet-column sheet-column-two{% if is_new_character %} new-char-hidden{% endif %}">
+                        <div id="abilities-section-container">
+                            {% include 'components/abilities_section.html' %}
+                        </div>
+                    </div>
+
+                    <div class="sheet-column sheet-column-three{% if is_new_character %} new-char-hidden{% endif %}">
+                        <div id="feats-section-container">
+                            {% include 'components/feats_traits_section.html' %}
+                        </div>
+                    </div>
+
+                    <div class="sheet-column sheet-column-four{% if is_new_character %} new-char-hidden{% endif %}">
+                        <div id="combat-stats-section-container">
+                            {% include 'components/combat_stats.html' %}
+                        </div>
+                        {% if not is_guest %}
+                        <div id="custom-buffs-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                            {% include 'components/custom_buffs_section.html' %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        {# ── Inventory tab ─────────────────────────────────────────────────── #}
+        {% if not is_guest %}
+        <div id="sheet-page-inventory" class="sub-page d-none">
+            <form action="/" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div id="inventory-section-container">
+                    {% include 'components/inventory_section.html' %}
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div id="sheet-page-inventory" class="sub-page d-none"></div>
+        {% endif %}
+
+        {# ── Trackers tab ──────────────────────────────────────────────────── #}
+        {% if current_user.is_authenticated and active_character_id %}
+        <div id="sheet-page-trackers" class="sub-page d-none">
+            <div id="tracker-page-container">
+                {% include 'components/tracker_page.html' %}
+            </div>
+        </div>
+        {% else %}
+        <div id="sheet-page-trackers" class="sub-page d-none"></div>
+        {% endif %}
+
     {% elif current_user.is_authenticated %}
         <div class="auth-empty-state">
             <p>You don't have any characters yet.</p>
-        </div>
-    {% else %}
-        <div class="auth-empty-state">
-            <p>Please log in or sign up to view your character sheets.</p>
         </div>
     {% endif %}
     </main>
