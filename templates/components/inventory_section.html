@@ -17,7 +17,7 @@
                     <div class="card-item-field card-item-quantity-field">
                         <label for="inventory-quantity-{{ item.id }}" class="card-item-label">Qty</label>
                             <div class="card-item-quantity-control" aria-label="Adjust quantity for {{ item.name }}">
-                                <button type="button" id="inventory-decrease-{{ item.id }}" class="card-item-btn card-item-quantity-btn" data-inventory-remove="true"
+                                <button type="button" id="inventory-decrease-{{ item.id }}" class="card-item-btn card-item-quantity-btn" data-inventory-remove="true" data-item-quantity="{{ item.quantity }}"
                                     hx-post="/characters/{{ character_id }}/inventory/fragment"
                                     hx-target="#inventory-section-container"
                                     hx-swap="innerHTML"
@@ -25,7 +25,7 @@
                                     hx-vals='{"inventory-action":"step","inventory-update-id":"{{ item.id }}","inventory-step":"-1"}'>−</button>
                                 <input type="number" id="inventory-quantity-{{ item.id }}"
                                     name="inventory-quantity-{{ item.id }}" value="{{ item.quantity }}" class="card-item-input card-item-quantity-display" min="0" readonly>
-                                <button type="button" id="inventory-increase-{{ item.id }}" class="card-item-btn card-item-quantity-btn" data-inventory-remove="true"
+                                <button type="button" id="inventory-increase-{{ item.id }}" class="card-item-btn card-item-quantity-btn"
                                     hx-post="/characters/{{ character_id }}/inventory/fragment"
                                     hx-target="#inventory-section-container"
                                     hx-swap="innerHTML"

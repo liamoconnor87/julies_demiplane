@@ -19,7 +19,6 @@
 
 /* ── Lock state ────────────────────────────────────────────────────────────── */
 
-.card-item-section[data-locked='true'] [data-inventory-remove],
 [data-inventory-remove]:disabled,
 .card-item-section[data-locked='true'] [data-feat-remove],
 [data-feat-remove]:disabled {

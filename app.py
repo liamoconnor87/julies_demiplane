@@ -14,6 +14,7 @@ from character_sheet.custom_buff import BuffProcessor
 from character_sheet import guest_character as guest
 from go_get_it.go_get_it import GoGetDB
 from functions.functions import uuid as generate_uuid
+from functions.validators import is_valid_uuid
 from auth import setup_auth
 from auth.models import User
 from misc.config import DEBUG, secret_key, SESSION_FILE_DIR  # type: ignore
@@ -73,6 +74,7 @@ Talisman(
 
 # ── Database & auth ───────────────────────────────────────────────────────────
 db = GoGetDB()
+db.go_create_db()  # ensure tables exist regardless of how the app is started
 setup_auth(app, db, limiter)
 
 
@@ -469,6 +471,30 @@ def custom_buffs_fragment(character_id: str):
         abort(403)
     sheet = CharacterSheet(character_id=character_id)
     sheet.save_custom_buff_values(character_id, request.form)
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/buff_change_response.html',
+        custom_buffs=data['custom_buffs'],
+        custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
+        buff_target_options=data['buff_target_options'],
+        character_id=character_id,
+        character=data['character'],
+        abilities=data['abilities'],
+        custom_stats=data['custom_stats'],
+        custom_stats_at_capacity=data['custom_stats_at_capacity'],
+        classes=data['classes'],
+    )
+
+@app.route('/characters/<character_id>/custom-buff/<custom_buff_id>/update', methods=['POST'])
+@login_required
+def update_custom_buff_item(character_id: str, custom_buff_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+    if not is_valid_uuid(custom_buff_id):
+        return redirect(url_for('character_sheet'))
+    sheet = CharacterSheet(character_id=character_id)
+    sheet.update_custom_buff_values(character_id, custom_buff_id, request.form)
 
     _, data = _build_character_sheet_data(character_id)
     return render_template(

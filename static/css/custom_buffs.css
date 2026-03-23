@@ -229,7 +229,13 @@
 	text-align: left;
 	overflow-wrap: break-word;
 	padding-left: 0.5rem;
-	padding-top: 0.5rem;
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
+}
+
+.custom-buffs-basic-fields-row .custom-buffs-section-label {
+	font-size: 0.5rem;
+	padding: 0.25rem 0 0.25rem 0.5rem;
 }
 
 .custom-buffs-section-input {
@@ -356,3 +362,26 @@
 		max-width: 4rem;
 	}
 }
+
+/* ── Card hover (editable) ─────────────────────────────────────────────────── */
+
+.custom-buffs-card[data-buff-edit="true"] {
+	cursor: pointer;
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.custom-buffs-card[data-buff-edit="true"]:hover {
+	transform: scale(1.04);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.custom-buffs-section[data-locked='true'] .custom-buffs-card[data-buff-edit="true"] {
+	cursor: default;
+	pointer-events: none;
+}
+
+.custom-buffs-section[data-locked='true'] .custom-buffs-remove-btn {
+	pointer-events: auto;
+}
+
+

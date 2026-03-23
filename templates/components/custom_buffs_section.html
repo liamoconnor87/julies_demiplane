@@ -13,7 +13,11 @@
 	<div class="custom-buffs-grid">
 		{% if custom_buffs %}
 			{% for buff in custom_buffs %}
-				<div class="custom-buffs-card">
+				<div class="custom-buffs-card" data-buff-edit="true"
+					data-buff-id="{{ buff.id }}"
+					data-buff-name="{{ buff.name }}"
+					data-buff-value="{{ buff.value }}"
+					data-buff-targets='{{ buff.targets | tojson | forceescape }}'>
 					<div class="custom-buffs-card-main-field">
 						<div class="custom-buffs-card-value">{% if (buff.value | int) == 0 %}--{% else %}{{ buff.value }}{% endif %}</div>
 						<div class="custom-buffs-card-title">{{ buff.name }}</div>
@@ -33,13 +37,14 @@
 		{% endif %}
 	</div>
 
-	{% if not custom_buffs_at_capacity %}
 	<div class="custom-buffs-section-row custom-buffs-section-add-row">
 		<div class="custom-buffs-section-top-row">
+			{% if not custom_buffs_at_capacity %}
 			<div class="custom-buffs-section-field custom-buffs-section-action-field section-action-field" id="add-custom-buff-btn-wrapper">
 				<button type="button" id="add-custom-buff-btn" class="custom-buffs-section-btn section-action-btn">+</button>
 				<label for="add-custom-buff-btn" class="custom-buffs-section-label section-action-label">Add Buff</label>
 			</div>
+			{% endif %}
 
 			<div class="custom-buffs-section-fields" id="add-custom-buff-fields-wrapper">
 				<div class="custom-buffs-basic-fields-row">
@@ -113,6 +118,5 @@
 			</div>
 		</div>
 	</div>
-	{% endif %}
 </div>
 <br>

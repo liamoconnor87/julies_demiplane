@@ -131,7 +131,7 @@ class CharacterSheet:
         # Custom Stats
         custom_stats = ggi.go_get_all('custom_stat', {'character_id': self.character_id}) or []
 
-        buff_target_options = self._get_buff_target_options(custom_stats)
+        buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
         custom_buffs = self._get_custom_buffs()
 
         return {
@@ -156,7 +156,7 @@ class CharacterSheet:
         except (TypeError, ValueError):
             return fallback
 
-    def _get_buff_target_options(self, custom_stats):
+    def _get_buff_target_options(self, custom_stats, feats_and_traits=None, inventory=None):
         options = {
             table_name: columns[:]
             for table_name, columns in self.BUFF_TARGET_TABLE_COLUMNS.items()
@@ -172,6 +172,24 @@ class CharacterSheet:
 
         custom_stat_names.sort()
         options['custom_stat'] = custom_stat_names
+
+        feat_names = []
+        for feat in feats_and_traits or []:
+            feat_name = str(feat.get('name') or '').strip()
+            if feat_name and feat_name not in feat_names:
+                feat_names.append(feat_name)
+
+        feat_names.sort()
+        options['feat_and_trait'] = feat_names
+
+        inventory_names = []
+        for item in inventory or []:
+            item_name = str(item.get('name') or '').strip()
+            if item_name and item_name not in inventory_names:
+                inventory_names.append(item_name)
+
+        inventory_names.sort()
+        options['inventory'] = inventory_names
         return options
 
     def _get_custom_buffs(self):
@@ -216,7 +234,9 @@ class CharacterSheet:
             return
 
         custom_stats = ggi.go_get_all('custom_stat', {'character_id': character_id}) or []
-        buff_target_options = self._get_buff_target_options(custom_stats)
+        feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': character_id}) or []
+        inventory = ggi.go_get_all('inventory', {'character_id': character_id}) or []
+        buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
 
         selected_tables = []
         for field_name in request_form:
@@ -258,6 +278,90 @@ class CharacterSheet:
             ggi.go_add_new('custom_buff_to_stat_table', {
                 'id': uuid(),
                 'custom_buff_id': custom_buff_id,
+                'stat_table_name': pending_target['table_name'],
+                'stat_table_id': stat_table_id,
+                'character_id': character_id,
+            })
+            for stat_name in pending_target['stats']:
+                ggi.go_add_new('stat_table_to_stat', {
+                    'id': uuid(),
+                    'stat_table_id': stat_table_id,
+                    'stat_name': stat_name,
+                    'character_id': character_id,
+                })
+
+    def update_custom_buff_values(self, character_id: str, buff_id: str, request_form):
+        if not is_valid_uuid(buff_id):
+            return
+
+        existing_buff = ggi.go_get_one('custom_buff', {'id': buff_id, 'character_id': character_id})
+        if not existing_buff:
+            return
+
+        table_name = 'custom_buff'
+        name = sanitize_str(request_form.get(f'{table_name}-name'), max_len=255)
+        value = clamp_int(request_form.get(f'{table_name}-value'), -999, 999, fallback=0)
+
+        if not name:
+            return
+
+        custom_stats = ggi.go_get_all('custom_stat', {'character_id': character_id}) or []
+        feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': character_id}) or []
+        inventory = ggi.go_get_all('inventory', {'character_id': character_id}) or []
+        buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
+
+        selected_tables = []
+        for field_name in request_form:
+            if field_name.startswith(f'{table_name}-table-'):
+                table_name_value = field_name.replace(f'{table_name}-table-', '')
+                if table_name_value in buff_target_options:
+                    selected_tables.append(table_name_value)
+
+        if not selected_tables:
+            return
+
+        pending_table_targets = []
+        for selected_table in selected_tables:
+            selected_stats = []
+            stat_field_prefix = f'{table_name}-stat-{selected_table}-'
+            for field_name in request_form:
+                if not field_name.startswith(stat_field_prefix):
+                    continue
+                stat_value = str(request_form.get(field_name) or '').strip()
+                if stat_value and stat_value in buff_target_options.get(selected_table, []) and stat_value not in selected_stats:
+                    selected_stats.append(stat_value)
+
+            if selected_stats:
+                pending_table_targets.append({'table_name': selected_table, 'stats': selected_stats})
+
+        if not pending_table_targets:
+            return
+
+        # Update the buff record itself
+        ggi.go_update('custom_buff', {
+            'id': buff_id,
+            'name': name,
+            'value': value,
+            'character_id': character_id,
+        })
+
+        # Delete old target mappings
+        old_tables = ggi.go_get_all('custom_buff_to_stat_table', {'custom_buff_id': buff_id, 'character_id': character_id}) or []
+        for old_table in old_tables:
+            old_stat_table_id = old_table.get('stat_table_id')
+            if old_stat_table_id:
+                for old_stat in ggi.go_get_all('stat_table_to_stat', {'stat_table_id': old_stat_table_id, 'character_id': character_id}) or []:
+                    if old_stat.get('id'):
+                        ggi.go_delete_it('stat_table_to_stat', {'id': old_stat['id']})
+            if old_table.get('id'):
+                ggi.go_delete_it('custom_buff_to_stat_table', {'id': old_table['id']})
+
+        # Insert new target mappings
+        for pending_target in pending_table_targets:
+            stat_table_id = uuid()
+            ggi.go_add_new('custom_buff_to_stat_table', {
+                'id': uuid(),
+                'custom_buff_id': buff_id,
                 'stat_table_name': pending_target['table_name'],
                 'stat_table_id': stat_table_id,
                 'character_id': character_id,

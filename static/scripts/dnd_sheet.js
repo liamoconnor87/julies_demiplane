@@ -69,6 +69,7 @@ window.addEventListener("load", () => {
             selectFeatField();
             bindFeatDescriptionDisplayAutoHeight();
             bindFeatsLockToggle();
+            decorateBuffedLabels();
             return;
         }
 
@@ -83,6 +84,7 @@ window.addEventListener("load", () => {
             selectInventoryField();
             bindInventoryDescriptionDisplayAutoHeight();
             bindInventoryLockToggle();
+            decorateBuffedLabels();
             return;
         }
 
@@ -98,6 +100,7 @@ window.addEventListener("load", () => {
             bindCustomStatAutoSave();
             selectCustomBuffField();
             bindBuffsLockToggle();
+            bindBuffCardEdit();
             decorateBuffedLabels();
             return;
         }
@@ -110,6 +113,7 @@ window.addEventListener("load", () => {
             bindCombatFieldAutoSave();
             bindClassesAndStatsLockToggle();
             bindBuffsLockToggle();
+            bindBuffCardEdit();
             decorateBuffedLabels();
         }
     });
@@ -224,6 +228,7 @@ function initializeUiBindings() {
     bindFeatsLockToggle();
     bindInventoryLockToggle();
     bindBuffsLockToggle();
+    bindBuffCardEdit();
     bindFeatDescriptionDisplayAutoHeight();
     bindInventoryDescriptionDisplayAutoHeight();
     decorateBuffedLabels();
@@ -508,6 +513,129 @@ function bindBuffsLockToggle() {
     syncLockText();
 }
 
+function bindBuffCardEdit() {
+    const section = document.querySelector('.custom-buffs-section');
+    if (!section) return;
+
+    const addBtnWrapper = document.getElementById('add-custom-buff-btn-wrapper');
+    const fieldsWrapper = document.getElementById('add-custom-buff-fields-wrapper');
+    const submitBtnWrapper = document.getElementById('add-custom-buff-submit-btn-wrapper');
+    const closeBtnWrapper = document.getElementById('close-custom-buff-btn-wrapper');
+    const submitBtn = document.getElementById('custom-buff-add');
+    const submitLabel = submitBtnWrapper ? submitBtnWrapper.querySelector('.section-action-label') : null;
+    const nameInput = document.getElementById('custom_buff-name');
+    const valueInput = document.getElementById('custom_buff-value');
+
+    if (!submitBtn || !nameInput || !valueInput || !fieldsWrapper || !submitBtnWrapper || !closeBtnWrapper) {
+        return;
+    }
+
+    // Store the original add URL so we can restore it when closing edit mode
+    if (!submitBtn.dataset.originalUrl) {
+        submitBtn.dataset.originalUrl = submitBtn.getAttribute('hx-post') || '';
+    }
+    const originalUrl = submitBtn.dataset.originalUrl;
+
+    const tableCheckboxes = section.querySelectorAll('.custom-buffs-table-checkbox');
+    const statCheckboxes = section.querySelectorAll('.custom-buffs-stat-checkbox');
+
+    const resetToAddMode = () => {
+        // Clear form fields
+        nameInput.value = '';
+        valueInput.value = '0';
+        tableCheckboxes.forEach((cb) => { cb.checked = false; });
+        statCheckboxes.forEach((cb) => { cb.checked = false; });
+
+        // Restore the add URL and label
+        submitBtn.setAttribute('hx-post', originalUrl);
+        htmx.process(submitBtn);
+        if (submitLabel) submitLabel.textContent = 'Add';
+        section.dataset.editMode = 'false';
+    };
+
+    const cards = section.querySelectorAll('.custom-buffs-card[data-buff-edit="true"]');
+    cards.forEach((card) => {
+        if (card.dataset.editBound === 'true') return;
+        card.dataset.editBound = 'true';
+
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.custom-buffs-remove-btn')) return;
+            if (section.dataset.locked === 'true') return;
+
+            const buffId = card.dataset.buffId;
+            const buffName = card.dataset.buffName;
+            const buffValue = card.dataset.buffValue;
+            let buffTargets = [];
+            try {
+                buffTargets = JSON.parse(card.dataset.buffTargets || '[]');
+            } catch (_) { /* ignore */ }
+
+            // Populate name/value
+            nameInput.value = buffName || '';
+            valueInput.value = buffValue || '0';
+
+            // Build sets of selected tables and stats
+            const selectedTables = new Set();
+            const selectedStatsByTable = {};
+            for (const target of buffTargets) {
+                const tableName = target.stat_table_name;
+                if (tableName) {
+                    selectedTables.add(tableName);
+                    if (!selectedStatsByTable[tableName]) {
+                        selectedStatsByTable[tableName] = new Set();
+                    }
+                    for (const statName of (target.stat_names || [])) {
+                        selectedStatsByTable[tableName].add(statName);
+                    }
+                }
+            }
+
+            // Set table checkboxes
+            tableCheckboxes.forEach((cb) => {
+                cb.checked = selectedTables.has(cb.dataset.tableName);
+            });
+
+            // Set stat checkboxes
+            statCheckboxes.forEach((cb) => {
+                const tableName = cb.dataset.tableName;
+                cb.checked = !!(selectedStatsByTable[tableName] && selectedStatsByTable[tableName].has(cb.value));
+            });
+
+            // Swap submit button to update mode
+            const characterIdField = document.getElementById('character-id');
+            const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+            if (characterId && buffId) {
+                submitBtn.setAttribute('hx-post', `/characters/${characterId}/custom-buff/${buffId}/update`);
+                htmx.process(submitBtn);
+            }
+            if (submitLabel) submitLabel.textContent = 'Save';
+            section.dataset.editMode = 'true';
+
+            // Show the form (same as clicking the + Add button)
+            if (addBtnWrapper) addBtnWrapper.style.display = 'none';
+            fieldsWrapper.style.display = 'flex';
+            submitBtnWrapper.style.display = 'flex';
+            closeBtnWrapper.style.display = 'flex';
+
+            // Trigger the table stat groups to update visibility
+            tableCheckboxes.forEach((cb) => {
+                cb.dispatchEvent(new Event('change'));
+            });
+        });
+    });
+
+    // When the close button is clicked, reset back to add mode
+    const closeBtn = document.getElementById('close-custom-buff-field-x-btn');
+    if (closeBtn && closeBtn.dataset.editResetBound !== 'true') {
+        closeBtn.dataset.editResetBound = 'true';
+        closeBtn.addEventListener('click', () => {
+            if (section.dataset.editMode === 'true') {
+                resetToAddMode();
+            }
+        });
+    }
+}
+
 function getFeatsLockCookieKey() {
     const characterIdField = document.getElementById('character-id');
     const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
@@ -613,8 +741,10 @@ function bindInventoryLockToggle() {
         const isLocked = section.dataset.locked === 'true';
         const removeButtons = section.querySelectorAll('[data-inventory-remove="true"]');
         removeButtons.forEach((button) => {
-            button.disabled = isLocked;
-            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+            const quantity = parseInt(button.dataset.itemQuantity, 10) || 0;
+            const shouldDisable = isLocked && quantity <= 1;
+            button.disabled = shouldDisable;
+            button.setAttribute('aria-disabled', shouldDisable ? 'true' : 'false');
         });
     };
 
@@ -688,6 +818,32 @@ function decorateBuffedLabels() {
                     label.htmlFor.startsWith('custom_stat-value-')
                 ) {
                     addBuffIndicator(label);
+                }
+            });
+            return;
+        }
+
+        if (table === 'feat_and_trait') {
+            // Match feat/trait label by the input value (feat name)
+            document.querySelectorAll('.feats-section .card-item-saved-row input[readonly]').forEach(input => {
+                if (input.value.trim() === stat && input.id) {
+                    const label = document.querySelector(`label[for="${input.id}"]`);
+                    if (label) {
+                        addBuffIndicator(label);
+                    }
+                }
+            });
+            return;
+        }
+
+        if (table === 'inventory') {
+            // Match inventory label by the input value (item name)
+            document.querySelectorAll('.inventory-section .card-item-saved-row input[readonly]').forEach(input => {
+                if (input.value.trim() === stat && input.id) {
+                    const label = document.querySelector(`label[for="${input.id}"]`);
+                    if (label) {
+                        addBuffIndicator(label);
+                    }
                 }
             });
             return;
@@ -1165,6 +1321,9 @@ function bindProficiencyToggles() {
     const proficiencyToggleItems = document.querySelectorAll('.proficiency-toggle-item');
 
     proficiencyToggleItems.forEach((item) => {
+        if (item.dataset.bound === 'true') return;
+        item.dataset.bound = 'true';
+
         const checkboxId = item.dataset.checkboxId;
         if (!checkboxId) {
             return;
