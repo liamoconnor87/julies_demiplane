@@ -4,6 +4,8 @@ Each returns (is_valid: bool, error_message: str | None).
 """
 import re
 
+from go_get_it.go_get_it import GoGetDB
+
 _USERNAME_RE = re.compile(r'^[a-zA-Z0-9_]+$')
 
 
@@ -15,6 +17,11 @@ def validate_username(value: str):
         return False, 'Username must be 30 characters or fewer.'
     if not _USERNAME_RE.match(value):
         return False, 'Username may only contain letters, numbers, and underscores.'
+
+    ggi = GoGetDB()
+    all_users = ggi.go_get_all('users')
+    if all_users and any(user['username'].lower() == value.lower() for user in all_users):
+        return False, 'Username is already taken.'
     return True, None
 
 

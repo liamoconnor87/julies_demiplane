@@ -535,29 +535,54 @@ def remove_inventory_item(character_id: str, inventory_id: str):
 def remove_feat_and_trait_item(character_id: str, feat_and_trait_id: str):
     if guest.is_guest() and not current_user.is_authenticated:
         guest.remove_feat_and_trait(feat_and_trait_id)
-        data = guest.create_form()
-        return render_template(
-            'components/feats_traits_section.html',
-            character_id=character_id,
-            feats_and_traits=data['feats_and_traits'],
-            feats_and_traits_at_capacity=data['feats_and_traits_at_capacity'],
-            is_guest=True,
-        )
+        return '', 200
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
     if not character_id or not feat_and_trait_id or not db.go_get_one('feat_and_trait', {'id': feat_and_trait_id, 'character_id': character_id}):
         return redirect(url_for('character_sheet'))
 
     db.go_delete_it('feat_and_trait', {'id': feat_and_trait_id, 'character_id': character_id})
+    return '', 200
 
-    _, data = _build_character_sheet_data(character_id)
-    return render_template(
-        'components/feats_traits_section.html',
-        character_id=character_id,
-        feats_and_traits=data['feats_and_traits'],
-        feats_and_traits_at_capacity=data['feats_and_traits_at_capacity'],
-        is_guest=False,
-    )
+
+@app.route('/characters/<character_id>/feat-and-trait/<feat_and_trait_id>/update', methods=['POST'])
+@guest_or_login_required
+@limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
+def update_feat_and_trait_item(character_id: str, feat_and_trait_id: str):
+    name = request.form.get(f'feat_and_trait-name-{feat_and_trait_id}', '')
+    description = request.form.get(f'feat_and_trait-description-{feat_and_trait_id}', '')
+    if guest.is_guest() and not current_user.is_authenticated:
+        feat = guest.update_single_feat(feat_and_trait_id, name, description)
+        if not feat:
+            abort(400)
+        return render_template('components/feat_row.html', feat=feat, character_id=character_id)
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+    sheet = CharacterSheet(character_id=character_id)
+    feat = sheet.update_single_feat(character_id, feat_and_trait_id, name, description)
+    if not feat:
+        abort(400)
+    return render_template('components/feat_row.html', feat=feat, character_id=character_id)
+
+
+@app.route('/characters/<character_id>/feat-and-trait/add', methods=['POST'])
+@guest_or_login_required
+@limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
+def add_feat_and_trait_item(character_id: str):
+    name = request.form.get('feat_and_trait-name', '')
+    description = request.form.get('feat_and_trait-description', '')
+    if guest.is_guest() and not current_user.is_authenticated:
+        feat = guest.add_single_feat(name, description)
+        if not feat:
+            abort(400)
+        return render_template('components/feat_row.html', feat=feat, character_id=character_id)
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+    sheet = CharacterSheet(character_id=character_id)
+    feat = sheet.add_single_feat(character_id, name, description)
+    if not feat:
+        abort(400)
+    return render_template('components/feat_row.html', feat=feat, character_id=character_id)
 
 
 @app.route('/characters/<character_id>/custom-stat/<custom_stat_id>/remove', methods=['POST'])

@@ -21,7 +21,7 @@
 					<div class="custom-buffs-card-main-field">
 						<div class="custom-buffs-card-value">{% if (buff.value | int) == 0 %}--{% else %}{{ buff.value }}{% endif %}</div>
 						<div class="custom-buffs-card-title">{{ buff.name }}</div>
-						<button type="button" class="custom-buffs-remove-btn" data-buff-remove="true"
+					<button type="button" class="section-remove-x" data-buff-remove="true"
 							data-buff-value="{{ buff.value }}"
 							data-buff-targets='{{ buff.targets | tojson | forceescape }}'
 							hx-post="/characters/{{ character_id }}/custom-buff/{{ buff.id }}/remove"
@@ -84,15 +84,22 @@
 								<div class="custom-buffs-table-stat-group" data-table-name="{{ table_name }}">
 									<div class="custom-buffs-table-stat-title">{{ table_name | replace('_', ' ') | title }}</div>
 									<div class="custom-buffs-checkbox-grid custom-buffs-columns-checkbox-grid">
-										{% for stat_name in columns %}
-											<label class="custom-buffs-checkbox-item custom-buffs-columns-checkbox-item" for="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}">
-												<input type="checkbox"
-													id="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}"
-													name="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}"
-													value="{{ stat_name }}"
-													class="custom-buffs-stat-checkbox"
-													data-table-name="{{ table_name }}">
-												<span>{{ stat_name | replace('_', ' ') | title }}</span>
+									{% for stat_option in columns %}
+										{% if stat_option is mapping %}
+											{% set stat_value = stat_option.id %}
+											{% set stat_display = stat_option.name %}
+										{% else %}
+											{% set stat_value = stat_option %}
+											{% set stat_display = stat_option | replace('_', ' ') | title %}
+										{% endif %}
+										<label class="custom-buffs-checkbox-item custom-buffs-columns-checkbox-item" for="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}">
+											<input type="checkbox"
+												id="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}"
+												name="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}"
+												value="{{ stat_value }}"
+												class="custom-buffs-stat-checkbox"
+												data-table-name="{{ table_name }}">
+											<span>{{ stat_display }}</span>
 											</label>
 										{% endfor %}
 									</div>

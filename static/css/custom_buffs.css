@@ -92,26 +92,6 @@
 	margin-left: 0;
 }
 
-.custom-buffs-remove-btn {
-	position: absolute;
-	top: 0.15rem;
-	right: 0.15rem;
-	width: 1.35rem;
-	min-width: 1.35rem;
-	height: 1.35rem;
-	border: none;
-	background: var(--primary-color-transparent);
-	color: var(--secondary-color);
-	cursor: pointer;
-	padding: 0;
-	line-height: 1;
-	font-size: 1rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 1;
-}
-
 .custom-buffs-section-row {
 	width: 100%;
 }
@@ -379,9 +359,4 @@
 	cursor: default;
 	pointer-events: none;
 }
-
-.custom-buffs-section[data-locked='true'] .custom-buffs-remove-btn {
-	pointer-events: auto;
-}
-
 

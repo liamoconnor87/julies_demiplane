@@ -3,32 +3,13 @@
         Feats & Traits
         <span id="feats-lock-toggle" class="section-lock-toggle" role="button" tabindex="0" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
     </h4>
+    <div id="feats-list">
     {% if feats_and_traits %}
         {% for feat in feats_and_traits %}
-            <div class="card-item-row card-item-saved-row">
-                <div class="card-item-top-row">
-                    <div class="card-item-field card-item-name-field">
-                        <label for="feat_and_trait-name-{{ feat.id }}" class="card-item-label">Feat/Trait</label>
-                        <input type="text" id="feat_and_trait-name-{{ feat.id }}"
-                               name="feat_and_trait-name-{{ feat.id }}" value="{{ feat.name }}" readonly class="card-item-input">
-                    </div>
-
-                    <div class="card-item-field card-item-action-field section-action-field">
-                        <button type="button" id="feat-and-trait-delete-{{ feat.id }}" class="card-item-btn section-action-btn" data-feat-remove="true"
-                                hx-post="/characters/{{ character_id }}/feat-and-trait/{{ feat.id }}/remove"
-                                hx-target="#feats-section-container"
-                            hx-swap="innerHTML"
-                                hx-include="closest form">−</button>
-                        <label for="feat-and-trait-delete-{{ feat.id }}" class="card-item-label section-action-label">Remove</label>
-                    </div>
-                </div>
-
-                <div class="card-item-field card-item-description-field">
-                    <div id="feat_and_trait-description-{{ feat.id }}" class="card-item-description-display">{{ feat.description }}</div>
-                </div>
-            </div>
+            {% include 'components/feat_row.html' %}
         {% endfor %}
     {% endif %}
+    </div>
 
     {% if not feats_and_traits_at_capacity %}
     <div class="card-item-row card-item-add-row">
@@ -46,10 +27,10 @@
 
             <div class="card-item-field card-item-action-field section-action-field" id="add-feat-submit-btn-wrapper">
                 <button type="button" id="feat-and-trait-add" class="card-item-btn section-action-btn"
-                        hx-post="/characters/{{ character_id }}/feats-traits/fragment"
-                        hx-target="#feats-section-container"
-                    hx-swap="innerHTML"
-                        hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+                        hx-post="/characters/{{ character_id }}/feat-and-trait/add"
+                        hx-target="#feats-list"
+                        hx-swap="beforeend"
+                        hx-include="#feat_and_trait-name, #feat_and_trait-description"><i class="bi bi-check-lg"></i></button>
                 <label for="feat-and-trait-add" class="card-item-label section-action-label">Add</label>
             </div>
 

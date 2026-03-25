@@ -7,7 +7,7 @@
                         <input type="number" id="custom_stat-value-{{ stat.id }}"
                             name="custom_stat-value-{{ stat.id }}" value="{{ stat.value }}" class="custom-stats-section-input">
                         <label for="custom_stat-value-{{ stat.id }}" class="custom-stats-section-label">{{ stat.name }}</label>
-                        <button type="button" id="custom-stat-delete-{{ stat.id }}" class="custom-stats-remove-btn" data-custom-stat-remove="true"
+                        <button type="button" id="custom-stat-delete-{{ stat.id }}" class="section-remove-x" data-custom-stat-remove="true"
                             hx-post="/characters/{{ character_id }}/custom-stat/{{ stat.id }}/remove"
                             hx-target="#custom-stats-section-container"
                             hx-swap="innerHTML"

@@ -162,34 +162,43 @@ class CharacterSheet:
             for table_name, columns in self.BUFF_TARGET_TABLE_COLUMNS.items()
         }
 
-        custom_stat_names = []
+        custom_stat_ids = []
+        seen_cs_ids = set()
         for custom_stat in custom_stats or []:
+            cs_id = custom_stat.get('id')
             stat_name = str(custom_stat.get('name') or '').strip()
-            if not stat_name:
+            if not cs_id or not stat_name:
                 continue
-            if stat_name not in custom_stat_names:
-                custom_stat_names.append(stat_name)
+            if cs_id not in seen_cs_ids:
+                seen_cs_ids.add(cs_id)
+                custom_stat_ids.append({'id': cs_id, 'name': stat_name})
 
-        custom_stat_names.sort()
-        options['custom_stat'] = custom_stat_names
+        custom_stat_ids.sort(key=lambda x: x['name'])
+        options['custom_stat'] = custom_stat_ids
 
-        feat_names = []
+        feat_ids = []
+        seen_feat_ids = set()
         for feat in feats_and_traits or []:
+            feat_id = feat.get('id')
             feat_name = str(feat.get('name') or '').strip()
-            if feat_name and feat_name not in feat_names:
-                feat_names.append(feat_name)
+            if feat_id and feat_name and feat_id not in seen_feat_ids:
+                seen_feat_ids.add(feat_id)
+                feat_ids.append({'id': feat_id, 'name': feat_name})
 
-        feat_names.sort()
-        options['feat_and_trait'] = feat_names
+        feat_ids.sort(key=lambda x: x['name'])
+        options['feat_and_trait'] = feat_ids
 
-        inventory_names = []
+        inventory_ids = []
+        seen_inv_ids = set()
         for item in inventory or []:
+            item_id = item.get('id')
             item_name = str(item.get('name') or '').strip()
-            if item_name and item_name not in inventory_names:
-                inventory_names.append(item_name)
+            if item_id and item_name and item_id not in seen_inv_ids:
+                seen_inv_ids.add(item_id)
+                inventory_ids.append({'id': item_id, 'name': item_name})
 
-        inventory_names.sort()
-        options['inventory'] = inventory_names
+        inventory_ids.sort(key=lambda x: x['name'])
+        options['inventory'] = inventory_ids
         return options
 
     def _get_custom_buffs(self):
@@ -222,6 +231,15 @@ class CharacterSheet:
 
         return custom_buffs
 
+    _ID_BASED_TABLES = {'custom_stat', 'feat_and_trait', 'inventory'}
+
+    def _get_valid_stat_values(self, buff_target_options, table_name):
+        """Get set of valid stat values for a table. For ID-based tables, returns IDs."""
+        options = buff_target_options.get(table_name, [])
+        if table_name in self._ID_BASED_TABLES:
+            return {opt['id'] for opt in options if isinstance(opt, dict) and opt.get('id')}
+        return set(options)
+
     def save_custom_buff_values(self, character_id: str, request_form):
         table_name = 'custom_buff'
         name = sanitize_str(request_form.get(f'{table_name}-name'), max_len=255)
@@ -251,12 +269,13 @@ class CharacterSheet:
         pending_table_targets = []
         for selected_table in selected_tables:
             selected_stats = []
+            valid_values = self._get_valid_stat_values(buff_target_options, selected_table)
             stat_field_prefix = f'{table_name}-stat-{selected_table}-'
             for field_name in request_form:
                 if not field_name.startswith(stat_field_prefix):
                     continue
                 stat_value = str(request_form.get(field_name) or '').strip()
-                if stat_value and stat_value in buff_target_options.get(selected_table, []) and stat_value not in selected_stats:
+                if stat_value and stat_value in valid_values and stat_value not in selected_stats:
                     selected_stats.append(stat_value)
 
             if selected_stats:
@@ -323,12 +342,13 @@ class CharacterSheet:
         pending_table_targets = []
         for selected_table in selected_tables:
             selected_stats = []
+            valid_values = self._get_valid_stat_values(buff_target_options, selected_table)
             stat_field_prefix = f'{table_name}-stat-{selected_table}-'
             for field_name in request_form:
                 if not field_name.startswith(stat_field_prefix):
                     continue
                 stat_value = str(request_form.get(field_name) or '').strip()
-                if stat_value and stat_value in buff_target_options.get(selected_table, []) and stat_value not in selected_stats:
+                if stat_value and stat_value in valid_values and stat_value not in selected_stats:
                     selected_stats.append(stat_value)
 
             if selected_stats:
@@ -583,6 +603,34 @@ class CharacterSheet:
 
     def save_feat_and_trait_values(self, character_id: str, request_form):
         table_name = 'feat_and_trait'
+
+        # Update existing feats
+        name_prefix = f'{table_name}-name-'
+        desc_prefix = f'{table_name}-description-'
+        existing_feat_ids = set()
+        for field_name in request_form:
+            if field_name.startswith(name_prefix):
+                existing_feat_ids.add(field_name.replace(name_prefix, ''))
+            if field_name.startswith(desc_prefix):
+                existing_feat_ids.add(field_name.replace(desc_prefix, ''))
+
+        for feat_id in existing_feat_ids:
+            if not is_valid_uuid(feat_id):
+                continue
+            existing_feat = ggi.go_get_one('feat_and_trait', {'id': feat_id, 'character_id': character_id})
+            if not existing_feat:
+                continue
+            updated_name = sanitize_optional_str(request_form.get(f'{name_prefix}{feat_id}'), max_len=255)
+            updated_desc = sanitize_optional_str(request_form.get(f'{desc_prefix}{feat_id}'), max_len=2000)
+            if updated_name:
+                ggi.go_update('feat_and_trait', {
+                    'id': feat_id,
+                    'name': updated_name,
+                    'description': updated_desc,
+                    'character_id': character_id,
+                })
+
+        # Add new feat
         feat_and_trait_id = uuid()
         name = sanitize_optional_str(request_form.get(f'{table_name}-name'), max_len=255)
         description = sanitize_optional_str(request_form.get(f'{table_name}-description'), max_len=2000)
@@ -598,6 +646,43 @@ class CharacterSheet:
             }
 
             ggi.go_add_new('feat_and_trait', feat_and_trait)
+
+    def update_single_feat(self, character_id: str, feat_id: str, name: str, description: str):
+        """Update a single feat/trait and return the updated record, or None."""
+        if not is_valid_uuid(feat_id):
+            return None
+        existing = ggi.go_get_one('feat_and_trait', {'id': feat_id, 'character_id': character_id})
+        if not existing:
+            return None
+        clean_name = sanitize_optional_str(name, max_len=255)
+        clean_desc = sanitize_optional_str(description, max_len=2000)
+        if not clean_name:
+            return existing
+        ggi.go_update('feat_and_trait', {
+            'id': feat_id,
+            'name': clean_name,
+            'description': clean_desc,
+            'character_id': character_id,
+        })
+        return {'id': feat_id, 'name': clean_name, 'description': clean_desc, 'character_id': character_id}
+
+    def add_single_feat(self, character_id: str, name: str, description: str):
+        """Add a new feat/trait and return the new record, or None if at capacity or invalid."""
+        clean_name = sanitize_optional_str(name, max_len=255)
+        if not clean_name:
+            return None
+        if (ggi.go_get_all('feat_and_trait', {'character_id': character_id}, count=True) or 0) >= FEAT_TRAIT_MAX:
+            return None
+        clean_desc = sanitize_optional_str(description, max_len=2000)
+        feat_id = uuid()
+        feat = {
+            'id': feat_id,
+            'name': clean_name,
+            'description': clean_desc,
+            'character_id': character_id,
+        }
+        ggi.go_add_new('feat_and_trait', feat)
+        return feat
 
     def save_custom_stat_values(self, character_id: str, request_form):
         table_name = 'custom_stat'

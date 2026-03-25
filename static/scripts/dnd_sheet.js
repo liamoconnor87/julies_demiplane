@@ -12,8 +12,16 @@ window.addEventListener("load", () => {
         }
     });
 
+    // After a feat delete (hx-swap="delete"), update capacity visibility
+    document.body.addEventListener('htmx:afterRequest', (event) => {
+        const trigger = event.detail.elt;
+        if (trigger && trigger.dataset.featRemove === 'true' && event.detail.successful) {
+            syncFeatCapacityVisibility();
+        }
+    });
+
     document.body.addEventListener('htmx:afterSwap', (event) => {
-        const target = event.target;
+        const target = event.detail.target || event.target;
         if (!target || !target.id) {
             return;
         }
@@ -67,7 +75,42 @@ window.addEventListener("load", () => {
 
         if (target.id === 'feats-section-container') {
             selectFeatField();
-            bindFeatDescriptionDisplayAutoHeight();
+            setTimeout(() => bindFeatDescriptionDisplayAutoHeight(), 0);
+            bindFeatsLockToggle();
+            bindFeatAutoSave();
+            decorateBuffedLabels();
+            return;
+        }
+
+        if (target.id === 'feats-list') {
+            // Clear and close the add-feat form after a successful add
+            const nameInput = document.getElementById('feat_and_trait-name');
+            const descInput = document.getElementById('feat_and_trait-description');
+            if (nameInput) nameInput.value = '';
+            if (descInput) descInput.value = '';
+            const addFeatBtnWrapper = document.getElementById('add-feat-btn-wrapper');
+            const addFeatFieldName = document.getElementById('add-feat-field-name');
+            const addFeatFieldDescription = document.getElementById('add-feat-field-description');
+            const addFeatSubmitBtnWrapper = document.getElementById('add-feat-submit-btn-wrapper');
+            const closeFeatBtnWrapper = document.getElementById('close-feat-btn-wrapper');
+            if (addFeatBtnWrapper) addFeatBtnWrapper.style.display = 'flex';
+            if (addFeatFieldName) addFeatFieldName.style.display = 'none';
+            if (addFeatFieldDescription) addFeatFieldDescription.style.display = 'none';
+            if (addFeatSubmitBtnWrapper) addFeatSubmitBtnWrapper.style.display = 'none';
+            if (closeFeatBtnWrapper) closeFeatBtnWrapper.style.display = 'none';
+
+            syncFeatCapacityVisibility();
+            setTimeout(() => bindFeatDescriptionDisplayAutoHeight(), 0);
+            bindFeatsLockToggle();
+            bindFeatAutoSave();
+            decorateBuffedLabels();
+            return;
+        }
+
+        // Individual feat row update (outerHTML swap)
+        if (target.id && target.id.startsWith('feat-row-')) {
+            setTimeout(() => bindFeatDescriptionDisplayAutoHeight(), 0);
+            bindFeatAutoSave();
             bindFeatsLockToggle();
             decorateBuffedLabels();
             return;
@@ -233,6 +276,83 @@ function initializeUiBindings() {
     bindInventoryDescriptionDisplayAutoHeight();
     decorateBuffedLabels();
     bindCharacterInfoAutoSave();
+    bindFeatAutoSave();
+    bindFeatsContainerSettle();
+}
+
+const FEAT_TRAIT_MAX = 15;
+
+function syncFeatCapacityVisibility() {
+    const featsList = document.getElementById('feats-list');
+    const addRow = document.querySelector('.feats-section .card-item-add-row');
+    if (!featsList || !addRow) return;
+    const count = featsList.querySelectorAll('.card-item-saved-row').length;
+    addRow.style.display = count >= FEAT_TRAIT_MAX ? 'none' : '';
+}
+
+function bindFeatsContainerSettle() {
+    const container = document.getElementById('feats-section-container');
+    if (!container || container.dataset.settleBound === 'true') {
+        return;
+    }
+    container.dataset.settleBound = 'true';
+    container.addEventListener('htmx:afterSettle', () => {
+        setTimeout(() => {
+            bindFeatDescriptionDisplayAutoHeight();
+            bindFeatAutoSave();
+            bindFeatsLockToggle();
+            decorateBuffedLabels();
+        }, 0);
+    });
+}
+
+let featAutoSaveTimers = {};
+
+function bindFeatAutoSave() {
+    const featsSection = document.querySelector('.feats-section');
+    if (!featsSection) {
+        return;
+    }
+
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return;
+    }
+
+    const rows = featsSection.querySelectorAll('.card-item-saved-row');
+
+    rows.forEach((row) => {
+        const nameInput = row.querySelector('.feat-name-input');
+        const descInput = row.querySelector('.feat-description-input');
+        if (!nameInput) return;
+
+        const featId = nameInput.dataset.featId;
+        if (!featId) return;
+
+        const triggerAutoSave = () => {
+            if (featAutoSaveTimers[featId]) {
+                clearTimeout(featAutoSaveTimers[featId]);
+            }
+            featAutoSaveTimers[featId] = setTimeout(() => {
+                featAutoSaveTimers[featId] = null;
+                htmx.ajax('POST', `/characters/${characterId}/feat-and-trait/${featId}/update`, {
+                    target: `#feat-row-${featId}`,
+                    swap: 'outerHTML',
+                    values: {
+                        [`feat_and_trait-name-${featId}`]: nameInput.value,
+                        [`feat_and_trait-description-${featId}`]: descInput ? descInput.value : '',
+                    }
+                });
+            }, 1000);
+        };
+
+        [nameInput, descInput].forEach((input) => {
+            if (!input || input.dataset.autoSaveBound === 'true') return;
+            input.dataset.autoSaveBound = 'true';
+            input.addEventListener('input', triggerAutoSave);
+        });
+    });
 }
 
 let characterInfoAutoSaveTimer = null;
@@ -672,6 +792,18 @@ function bindFeatsLockToggle() {
         });
     };
 
+    const syncEditableFields = () => {
+        const isLocked = section.dataset.locked === 'true';
+        const editableInputs = section.querySelectorAll('.feat-name-input, .feat-description-input');
+        editableInputs.forEach((input) => {
+            if (isLocked) {
+                input.setAttribute('readonly', '');
+            } else {
+                input.removeAttribute('readonly');
+            }
+        });
+    };
+
     const syncLockText = () => {
         const isLocked = section.dataset.locked === 'true';
         lockToggle.innerHTML = isLocked
@@ -680,6 +812,7 @@ function bindFeatsLockToggle() {
         lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
         lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
         syncRemoveButtons();
+        syncEditableFields();
     };
 
     if (lockToggle.dataset.bound !== 'true') {
@@ -810,42 +943,38 @@ function decorateBuffedLabels() {
 
     buffFields.forEach(({ table, stat }) => {
         if (table === 'custom_stat') {
-            // Match label by name text on custom_stat-value-* inputs
-            document.querySelectorAll('label.custom-stats-section-label').forEach(label => {
-                if (
-                    label.textContent.trim() === stat &&
-                    label.htmlFor &&
-                    label.htmlFor.startsWith('custom_stat-value-')
-                ) {
+            // stat is the custom_stat record ID — match by input id/name pattern
+            const input = document.getElementById(`custom_stat-value-${stat}`);
+            if (input && input.id) {
+                const label = document.querySelector(`label[for="${input.id}"]`);
+                if (label) {
                     addBuffIndicator(label);
                 }
-            });
+            }
             return;
         }
 
         if (table === 'feat_and_trait') {
-            // Match feat/trait label by the input value (feat name)
-            document.querySelectorAll('.feats-section .card-item-saved-row input[readonly]').forEach(input => {
-                if (input.value.trim() === stat && input.id) {
-                    const label = document.querySelector(`label[for="${input.id}"]`);
-                    if (label) {
-                        addBuffIndicator(label);
-                    }
+            // stat is the feat record ID — match by data-feat-id or input name pattern
+            const input = document.querySelector(`.feats-section .feat-name-input[data-feat-id="${stat}"]`);
+            if (input && input.id) {
+                const label = document.querySelector(`label[for="${input.id}"]`);
+                if (label) {
+                    addBuffIndicator(label);
                 }
-            });
+            }
             return;
         }
 
         if (table === 'inventory') {
-            // Match inventory label by the input value (item name)
-            document.querySelectorAll('.inventory-section .card-item-saved-row input[readonly]').forEach(input => {
-                if (input.value.trim() === stat && input.id) {
-                    const label = document.querySelector(`label[for="${input.id}"]`);
-                    if (label) {
-                        addBuffIndicator(label);
-                    }
+            // stat is the inventory record ID — match by input id pattern
+            const input = document.getElementById(`inventory-name-${stat}`);
+            if (input && input.id) {
+                const label = document.querySelector(`label[for="${input.id}"]`);
+                if (label) {
+                    addBuffIndicator(label);
                 }
-            });
+            }
             return;
         }
 
@@ -1095,12 +1224,9 @@ function resizeFeatDescriptionField(field) {
         return;
     }
 
-    field.style.height = 'auto';
-
-    const computedStyles = window.getComputedStyle(field);
-    const minHeight = Number.parseFloat(computedStyles.minHeight) || field.clientHeight || 0;
-    const targetHeight = Math.max(field.scrollHeight, minHeight);
-    field.style.height = `${targetHeight}px`;
+    // Collapse to CSS min-height so scrollHeight reflects actual content
+    field.style.height = '0';
+    field.style.height = `${field.scrollHeight}px`;
 }
 
 function resizeInventoryDescriptionField(field) {
@@ -1433,18 +1559,17 @@ function bindAbilitiesSectionLockToggle() {
 }
 
 function bindFeatDescriptionDisplayAutoHeight() {
-    const descriptionFields = document.querySelectorAll('.feats-section .card-item-description-input');
+    const descriptionFields = document.querySelectorAll('.feats-section .card-item-saved-row .card-item-description-input');
 
     if (!descriptionFields.length) {
         return;
     }
 
     descriptionFields.forEach((field) => {
-        if (field.hasAttribute('readonly')) {
-            resizeFeatDescriptionField(field);
-        }
+        // Defer initial resize so the browser has laid out the swapped content
+        setTimeout(() => resizeFeatDescriptionField(field), 0);
 
-        if (!field.hasAttribute('readonly') && field.dataset.autoresizeBound !== 'true') {
+        if (field.dataset.autoresizeBound !== 'true') {
             field.addEventListener('input', () => {
                 resizeFeatDescriptionField(field);
             });

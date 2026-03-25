@@ -2,24 +2,24 @@
     {% if classes %}
         {% for char_class in classes %}
         <div class="classes-section-row">
-            <div class="classes-section-field classes-section-level-field">
-                <label for="classes-level-{{ char_class.id }}" class="classes-section-label">Level</label>
-                <input type="number" id="classes-level-{{ char_class.id }}"
-                       name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="classes-section-input class-level-input">
-            </div>
             <div class="classes-section-field classes-section-name-field">
                 <label for="classes-class_name-{{ char_class.id }}" class="classes-section-label">Class</label>
-                <div class="classes-section-name-wrapper">
-                    <input type="text" id="classes-class_name-{{ char_class.id }}"
-                           name="classes-class_name-{{ char_class.id }}" value="{{ char_class.class_name | title() }}" readonly class="classes-section-input">
-                    <button type="button" id="classes-action-{{ char_class.id }}"
-                            data-class-remove="true"
-                            hx-post="/characters/{{ character_id }}/class/{{ char_class.id }}/remove"
-                            hx-target="#classes-section-container"
-                            hx-swap="innerHTML"
-                            hx-include="closest form"
-                            class="classes-section-remove-x" aria-label="Remove class">&times;</button>
+                <input type="text" id="classes-class_name-{{ char_class.id }}"
+                       name="classes-class_name-{{ char_class.id }}" value="{{ char_class.class_name | title() }}" readonly class="classes-section-input">
+            </div>
+            <div class="classes-section-field classes-section-level-field">
+                <button type="button" id="classes-action-{{ char_class.id }}"
+                        data-class-remove="true"
+                        hx-post="/characters/{{ character_id }}/class/{{ char_class.id }}/remove"
+                        hx-target="#classes-section-container"
+                        hx-swap="innerHTML"
+                        hx-include="closest form"
+                        class="section-remove-x" aria-label="Remove class">&times;</button>
+                <div class="classes-section-level-wrapper">
+                    <input type="number" id="classes-level-{{ char_class.id }}"
+                           name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="classes-section-input class-level-input">
                 </div>
+                <label for="classes-level-{{ char_class.id }}" class="classes-section-label">Level</label>
             </div>
             {% if loop.first %}
             <span id="custom-stats-lock-toggle" class="section-lock-toggle custom-stats-lock-toggle" role="button" tabindex="0" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>

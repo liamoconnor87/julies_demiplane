@@ -57,7 +57,7 @@
 }
 
 .character-info-square-field {
-    max-width: 5rem;
+    max-width: 5.5rem;
     flex: 0 0 auto;
     margin: 0;
     margin-right: 0.25rem;
@@ -107,7 +107,7 @@
 .character-info-square-field .character-info-label,
 .character-info-square-field .character-info-input {
     min-width: 0;
-    width: 5rem;
+    width: 5.5rem;
     text-align: center;
     padding: 0.25rem 0;
     justify-content: center;

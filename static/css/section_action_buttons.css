@@ -14,3 +14,26 @@
     text-align: center;
     padding-left: 0 !important;
 }
+
+/* ── Unified remove × button ──────────────────────────────────────────────── */
+
+.section-remove-x {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.1rem 0.25rem;
+    transition: opacity 0.15s;
+}
+
+[data-locked='true'] .section-remove-x,
+.section-remove-x:disabled {
+    opacity: 0;
+    pointer-events: none;
+    cursor: default;
+}

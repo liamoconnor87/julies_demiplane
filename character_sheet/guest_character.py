@@ -308,12 +308,37 @@ def save_ability_values(request_form):
 
 
 def save_feat_and_trait_values(request_form):
-    """Append a new feat/trait to the session list."""
+    """Add a new feat/trait or update existing ones in the session list."""
     guest = session.get(_SESSION_KEY)
     if not guest:
         return
 
     feats = guest['feats_and_traits']
+
+    # Update existing feats
+    name_prefix = 'feat_and_trait-name-'
+    desc_prefix = 'feat_and_trait-description-'
+    existing_feat_ids = set()
+    for field_name in request_form:
+        if field_name.startswith(name_prefix):
+            existing_feat_ids.add(field_name.replace(name_prefix, ''))
+        if field_name.startswith(desc_prefix):
+            existing_feat_ids.add(field_name.replace(desc_prefix, ''))
+
+    for feat_id in existing_feat_ids:
+        if not is_valid_uuid(feat_id):
+            continue
+        for feat in feats:
+            if feat['id'] == feat_id:
+                updated_name = sanitize_optional_str(request_form.get(f'{name_prefix}{feat_id}'), max_len=255)
+                updated_desc = sanitize_optional_str(request_form.get(f'{desc_prefix}{feat_id}'), max_len=500)
+                if updated_name:
+                    feat['name'] = updated_name
+                    feat['description'] = updated_desc
+                break
+    _mark_modified()
+
+    # Add new feat
     if len(feats) >= FEAT_TRAIT_MAX:
         return
 
@@ -399,6 +424,47 @@ def remove_feat_and_trait(item_id: str):
         return
     guest['feats_and_traits'] = [f for f in guest['feats_and_traits'] if f.get('id') != item_id]
     _mark_modified()
+
+
+def update_single_feat(feat_id: str, name: str, description: str):
+    """Update a single feat/trait in the session and return it, or None."""
+    guest = session.get(_SESSION_KEY)
+    if not guest or not is_valid_uuid(feat_id):
+        return None
+    clean_name = sanitize_optional_str(name, max_len=255)
+    clean_desc = sanitize_optional_str(description, max_len=500)
+    if not clean_name:
+        return None
+    for feat in guest['feats_and_traits']:
+        if feat['id'] == feat_id:
+            feat['name'] = clean_name
+            feat['description'] = clean_desc
+            _mark_modified()
+            return feat
+    return None
+
+
+def add_single_feat(name: str, description: str):
+    """Add a new feat/trait to the session and return it, or None."""
+    guest = session.get(_SESSION_KEY)
+    if not guest:
+        return None
+    feats = guest['feats_and_traits']
+    if len(feats) >= FEAT_TRAIT_MAX:
+        return None
+    clean_name = sanitize_optional_str(name, max_len=255)
+    if not clean_name:
+        return None
+    clean_desc = sanitize_optional_str(description, max_len=500)
+    feat = {
+        'id': uuid(),
+        'character_id': guest['character']['id'],
+        'name': clean_name,
+        'description': clean_desc,
+    }
+    feats.append(feat)
+    _mark_modified()
+    return feat
 
 
 def remove_custom_stat(item_id: str):

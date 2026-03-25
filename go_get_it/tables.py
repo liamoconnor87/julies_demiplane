@@ -28,6 +28,7 @@ TABLES = {
         "username": _text(30),
         "password_hash": _text(256),
         "created_at": _text(),
+        "admin": _boolean,
     },
     "user_to_character": {
         "id": _id,

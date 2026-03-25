@@ -19,43 +19,70 @@
 }
 
 .classes-section-name-field {
-    width: 11.25rem;
-    min-width: 11.25rem;
-    max-width: 11.25rem;
+    width: 9rem;
+    min-width: 9rem;
+    max-width: 9rem;
     flex: 0 0 auto;
-    margin-right: 0.25rem;
-    position: relative;
+    margin-right: 0;
 }
 
-.classes-section-name-wrapper {
-    display: flex;
-    align-items: stretch;
+.classes-section-name-field .classes-section-input {
+    height: 2.58rem;
 }
 
-.classes-section-name-wrapper .classes-section-input {
-    flex: 1;
-    padding-right: 1.5rem;
-}
-
-.classes-section-remove-x {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: none;
-    border: none;
-    color: var(--secondary-color);
-    font-size: 1.1rem;
-    line-height: 1;
-    cursor: pointer;
-    padding: 0.1rem 0.25rem;
-    transition: opacity 0.15s;
+.classes-section-name-field select.classes-section-input {
+    height: 2.58rem;
 }
 
 .classes-section-level-field {
-    max-width: 3rem;
-    min-width: 3rem;
+    max-width: 4.5rem;
+    min-width: 4.5rem;
     align-items: center;
     margin-right: 0;
+    position: relative;
+}
+
+.classes-section-level-field > .section-remove-x {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.1rem 0.25rem;
+    z-index: 1;
+}
+
+.classes-section-level-wrapper {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+}
+
+.classes-section-level-wrapper .classes-section-input {
+    width: 4.5rem;
+}
+
+.classes-section-level-field .classes-section-input {
+    text-align: center;
+    padding: 0.3rem 0 0 0;
+    width: 4.5rem;
+    appearance: textfield;
+    -moz-appearance: textfield;
+    height: 100%;
+    font-size: 1.6rem;
+}
+
+.classes-section-level-field .classes-section-input::-webkit-outer-spin-button,
+.classes-section-level-field .classes-section-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.classes-section-level-field .classes-section-label {
+    text-align: center;
+    padding-left: 0;
+    width: 100%;
+    font-size: 0.5rem;
+    padding: 0.25rem 0;
 }
 
 .classes-section-action-field,
@@ -100,35 +127,6 @@
     padding-top: 0.5rem;
 }
 
-.classes-section-name-field .classes-section-input {
-    height: 2.58rem;
-}
-
-.classes-section-name-field select.classes-section-input {
-    height: 2.58rem;
-}
-
-.classes-section-level-field .classes-section-input {
-    text-align: center;
-    padding: 0.5rem 0;
-    width: 100%;
-    appearance: textfield;
-    -moz-appearance: textfield;
-    height: 2.58rem;
-}
-
-.classes-section-level-field .classes-section-input::-webkit-outer-spin-button,
-.classes-section-level-field .classes-section-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.classes-section-level-field .classes-section-label {
-    text-align: center;
-    padding-left: 0;
-    width: 100%;
-}
-
 .classes-section-btn {
     cursor: pointer;
     text-align: center;
@@ -161,13 +159,8 @@
 
 .classes-section-row .custom-stats-lock-toggle {
     align-self: flex-end;
-    margin-left: 0;
+    margin-left: 0.35rem;
     margin-bottom: 0.25rem;
-}
-
-.classes-section-remove-x[data-class-remove]:disabled {
-    opacity: 0;
-    cursor: default;
 }
 
 @media (max-width: 499px) {

@@ -19,9 +19,7 @@
 
 /* ── Lock state ────────────────────────────────────────────────────────────── */
 
-[data-inventory-remove]:disabled,
-.card-item-section[data-locked='true'] [data-feat-remove],
-[data-feat-remove]:disabled {
+[data-inventory-remove]:disabled {
     color: var(--secondary-color-dark);
 }
 
@@ -83,6 +81,22 @@
     min-width: 0;
 }
 
+/* ── Name wrapper — contains name input + absolute-positioned × ──────────── */
+
+.card-item-name-wrapper {
+    position: relative;
+}
+
+.card-item-saved-row .card-item-name-wrapper {
+    width: var(--card-item-total-width);
+    min-width: 0;
+    max-width: var(--card-item-total-width);
+}
+
+.card-item-saved-row .card-item-name-wrapper .card-item-input {
+    padding-right: 1.5rem;
+}
+
 .card-item-saved-row .card-item-name-field {
     align-self: stretch;
     margin-bottom: 0;
@@ -136,6 +150,14 @@
     line-height: 1.2;
     white-space: pre-wrap;
     min-height: calc(var(--card-item-field-input-height) * 2);
+    padding-bottom: 1rem;
+}
+
+.card-item-saved-row .card-item-description-input {
+    height: auto;
+    min-height: var(--card-item-field-input-height);
+    overflow: hidden;
+    resize: none;
 }
 
 .card-item-description-input[readonly] {
@@ -156,7 +178,7 @@
     font-size: 0.8rem;
     line-height: 1.2;
     display: block;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.75rem 1rem;
     min-height: var(--card-item-field-input-height);
     white-space: pre-wrap;
 }
@@ -172,7 +194,7 @@
     font-weight: bold;
     margin-bottom: 0;
     display: block;
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     width: 100%;
     box-sizing: border-box;
     transition: background 0.2s;
@@ -323,6 +345,12 @@
     }
 
     .card-item-description-field {
+        width: 100%;
+        min-width: 0;
+        max-width: 19.75rem;
+    }
+
+    .card-item-saved-row .card-item-name-wrapper {
         width: 100%;
         min-width: 0;
         max-width: 19.75rem;

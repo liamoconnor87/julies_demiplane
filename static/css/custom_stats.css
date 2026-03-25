@@ -68,27 +68,8 @@
     position: relative;
 }
 
-.custom-stats-remove-btn {
-    position: absolute;
-    top: 0.15rem;
-    right: 0.15rem;
-    width: 1.35rem;
-    height: 1.35rem;
-    line-height: 1;
-    font-size: 1rem;
-    border: none;
-    background: var(--primary-color-transparent);
-    color: var(--secondary-color);
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-}
-
-.custom-stats-section[data-locked='true'] .custom-stats-remove-btn,
-.custom-stats-remove-btn:disabled {
+.custom-stats-section[data-locked='true'] .section-remove-x,
+.custom-stats-section .section-remove-x:disabled {
     opacity: 0;
     cursor: default;
 }

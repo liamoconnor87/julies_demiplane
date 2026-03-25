@@ -33,6 +33,11 @@
 
 html {
     font-size: 17px;
+    scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+    display: none;
 }
 
 body {
