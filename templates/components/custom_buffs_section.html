@@ -2,7 +2,13 @@
 {% for buff in custom_buffs %}
 	{% for target in buff.targets %}
 		{% for stat in target.stat_names %}
-			{% set _ = buff_fields.append({'table': target.stat_table_name, 'stat': stat}) %}
+			{% set _ = buff_fields.append({
+				'table': target.stat_table_name,
+				'stat': stat,
+				'buff_id': buff.id,
+				'buff_name': buff.name,
+				'buff_value': buff.value
+			}) %}
 		{% endfor %}
 	{% endfor %}
 {% endfor %}

@@ -925,9 +925,102 @@ function addBuffIndicator(el) {
     }
 }
 
-function decorateBuffedLabels() {
-    // Clear any existing indicators first
+function clearBuffLabelDecorations() {
     document.querySelectorAll('.buff-indicator').forEach(el => el.remove());
+
+    document.querySelectorAll('[data-buff-tooltip-applied="true"]').forEach((el) => {
+        const hadOriginalTitle = el.dataset.hadOriginalTitle === 'true';
+        const originalTitle = el.dataset.originalTitle || '';
+
+        if (hadOriginalTitle) {
+            el.setAttribute('title', originalTitle);
+        } else {
+            el.removeAttribute('title');
+        }
+
+        el.classList.remove('buff-tooltip-label');
+        delete el.dataset.originalTitle;
+        delete el.dataset.hadOriginalTitle;
+        delete el.dataset.buffTooltipApplied;
+    });
+}
+
+function formatBuffSourceLabel(source) {
+    const rawName = String(source.buff_name || '').trim();
+    const name = rawName || 'Unnamed Effect';
+    const parsedValue = Number.parseInt(source.buff_value, 10);
+
+    if (Number.isNaN(parsedValue)) {
+        return name;
+    }
+
+    const valueLabel = parsedValue >= 0 ? `+${parsedValue}` : `${parsedValue}`;
+    return `${name} (${valueLabel})`;
+}
+
+function setBuffTooltip(el, buffSources) {
+    if (!el || !Array.isArray(buffSources) || buffSources.length === 0) {
+        return;
+    }
+
+    if (el.dataset.buffTooltipApplied !== 'true') {
+        el.dataset.originalTitle = el.getAttribute('title') || '';
+        el.dataset.hadOriginalTitle = el.hasAttribute('title') ? 'true' : 'false';
+    }
+
+    const sourceLines = buffSources.map(formatBuffSourceLabel);
+    const tooltip = sourceLines.length === 1
+        ? `Affected by: ${sourceLines[0]}`
+        : `Affected by:\n${sourceLines.map((line) => `- ${line}`).join('\n')}`;
+
+    el.setAttribute('title', tooltip);
+    el.classList.add('buff-tooltip-label');
+    el.dataset.buffTooltipApplied = 'true';
+}
+
+function getBuffedLabelElement(table, stat) {
+    const normalizedStat = String(stat);
+
+    if (table === 'custom_stat') {
+        const input = document.getElementById(`custom_stat-value-${normalizedStat}`);
+        if (input && input.id) {
+            return document.querySelector(`label[for="${input.id}"]`);
+        }
+        return null;
+    }
+
+    if (table === 'feat_and_trait') {
+        const input = document.querySelector(`.feats-section .feat-name-input[data-feat-id="${normalizedStat}"]`);
+        if (input && input.id) {
+            return document.querySelector(`label[for="${input.id}"]`);
+        }
+        return null;
+    }
+
+    if (table === 'inventory') {
+        const input = document.getElementById(`inventory-name-${normalizedStat}`);
+        if (input && input.id) {
+            return document.querySelector(`label[for="${input.id}"]`);
+        }
+        return null;
+    }
+
+    const key = `${table}-${normalizedStat}`;
+    const input = document.querySelector(`input[name="${key}"]`);
+    if (input && input.id) {
+        return document.querySelector(`label[for="${input.id}"]`);
+    }
+
+    const displayDiv = document.getElementById(key);
+    if (!displayDiv) {
+        return null;
+    }
+
+    return displayDiv.closest('.abilities-section-secondary-field, .abilities-section-skills-item')?.querySelector('.abilities-section-display-label') || null;
+}
+
+function decorateBuffedLabels() {
+    clearBuffLabelDecorations();
 
     const dataEl = document.getElementById('buff-fields-data');
     if (!dataEl) return;
@@ -941,63 +1034,40 @@ function decorateBuffedLabels() {
 
     if (!buffFields || !buffFields.length) return;
 
-    buffFields.forEach(({ table, stat }) => {
-        if (table === 'custom_stat') {
-            // stat is the custom_stat record ID — match by input id/name pattern
-            const input = document.getElementById(`custom_stat-value-${stat}`);
-            if (input && input.id) {
-                const label = document.querySelector(`label[for="${input.id}"]`);
-                if (label) {
-                    addBuffIndicator(label);
-                }
-            }
+    const sourcesByField = new Map();
+
+    buffFields.forEach((buffField) => {
+        const table = String(buffField.table || '').trim();
+        const stat = String(buffField.stat || '').trim();
+        if (!table || !stat) {
             return;
         }
 
-        if (table === 'feat_and_trait') {
-            // stat is the feat record ID — match by data-feat-id or input name pattern
-            const input = document.querySelector(`.feats-section .feat-name-input[data-feat-id="${stat}"]`);
-            if (input && input.id) {
-                const label = document.querySelector(`label[for="${input.id}"]`);
-                if (label) {
-                    addBuffIndicator(label);
-                }
-            }
+        const fieldKey = `${table}::${stat}`;
+        if (!sourcesByField.has(fieldKey)) {
+            sourcesByField.set(fieldKey, new Map());
+        }
+
+        const sourceMap = sourcesByField.get(fieldKey);
+        const fallbackSourceKey = `${buffField.buff_name || ''}|${buffField.buff_value || ''}`;
+        const sourceKey = buffField.buff_id != null ? String(buffField.buff_id) : fallbackSourceKey;
+        if (!sourceMap.has(sourceKey)) {
+            sourceMap.set(sourceKey, {
+                buff_name: buffField.buff_name,
+                buff_value: buffField.buff_value,
+            });
+        }
+    });
+
+    sourcesByField.forEach((sourceMap, fieldKey) => {
+        const [table, stat] = fieldKey.split('::');
+        const label = getBuffedLabelElement(table, stat);
+        if (!label) {
             return;
         }
 
-        if (table === 'inventory') {
-            // stat is the inventory record ID — match by input id pattern
-            const input = document.getElementById(`inventory-name-${stat}`);
-            if (input && input.id) {
-                const label = document.querySelector(`label[for="${input.id}"]`);
-                if (label) {
-                    addBuffIndicator(label);
-                }
-            }
-            return;
-        }
-
-        const key = `${table}-${stat}`;
-
-        // Try input (character stats, ability values)
-        const input = document.querySelector(`input[name="${key}"]`);
-        if (input && input.id) {
-            const label = document.querySelector(`label[for="${input.id}"]`);
-            if (label) {
-                addBuffIndicator(label);
-                return;
-            }
-        }
-
-        // Try display div (modifier, saving throw, skills)
-        const displayDiv = document.getElementById(key);
-        if (displayDiv) {
-            const labelDiv = displayDiv.closest('.abilities-section-secondary-field, .abilities-section-skills-item')?.querySelector('.abilities-section-display-label');
-            if (labelDiv) {
-                addBuffIndicator(labelDiv);
-            }
-        }
+        addBuffIndicator(label);
+        setBuffTooltip(label, Array.from(sourceMap.values()));
     });
 }
 
