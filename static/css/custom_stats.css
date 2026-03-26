@@ -74,14 +74,6 @@
     cursor: default;
 }
 
-.custom-stats-lock-toggle {
-    display: flex;
-    align-self: flex-end;
-    margin-right: 0.25rem;
-    margin-bottom: 0.25rem;
-    margin-left: 0;
-}
-
 .custom-stats-stat-card .custom-stats-square-field {
     margin-right: 0;
     margin-bottom: 0;

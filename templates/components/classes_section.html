@@ -21,9 +21,6 @@
                 </div>
                 <label for="classes-level-{{ char_class.id }}" class="classes-section-label">Level</label>
             </div>
-            {% if loop.first %}
-            <span id="custom-stats-lock-toggle" class="section-lock-toggle custom-stats-lock-toggle" role="button" tabindex="0" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
-            {% endif %}
         </div>
         {% endfor %}
     {% endif %}

@@ -1,49 +1,15 @@
 <div class="card-item-section inventory-section">
     <h4>
         Inventory
-        <span id="inventory-lock-toggle" class="section-lock-toggle" role="button" tabindex="0" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
     </h4>
 
+    <div id="inventory-list">
     {% if inventory %}
         {% for item in inventory %}
-            <div class="card-item-row card-item-saved-row">
-                <div class="card-item-top-row">
-                    <div class="card-item-field card-item-name-field">
-                        <label for="inventory-name-{{ item.id }}" class="card-item-label">Item(s)</label>
-                        <input type="text" id="inventory-name-{{ item.id }}"
-                            name="inventory-name-{{ item.id }}" value="{{ item.name }}" readonly class="card-item-input">
-                    </div>
-
-                    <div class="card-item-field card-item-quantity-field">
-                        <label for="inventory-quantity-{{ item.id }}" class="card-item-label">Qty</label>
-                            <div class="card-item-quantity-control" aria-label="Adjust quantity for {{ item.name }}">
-                                <button type="button" id="inventory-decrease-{{ item.id }}" class="card-item-btn card-item-quantity-btn" data-inventory-remove="true" data-item-quantity="{{ item.quantity }}"
-                                    hx-post="/characters/{{ character_id }}/inventory/fragment"
-                                    hx-target="#inventory-section-container"
-                                    hx-swap="innerHTML"
-                                    hx-include="closest form"
-                                    hx-vals='{"inventory-action":"step","inventory-update-id":"{{ item.id }}","inventory-step":"-1"}'>−</button>
-                                <input type="number" id="inventory-quantity-{{ item.id }}"
-                                    name="inventory-quantity-{{ item.id }}" value="{{ item.quantity }}" class="card-item-input card-item-quantity-display" min="0" readonly>
-                                <button type="button" id="inventory-increase-{{ item.id }}" class="card-item-btn card-item-quantity-btn"
-                                    hx-post="/characters/{{ character_id }}/inventory/fragment"
-                                    hx-target="#inventory-section-container"
-                                    hx-swap="innerHTML"
-                                    hx-include="closest form"
-                                    hx-vals='{"inventory-action":"step","inventory-update-id":"{{ item.id }}","inventory-step":"1"}'>+</button>
-                            </div>
-                    </div>
-
-                </div>
-
-                {% if item.description %}
-                    <div class="card-item-field card-item-description-field">
-                        <div id="inventory-description-{{ item.id }}" class="card-item-description-display">{{ item.description }}</div>
-                    </div>
-                {% endif %}
-            </div>
+            {% include 'components/inventory_row.html' %}
         {% endfor %}
     {% endif %}
+    </div>
 
     {% if not inventory_at_capacity %}
     <div class="card-item-row card-item-add-row">
@@ -65,12 +31,10 @@
 
             <div class="card-item-field card-item-action-field section-action-field" id="add-inventory-submit-btn-wrapper">
                 <button type="button" id="inventory-add" class="card-item-btn section-action-btn"
-                    name="inventory-action"
-                    value="add"
-                    hx-post="/characters/{{ character_id }}/inventory/fragment"
-                    hx-target="#inventory-section-container"
-                    hx-swap="innerHTML"
-                    hx-include="closest form"><i class="bi bi-check-lg"></i></button>
+                    hx-post="/characters/{{ character_id }}/inventory/add"
+                    hx-target="#inventory-list"
+                    hx-swap="beforeend"
+                    hx-include="#inventory-name, #inventory-description, #inventory-quantity"><i class="bi bi-check-lg"></i></button>
                 <label for="inventory-add" class="card-item-label section-action-label">Add</label>
             </div>
 

@@ -157,12 +157,6 @@
     padding: 0.25rem 0;
 }
 
-.classes-section-row .custom-stats-lock-toggle {
-    align-self: flex-end;
-    margin-left: 0.35rem;
-    margin-bottom: 0.25rem;
-}
-
 @media (max-width: 499px) {
     .classes-section {
         padding: 0 0.25rem;

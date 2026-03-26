@@ -18,6 +18,12 @@ window.addEventListener("load", () => {
         if (trigger && trigger.dataset.featRemove === 'true' && event.detail.successful) {
             syncFeatCapacityVisibility();
         }
+        if (trigger && trigger.dataset.inventoryRemove === 'true' && event.detail.successful) {
+            syncInventoryCapacityVisibility();
+        }
+        if (trigger && trigger.dataset.inventoryDelete === 'true' && event.detail.successful) {
+            syncInventoryCapacityVisibility();
+        }
     });
 
     document.body.addEventListener('htmx:afterSwap', (event) => {
@@ -50,7 +56,7 @@ window.addEventListener("load", () => {
         if (target.id === 'character-info-section-container') {
             bindCurrentHpCalculation();
             bindProficiencyToggles();
-            bindAbilitiesSectionLockToggle();
+            syncGlobalLockState();
             decorateBuffedLabels();
             bindCharacterInfoAutoSave();
 
@@ -69,14 +75,14 @@ window.addEventListener("load", () => {
         if (target.id === 'classes-section-container') {
             bindAddActionButtons();
             bindClassLevelAutoSave();
-            bindClassesAndStatsLockToggle();
+            syncGlobalLockState();
             return;
         }
 
         if (target.id === 'feats-section-container') {
             selectFeatField();
             setTimeout(() => bindFeatDescriptionDisplayAutoHeight(), 0);
-            bindFeatsLockToggle();
+            syncGlobalLockState();
             bindFeatAutoSave();
             decorateBuffedLabels();
             return;
@@ -101,7 +107,7 @@ window.addEventListener("load", () => {
 
             syncFeatCapacityVisibility();
             setTimeout(() => bindFeatDescriptionDisplayAutoHeight(), 0);
-            bindFeatsLockToggle();
+            syncGlobalLockState();
             bindFeatAutoSave();
             decorateBuffedLabels();
             return;
@@ -111,22 +117,61 @@ window.addEventListener("load", () => {
         if (target.id && target.id.startsWith('feat-row-')) {
             setTimeout(() => bindFeatDescriptionDisplayAutoHeight(), 0);
             bindFeatAutoSave();
-            bindFeatsLockToggle();
+            syncGlobalLockState();
             decorateBuffedLabels();
             return;
         }
 
         if (target.id === 'abilities-section-container') {
             bindProficiencyToggles();
-            bindAbilitiesSectionLockToggle();
+            syncGlobalLockState();
             decorateBuffedLabels();
             return;
         }
 
         if (target.id === 'inventory-section-container') {
             selectInventoryField();
-            bindInventoryDescriptionDisplayAutoHeight();
-            bindInventoryLockToggle();
+            setTimeout(() => bindInventoryDescriptionDisplayAutoHeight(), 0);
+            syncGlobalLockState();
+            bindInventoryAutoSave();
+            decorateBuffedLabels();
+            return;
+        }
+
+        if (target.id === 'inventory-list') {
+            // Clear and close the add-inventory form after a successful add
+            const nameInput = document.getElementById('inventory-name');
+            const descInput = document.getElementById('inventory-description');
+            const qtyInput = document.getElementById('inventory-quantity');
+            if (nameInput) nameInput.value = '';
+            if (descInput) descInput.value = '';
+            if (qtyInput) qtyInput.value = '1';
+            const addInventoryBtnWrapper = document.getElementById('add-inventory-btn-wrapper');
+            const addInventoryFieldName = document.getElementById('add-inventory-field-name');
+            const addInventoryFieldQuantity = document.getElementById('add-inventory-field-quantity');
+            const addInventoryFieldDescription = document.getElementById('add-inventory-field-description');
+            const addInventorySubmitBtnWrapper = document.getElementById('add-inventory-submit-btn-wrapper');
+            const closeInventoryBtnWrapper = document.getElementById('close-inventory-btn-wrapper');
+            if (addInventoryBtnWrapper) addInventoryBtnWrapper.style.display = 'flex';
+            if (addInventoryFieldName) addInventoryFieldName.style.display = 'none';
+            if (addInventoryFieldQuantity) addInventoryFieldQuantity.style.display = 'none';
+            if (addInventoryFieldDescription) addInventoryFieldDescription.style.display = 'none';
+            if (addInventorySubmitBtnWrapper) addInventorySubmitBtnWrapper.style.display = 'none';
+            if (closeInventoryBtnWrapper) closeInventoryBtnWrapper.style.display = 'none';
+
+            syncInventoryCapacityVisibility();
+            setTimeout(() => bindInventoryDescriptionDisplayAutoHeight(), 0);
+            syncGlobalLockState();
+            bindInventoryAutoSave();
+            decorateBuffedLabels();
+            return;
+        }
+
+        // Individual inventory row update (outerHTML swap)
+        if (target.id && target.id.startsWith('inventory-row-')) {
+            setTimeout(() => bindInventoryDescriptionDisplayAutoHeight(), 0);
+            bindInventoryAutoSave();
+            syncGlobalLockState();
             decorateBuffedLabels();
             return;
         }
@@ -139,10 +184,9 @@ window.addEventListener("load", () => {
 
         if (target.id === 'custom-stats-section-container') {
             bindAddActionButtons();
-            bindClassesAndStatsLockToggle();
+            syncGlobalLockState();
             bindCustomStatAutoSave();
             selectCustomBuffField();
-            bindBuffsLockToggle();
             bindBuffCardEdit();
             decorateBuffedLabels();
             return;
@@ -151,11 +195,9 @@ window.addEventListener("load", () => {
         if (target.id === 'custom-buffs-section-container') {
             selectCustomBuffField();
             bindProficiencyToggles();
-            bindAbilitiesSectionLockToggle();
+            syncGlobalLockState();
             bindCurrentHpCalculation();
             bindCombatFieldAutoSave();
-            bindClassesAndStatsLockToggle();
-            bindBuffsLockToggle();
             bindBuffCardEdit();
             decorateBuffedLabels();
         }
@@ -193,16 +235,6 @@ function setCookieValue(name, value, maxAgeSeconds) {
     const encodedName = encodeURIComponent(name);
     const encodedValue = encodeURIComponent(value);
     document.cookie = `${encodedName}=${encodedValue}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
-}
-
-function getAbilityLockCookieKey() {
-    const characterIdField = document.getElementById('character-id');
-    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
-    if (!characterId) {
-        return null;
-    }
-
-    return `ability_skill_lock_${characterId}`;
 }
 
 // ── Delete-character dropdown ────────────────────────────────────────────────
@@ -264,23 +296,22 @@ function initializeUiBindings() {
     bindClassLevelAutoSave();
     bindCustomStatAutoSave();
     bindProficiencyToggles();
-    bindAbilitiesSectionLockToggle();
     bindCurrentHpCalculation();
     bindCombatFieldAutoSave();
-    bindClassesAndStatsLockToggle();
-    bindFeatsLockToggle();
-    bindInventoryLockToggle();
-    bindBuffsLockToggle();
     bindBuffCardEdit();
     bindFeatDescriptionDisplayAutoHeight();
     bindInventoryDescriptionDisplayAutoHeight();
     decorateBuffedLabels();
     bindCharacterInfoAutoSave();
     bindFeatAutoSave();
+    bindInventoryAutoSave();
     bindFeatsContainerSettle();
+    bindInventoryContainerSettle();
+    bindGlobalLockToggle();
 }
 
 const FEAT_TRAIT_MAX = 15;
+const INVENTORY_MAX = 50;
 
 function syncFeatCapacityVisibility() {
     const featsList = document.getElementById('feats-list');
@@ -288,6 +319,14 @@ function syncFeatCapacityVisibility() {
     if (!featsList || !addRow) return;
     const count = featsList.querySelectorAll('.card-item-saved-row').length;
     addRow.style.display = count >= FEAT_TRAIT_MAX ? 'none' : '';
+}
+
+function syncInventoryCapacityVisibility() {
+    const inventoryList = document.getElementById('inventory-list');
+    const addRow = document.querySelector('.inventory-section .card-item-add-row');
+    if (!inventoryList || !addRow) return;
+    const count = inventoryList.querySelectorAll('.card-item-saved-row').length;
+    addRow.style.display = count >= INVENTORY_MAX ? 'none' : '';
 }
 
 function bindFeatsContainerSettle() {
@@ -300,7 +339,23 @@ function bindFeatsContainerSettle() {
         setTimeout(() => {
             bindFeatDescriptionDisplayAutoHeight();
             bindFeatAutoSave();
-            bindFeatsLockToggle();
+            syncGlobalLockState();
+            decorateBuffedLabels();
+        }, 0);
+    });
+}
+
+function bindInventoryContainerSettle() {
+    const container = document.getElementById('inventory-section-container');
+    if (!container || container.dataset.settleBound === 'true') {
+        return;
+    }
+    container.dataset.settleBound = 'true';
+    container.addEventListener('htmx:afterSettle', () => {
+        setTimeout(() => {
+            bindInventoryDescriptionDisplayAutoHeight();
+            bindInventoryAutoSave();
+            syncGlobalLockState();
             decorateBuffedLabels();
         }, 0);
     });
@@ -397,16 +452,6 @@ function bindCharacterInfoAutoSave() {
     });
 }
 
-function getCustomStatsLockCookieKey() {
-    const characterIdField = document.getElementById('character-id');
-    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
-    if (!characterId) {
-        return null;
-    }
-
-    return `custom_stats_lock_${characterId}`;
-}
-
 let classLevelAutoSaveTimer = null;
 
 function bindClassLevelAutoSave() {
@@ -492,145 +537,11 @@ function bindCustomStatAutoSave() {
 }
 
 function bindClassesAndStatsLockToggle() {
-    const lockToggle = document.getElementById('custom-stats-lock-toggle');
-    if (!lockToggle) {
-        return;
-    }
-
-    const cookieKey = getCustomStatsLockCookieKey();
-    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
-
-    // Read persisted state; default to unlocked
-    let currentLocked;
-    if (persistedLockState === 'true' || persistedLockState === 'false') {
-        currentLocked = persistedLockState;
-    } else {
-        currentLocked = 'false';
-    }
-
-    const syncAll = () => {
-        const isLocked = currentLocked === 'true';
-
-        // Update lock icon
-        lockToggle.innerHTML = isLocked
-            ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
-            : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
-        lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
-        lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
-
-        // Sync custom stat remove buttons
-        document.querySelectorAll('[data-custom-stat-remove="true"]').forEach((button) => {
-            button.disabled = isLocked;
-            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
-        });
-
-        // Sync class remove buttons
-        document.querySelectorAll('[data-class-remove="true"]').forEach((button) => {
-            button.disabled = isLocked;
-            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
-        });
-
-        // Apply locked state to custom-stats-section for CSS
-        const statsSection = document.querySelector('.custom-stats-section');
-        if (statsSection) {
-            statsSection.dataset.locked = currentLocked;
-        }
-    };
-
-    const toggle = () => {
-        currentLocked = currentLocked === 'true' ? 'false' : 'true';
-        if (cookieKey) {
-            setCookieValue(cookieKey, currentLocked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
-        }
-        syncAll();
-    };
-
-    if (lockToggle.dataset.bound !== 'true') {
-        lockToggle.addEventListener('click', toggle);
-        lockToggle.addEventListener('keydown', (event) => {
-            if (event.key === ' ' || event.key === 'Enter') {
-                event.preventDefault();
-                toggle();
-            }
-        });
-        lockToggle.dataset.bound = 'true';
-    }
-
-    syncAll();
-}
-
-function getBuffsLockCookieKey() {
-    const characterIdField = document.getElementById('character-id');
-    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
-    if (!characterId) {
-        return null;
-    }
-
-    return `buffs_lock_${characterId}`;
+    syncGlobalLockState();
 }
 
 function bindBuffsLockToggle() {
-    const section = document.querySelector('.custom-buffs-section');
-    const lockToggle = document.getElementById('buffs-lock-toggle');
-
-    if (!section || !lockToggle) {
-        return;
-    }
-
-    const cookieKey = getBuffsLockCookieKey();
-    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
-
-    if (persistedLockState === 'true' || persistedLockState === 'false') {
-        section.dataset.locked = persistedLockState;
-    } else if (!section.dataset.locked) {
-        section.dataset.locked = 'false';
-    }
-
-    const syncRemoveButtons = () => {
-        const isLocked = section.dataset.locked === 'true';
-        const removeButtons = section.querySelectorAll('[data-buff-remove="true"]');
-        removeButtons.forEach((button) => {
-            button.disabled = isLocked;
-            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
-        });
-    };
-
-    const syncLockText = () => {
-        const isLocked = section.dataset.locked === 'true';
-        lockToggle.innerHTML = isLocked
-            ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
-            : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
-        lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
-        lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
-        syncRemoveButtons();
-    };
-
-    if (lockToggle.dataset.bound !== 'true') {
-        lockToggle.addEventListener('click', () => {
-            const isLocked = section.dataset.locked === 'true';
-            section.dataset.locked = isLocked ? 'false' : 'true';
-            if (cookieKey) {
-                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
-            }
-            syncLockText();
-        });
-
-        lockToggle.addEventListener('keydown', (event) => {
-            if (event.key === ' ' || event.key === 'Enter') {
-                event.preventDefault();
-                const isLocked = section.dataset.locked === 'true';
-                section.dataset.locked = isLocked ? 'false' : 'true';
-                if (cookieKey) {
-                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
-                }
-                syncLockText();
-            }
-        });
-
-        lockToggle.dataset.bound = 'true';
-    }
-
-    syncLockText();
+    syncGlobalLockState();
 }
 
 function bindBuffCardEdit() {
@@ -756,167 +667,149 @@ function bindBuffCardEdit() {
     }
 }
 
-function getFeatsLockCookieKey() {
+function getGlobalLockCookieKey() {
     const characterIdField = document.getElementById('character-id');
     const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
     if (!characterId) {
         return null;
     }
-
-    return `feats_lock_${characterId}`;
+    return `global_lock_${characterId}`;
 }
 
-function bindFeatsLockToggle() {
-    const section = document.querySelector('.feats-section');
-    const lockToggle = document.getElementById('feats-lock-toggle');
+function getGlobalLockState() {
+    const cookieKey = getGlobalLockCookieKey();
+    const persisted = cookieKey ? getCookieValue(cookieKey) : null;
+    if (persisted === 'true') return true;
+    return false;
+}
 
-    if (!section || !lockToggle) {
-        return;
-    }
+function syncGlobalLockState() {
+    const isLocked = getGlobalLockState();
 
-    const cookieKey = getFeatsLockCookieKey();
-    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
-
-    if (persistedLockState === 'true' || persistedLockState === 'false') {
-        section.dataset.locked = persistedLockState;
-    } else if (!section.dataset.locked) {
-        section.dataset.locked = 'false';
-    }
-
-    const syncRemoveButtons = () => {
-        const isLocked = section.dataset.locked === 'true';
-        const removeButtons = section.querySelectorAll('[data-feat-remove="true"]');
-        removeButtons.forEach((button) => {
-            button.disabled = isLocked;
-            button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
-        });
-    };
-
-    const syncEditableFields = () => {
-        const isLocked = section.dataset.locked === 'true';
-        const editableInputs = section.querySelectorAll('.feat-name-input, .feat-description-input');
-        editableInputs.forEach((input) => {
-            if (isLocked) {
-                input.setAttribute('readonly', '');
-            } else {
-                input.removeAttribute('readonly');
-            }
-        });
-    };
-
-    const syncLockText = () => {
-        const isLocked = section.dataset.locked === 'true';
-        lockToggle.innerHTML = isLocked
+    // ── Sub-bar lock button icon ──
+    const lockBtn = document.getElementById('global-lock-toggle');
+    if (lockBtn) {
+        lockBtn.innerHTML = isLocked
             ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
             : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
-        lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
-        lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
-        syncRemoveButtons();
-        syncEditableFields();
-    };
-
-    if (lockToggle.dataset.bound !== 'true') {
-        lockToggle.addEventListener('click', () => {
-            const isLocked = section.dataset.locked === 'true';
-            section.dataset.locked = isLocked ? 'false' : 'true';
-            if (cookieKey) {
-                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
-            }
-            syncLockText();
-        });
-
-        lockToggle.addEventListener('keydown', (event) => {
-            if (event.key === ' ' || event.key === 'Enter') {
-                event.preventDefault();
-                const isLocked = section.dataset.locked === 'true';
-                section.dataset.locked = isLocked ? 'false' : 'true';
-                if (cookieKey) {
-                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
-                }
-                syncLockText();
-            }
-        });
-
-        lockToggle.dataset.bound = 'true';
+        lockBtn.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
+        lockBtn.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
     }
 
-    syncLockText();
-}
-
-function getInventoryLockCookieKey() {
-    const characterIdField = document.getElementById('character-id');
-    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
-    if (!characterId) {
-        return null;
+    // ── Abilities section ──
+    const abilitiesSection = document.querySelector('.abilities-section');
+    if (abilitiesSection) {
+        abilitiesSection.dataset.locked = String(isLocked);
     }
 
-    return `inventory_lock_${characterId}`;
+    // ── Classes & custom stats section ──
+    const statsSection = document.querySelector('.custom-stats-section');
+    if (statsSection) {
+        statsSection.dataset.locked = String(isLocked);
+    }
+    document.querySelectorAll('[data-custom-stat-remove="true"]').forEach((button) => {
+        button.disabled = isLocked;
+        button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-class-remove="true"]').forEach((button) => {
+        button.disabled = isLocked;
+        button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+    });
+
+    // ── Feats section ──
+    const featsSection = document.querySelector('.feats-section');
+    if (featsSection) {
+        featsSection.dataset.locked = String(isLocked);
+    }
+    document.querySelectorAll('[data-feat-remove="true"]').forEach((button) => {
+        button.disabled = isLocked;
+        button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+    });
+    document.querySelectorAll('.feat-name-input, .feat-description-input').forEach((input) => {
+        if (isLocked) {
+            input.setAttribute('readonly', '');
+        } else {
+            input.removeAttribute('readonly');
+        }
+    });
+
+    // ── Inventory section ──
+    const inventorySection = document.querySelector('.inventory-section');
+    if (inventorySection) {
+        inventorySection.dataset.locked = String(isLocked);
+    }
+    document.querySelectorAll('.inventory-section [data-inventory-remove="true"]').forEach((button) => {
+        const quantity = parseInt(button.dataset.itemQuantity, 10) || 0;
+        const shouldDisable = isLocked && quantity <= 1;
+        button.disabled = shouldDisable;
+        button.setAttribute('aria-disabled', shouldDisable ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-inventory-delete="true"]').forEach((button) => {
+        button.disabled = isLocked;
+        button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+    });
+    document.querySelectorAll('.inventory-name-input, .inventory-description-input').forEach((input) => {
+        if (isLocked) {
+            input.setAttribute('readonly', '');
+        } else {
+            input.removeAttribute('readonly');
+        }
+    });
+
+    // ── Buffs section ──
+    const buffsSection = document.querySelector('.custom-buffs-section');
+    if (buffsSection) {
+        buffsSection.dataset.locked = String(isLocked);
+    }
+    document.querySelectorAll('[data-buff-remove="true"]').forEach((button) => {
+        button.disabled = isLocked;
+        button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+    });
+
+    // ── Tracker section ──
+    const trackerSection = document.querySelector('.tracker-section');
+    if (trackerSection) {
+        trackerSection.dataset.locked = String(isLocked);
+    }
+    document.querySelectorAll('[data-tracker-remove="true"], [data-tracker-entry-remove="true"]').forEach((button) => {
+        button.disabled = isLocked;
+        button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+    });
+    document.querySelectorAll('.tracker-add-actions-row').forEach((row) => {
+        row.style.display = isLocked ? 'none' : 'flex';
+    });
 }
 
-function bindInventoryLockToggle() {
-    const section = document.querySelector('.inventory-section');
-    const lockToggle = document.getElementById('inventory-lock-toggle');
-
-    if (!section || !lockToggle) {
+function bindGlobalLockToggle() {
+    const lockBtn = document.getElementById('global-lock-toggle');
+    if (!lockBtn || lockBtn.dataset.bound === 'true') {
+        syncGlobalLockState();
         return;
     }
+    lockBtn.dataset.bound = 'true';
 
-    const cookieKey = getInventoryLockCookieKey();
-    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
+    lockBtn.addEventListener('click', () => {
+        const cookieKey = getGlobalLockCookieKey();
+        const nowLocked = !getGlobalLockState();
+        if (cookieKey) {
+            setCookieValue(cookieKey, String(nowLocked), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+        }
+        syncGlobalLockState();
+    });
 
-    if (persistedLockState === 'true' || persistedLockState === 'false') {
-        section.dataset.locked = persistedLockState;
-    } else if (!section.dataset.locked) {
-        section.dataset.locked = 'false';
-    }
-
-    const syncRemoveButtons = () => {
-        const isLocked = section.dataset.locked === 'true';
-        const removeButtons = section.querySelectorAll('[data-inventory-remove="true"]');
-        removeButtons.forEach((button) => {
-            const quantity = parseInt(button.dataset.itemQuantity, 10) || 0;
-            const shouldDisable = isLocked && quantity <= 1;
-            button.disabled = shouldDisable;
-            button.setAttribute('aria-disabled', shouldDisable ? 'true' : 'false');
-        });
-    };
-
-    const syncLockText = () => {
-        const isLocked = section.dataset.locked === 'true';
-        lockToggle.innerHTML = isLocked
-            ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
-            : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
-        lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
-        lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
-        syncRemoveButtons();
-    };
-
-    if (lockToggle.dataset.bound !== 'true') {
-        lockToggle.addEventListener('click', () => {
-            const isLocked = section.dataset.locked === 'true';
-            section.dataset.locked = isLocked ? 'false' : 'true';
+    lockBtn.addEventListener('keydown', (event) => {
+        if (event.key === ' ' || event.key === 'Enter') {
+            event.preventDefault();
+            const cookieKey = getGlobalLockCookieKey();
+            const nowLocked = !getGlobalLockState();
             if (cookieKey) {
-                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+                setCookieValue(cookieKey, String(nowLocked), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
             }
-            syncLockText();
-        });
+            syncGlobalLockState();
+        }
+    });
 
-        lockToggle.addEventListener('keydown', (event) => {
-            if (event.key === ' ' || event.key === 'Enter') {
-                event.preventDefault();
-                const isLocked = section.dataset.locked === 'true';
-                section.dataset.locked = isLocked ? 'false' : 'true';
-                if (cookieKey) {
-                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
-                }
-                syncLockText();
-            }
-        });
-
-        lockToggle.dataset.bound = 'true';
-    }
-
-    syncLockText();
+    syncGlobalLockState();
 }
 
 function addBuffIndicator(el) {
@@ -1304,22 +1197,58 @@ function resizeInventoryDescriptionField(field) {
         return;
     }
 
-    field.style.height = 'auto';
-
-    const computedStyles = window.getComputedStyle(field);
-    const minHeight = Number.parseFloat(computedStyles.minHeight) || field.clientHeight || 0;
-    const targetHeight = Math.max(field.scrollHeight, minHeight);
-    field.style.height = `${targetHeight}px`;
+    // Collapse to CSS min-height so scrollHeight reflects actual content
+    field.style.height = '0';
+    field.style.height = `${field.scrollHeight}px`;
 }
 
-// Function to update inventory item quantity
-function updateInventoryItem(itemId) {
-    const qtyInput = document.getElementById('inventory-quantity-' + itemId);
-    const newQuantity = qtyInput.value;
+let inventoryAutoSaveTimers = {};
 
-    // You can implement this as a fetch request or form submission
-    // For now, this will trigger the main form save
-    alert('Update inventory quantity to ' + newQuantity + ' - Click Save at the bottom to persist changes');
+function bindInventoryAutoSave() {
+    const inventorySection = document.querySelector('.inventory-section');
+    if (!inventorySection) {
+        return;
+    }
+
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return;
+    }
+
+    const rows = inventorySection.querySelectorAll('.card-item-saved-row');
+
+    rows.forEach((row) => {
+        const nameInput = row.querySelector('.inventory-name-input');
+        const descInput = row.querySelector('.inventory-description-input');
+        if (!nameInput) return;
+
+        const inventoryId = nameInput.dataset.inventoryId;
+        if (!inventoryId) return;
+
+        const triggerAutoSave = () => {
+            if (inventoryAutoSaveTimers[inventoryId]) {
+                clearTimeout(inventoryAutoSaveTimers[inventoryId]);
+            }
+            inventoryAutoSaveTimers[inventoryId] = setTimeout(() => {
+                inventoryAutoSaveTimers[inventoryId] = null;
+                htmx.ajax('POST', `/characters/${characterId}/inventory/${inventoryId}/update`, {
+                    target: `#inventory-row-${inventoryId}`,
+                    swap: 'outerHTML',
+                    values: {
+                        [`inventory-name-${inventoryId}`]: nameInput.value,
+                        [`inventory-description-${inventoryId}`]: descInput ? descInput.value : '',
+                    }
+                });
+            }, 1000);
+        };
+
+        [nameInput, descInput].forEach((input) => {
+            if (!input || input.dataset.autoSaveBound === 'true') return;
+            input.dataset.autoSaveBound = 'true';
+            input.addEventListener('input', triggerAutoSave);
+        });
+    });
 }
 
 function bindCurrentHpCalculation() {
@@ -1575,57 +1504,7 @@ function bindProficiencyToggles() {
 }
 
 function bindAbilitiesSectionLockToggle() {
-    const section = document.querySelector('.abilities-section');
-    const lockToggle = document.getElementById('abilities-lock-toggle');
-
-    if (!section || !lockToggle) {
-        return;
-    }
-
-    const cookieKey = getAbilityLockCookieKey();
-    const persistedLockState = cookieKey ? getCookieValue(cookieKey) : null;
-
-    if (persistedLockState === 'true' || persistedLockState === 'false') {
-        section.dataset.locked = persistedLockState;
-    } else if (!section.dataset.locked) {
-        section.dataset.locked = 'false';
-    }
-
-    const syncLockText = () => {
-        const isLocked = section.dataset.locked === 'true';
-        lockToggle.innerHTML = isLocked
-            ? '<i class="bi bi-lock-fill" aria-hidden="true"></i>'
-            : '<i class="bi bi-unlock-fill" aria-hidden="true"></i>';
-        lockToggle.setAttribute('aria-label', isLocked ? 'Locked' : 'Unlocked');
-        lockToggle.setAttribute('aria-pressed', isLocked ? 'true' : 'false');
-    };
-
-    if (lockToggle.dataset.bound !== 'true') {
-        lockToggle.addEventListener('click', () => {
-            const isLocked = section.dataset.locked === 'true';
-            section.dataset.locked = isLocked ? 'false' : 'true';
-            if (cookieKey) {
-                setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
-            }
-            syncLockText();
-        });
-
-        lockToggle.addEventListener('keydown', (event) => {
-            if (event.key === ' ' || event.key === 'Enter') {
-                event.preventDefault();
-                const isLocked = section.dataset.locked === 'true';
-                section.dataset.locked = isLocked ? 'false' : 'true';
-                if (cookieKey) {
-                    setCookieValue(cookieKey, section.dataset.locked, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
-                }
-                syncLockText();
-            }
-        });
-
-        lockToggle.dataset.bound = 'true';
-    }
-
-    syncLockText();
+    syncGlobalLockState();
 }
 
 function bindFeatDescriptionDisplayAutoHeight() {
@@ -1663,24 +1542,32 @@ function bindFeatDescriptionDisplayAutoHeight() {
 }
 
 function bindInventoryDescriptionDisplayAutoHeight() {
-    const descriptionFields = document.querySelectorAll('.inventory-section .card-item-description-input');
+    const descriptionFields = document.querySelectorAll('.inventory-section .card-item-saved-row .card-item-description-input');
 
     if (!descriptionFields.length) {
         return;
     }
 
     descriptionFields.forEach((field) => {
-        if (field.hasAttribute('readonly')) {
-            resizeInventoryDescriptionField(field);
-        }
+        // Defer initial resize so the browser has laid out the swapped content
+        setTimeout(() => resizeInventoryDescriptionField(field), 0);
 
-        if (!field.hasAttribute('readonly') && field.dataset.autoresizeBound !== 'true') {
+        if (field.dataset.autoresizeBound !== 'true') {
             field.addEventListener('input', () => {
                 resizeInventoryDescriptionField(field);
             });
             field.dataset.autoresizeBound = 'true';
         }
     });
+
+    // Also handle the add-form textarea
+    const addDescriptionField = document.querySelector('.inventory-section .card-item-add-row .card-item-description-input');
+    if (addDescriptionField && addDescriptionField.dataset.autoresizeBound !== 'true') {
+        addDescriptionField.addEventListener('input', () => {
+            resizeInventoryDescriptionField(addDescriptionField);
+        });
+        addDescriptionField.dataset.autoresizeBound = 'true';
+    }
 
     if (!inventoryDescriptionResizeWindowBound) {
         window.addEventListener('resize', () => {
@@ -1763,17 +1650,63 @@ function bindTrackerToggles() {
 }
 
 function bindTrackerAddEntryToggles() {
-    document.querySelectorAll('.tracker-add-entry-toggle-btn').forEach((btn) => {
+    const showEl = (el) => { if (el) el.style.display = 'flex'; };
+    const hideEl = (el) => { if (el) el.style.display = 'none'; };
+
+    // ── Per-tracker "Add Entry" toggles ──
+    document.querySelectorAll('.tracker-add-entry-btn').forEach((btn) => {
         if (btn.dataset.bound === 'true') return;
         btn.dataset.bound = 'true';
         btn.addEventListener('click', () => {
-            const trackerId = btn.dataset.trackerId;
-            const form = document.getElementById(`add-entry-form-${trackerId}`);
-            if (form) {
-                form.classList.toggle('visible');
-            }
+            const tid = btn.dataset.trackerId;
+            hideEl(document.getElementById(`add-entry-btn-wrapper-${tid}`));
+            showEl(document.getElementById(`add-entry-field-name-${tid}`));
+            showEl(document.getElementById(`add-entry-field-value-${tid}`));
+            showEl(document.getElementById(`add-entry-submit-wrapper-${tid}`));
+            showEl(document.getElementById(`add-entry-close-wrapper-${tid}`));
         });
     });
+
+    document.querySelectorAll('.tracker-add-entry-close-btn').forEach((btn) => {
+        if (btn.dataset.bound === 'true') return;
+        btn.dataset.bound = 'true';
+        btn.addEventListener('click', () => {
+            const tid = btn.dataset.trackerId;
+            showEl(document.getElementById(`add-entry-btn-wrapper-${tid}`));
+            hideEl(document.getElementById(`add-entry-field-name-${tid}`));
+            hideEl(document.getElementById(`add-entry-field-value-${tid}`));
+            hideEl(document.getElementById(`add-entry-submit-wrapper-${tid}`));
+            hideEl(document.getElementById(`add-entry-close-wrapper-${tid}`));
+        });
+    });
+
+    // ── "Add Tracker" toggle ──
+    const addTrackerBtn = document.getElementById('add-tracker-btn');
+    const addTrackerBtnWrapper = document.getElementById('add-tracker-btn-wrapper');
+    const addTrackerFieldName = document.getElementById('add-tracker-field-name');
+    const addTrackerSubmitWrapper = document.getElementById('add-tracker-submit-wrapper');
+    const addTrackerCloseWrapper = document.getElementById('add-tracker-close-wrapper');
+    const addTrackerCloseBtn = document.getElementById('add-tracker-close-btn');
+
+    if (addTrackerBtn && !addTrackerBtn.dataset.bound) {
+        addTrackerBtn.dataset.bound = 'true';
+        addTrackerBtn.addEventListener('click', () => {
+            hideEl(addTrackerBtnWrapper);
+            showEl(addTrackerFieldName);
+            showEl(addTrackerSubmitWrapper);
+            showEl(addTrackerCloseWrapper);
+        });
+    }
+
+    if (addTrackerCloseBtn && !addTrackerCloseBtn.dataset.bound) {
+        addTrackerCloseBtn.dataset.bound = 'true';
+        addTrackerCloseBtn.addEventListener('click', () => {
+            showEl(addTrackerBtnWrapper);
+            hideEl(addTrackerFieldName);
+            hideEl(addTrackerSubmitWrapper);
+            hideEl(addTrackerCloseWrapper);
+        });
+    }
 }
 
 // ── Sub-bar tab navigation ───────────────────────────────────────────────────
@@ -1817,10 +1750,11 @@ function bindSubBarTabs() {
         if (tabName === 'trackers') {
             bindTrackerToggles();
             bindTrackerAddEntryToggles();
+            syncGlobalLockState();
         } else if (tabName === 'inventory') {
             selectInventoryField();
             bindInventoryDescriptionDisplayAutoHeight();
-            bindInventoryLockToggle();
+            syncGlobalLockState();
         }
     };
 

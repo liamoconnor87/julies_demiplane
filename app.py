@@ -519,14 +519,36 @@ def remove_inventory_item(character_id: str, inventory_id: str):
         return redirect(url_for('character_sheet'))
 
     db.go_delete_it('inventory', {'id': inventory_id, 'character_id': character_id})
+    return '', 200
 
-    _, data = _build_character_sheet_data(character_id)
-    return render_template(
-        'components/inventory_section.html',
-        inventory=data['inventory'],
-        inventory_at_capacity=data['inventory_at_capacity'],
-        character_id=character_id
-    )
+
+@app.route('/characters/<character_id>/inventory/<inventory_id>/update', methods=['POST'])
+@login_required
+def update_inventory_item(character_id: str, inventory_id: str):
+    name = request.form.get(f'inventory-name-{inventory_id}', '')
+    description = request.form.get(f'inventory-description-{inventory_id}', '')
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+    sheet = CharacterSheet(character_id=character_id)
+    item = sheet.update_single_inventory_item(character_id, inventory_id, name, description)
+    if not item:
+        abort(400)
+    return render_template('components/inventory_row.html', item=item, character_id=character_id)
+
+
+@app.route('/characters/<character_id>/inventory/add', methods=['POST'])
+@login_required
+def add_inventory_item(character_id: str):
+    name = request.form.get('inventory-name', '')
+    description = request.form.get('inventory-description', '')
+    quantity = request.form.get('inventory-quantity', '1')
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+    sheet = CharacterSheet(character_id=character_id)
+    item = sheet.add_single_inventory_item(character_id, name, description, quantity)
+    if not item:
+        abort(400)
+    return render_template('components/inventory_row.html', item=item, character_id=character_id)
 
 
 @app.route('/characters/<character_id>/feat-and-trait/<feat_and_trait_id>/remove', methods=['POST'])

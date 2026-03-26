@@ -6,6 +6,8 @@
         <button class="sub-bar-tab" id="sub-tab-info" data-tab="info" type="button">Info</button>
         <button class="sub-bar-tab" id="sub-tab-inventory" data-tab="inventory" type="button">Inventory</button>
         <button class="sub-bar-tab" id="sub-tab-trackers" data-tab="trackers" type="button">Trackers</button>
+        {# Lock toggle tab #}
+        <button class="sub-bar-tab sub-bar-tab-lock" id="global-lock-toggle" type="button" title="Lock / Unlock editing" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></button>
         {# Delete tab — right-aligned #}
         {% if not (is_unsaved is defined and is_unsaved) %}
         <div class="character-bar-delete-wrapper">

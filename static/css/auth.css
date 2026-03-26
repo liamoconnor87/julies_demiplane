@@ -213,7 +213,6 @@
 
 .character-bar-delete-wrapper {
     position: relative;
-    margin-left: auto;          /* push to far right */
     flex-shrink: 0;
     pointer-events: all;        /* restore from sub-bar's pointer-events: none container */
 }

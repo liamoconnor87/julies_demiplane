@@ -65,6 +65,30 @@
     background: rgba(255, 80, 80, 0.08);
 }
 
+.sub-bar-tab-lock {
+    margin-left: auto;
+    pointer-events: all;
+    background: var(--primary-color-transparent);
+    border: 1px solid var(--secondary-color-dark);
+    border-top: none;
+    color: var(--secondary-color-dark);
+    font-size: 0.78rem;
+    padding: 0.2rem 0.65rem;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 4px;
+    transition: color 0.15s, background 0.15s;
+}
+
+.sub-bar-tab-lock:hover {
+    color: var(--secondary-color);
+}
+
+.sub-bar-tab-lock[aria-pressed="true"] {
+    background: var(--primary-color);
+    color: var(--secondary-color);
+}
+
 /* ── Sub-pages (shown/hidden by JS tab switching) ──────────────────────────── */
 
 .sub-page {
@@ -80,9 +104,10 @@
     padding: 0 1rem;
     --tracker-name-width: 14rem;
     --tracker-entry-name-width: 9rem;
-    --tracker-value-width: 3.5rem;
+    --tracker-value-width: 5rem;
     --tracker-action-width: 3rem;
     --tracker-input-height: 2.55rem;
+    --tracker-entry-height: 3rem;
 }
 
 /* ── Shared label — matches custom-stats-section-label ─────────────────────── */
@@ -121,6 +146,11 @@
     -moz-appearance: textfield;
 }
 
+/* No-label variant — taller entry fields */
+.tracker-input-no-label {
+    height: var(--tracker-entry-height);
+}
+
 .tracker-input[type='number']::-webkit-outer-spin-button,
 .tracker-input[type='number']::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -150,6 +180,30 @@
     max-width: var(--tracker-entry-name-width);
 }
 
+.tracker-entry-value-field {
+    width: var(--tracker-value-width);
+    min-width: var(--tracker-value-width);
+    max-width: var(--tracker-value-width);
+    position: relative;
+    margin-right: 0;
+}
+
+.tracker-entry-value-field .tracker-input {
+    text-align: center;
+    padding: 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+/* Remove gap between entry name and value */
+.tracker-entry-name-no-gap {
+    margin-right: 0;
+}
+
+/* Entry rows have no labels — align to bottom of tracker name row */
+.tracker-entry-row {
+    align-items: flex-end;
+}
+
 .tracker-value-field {
     width: var(--tracker-value-width);
     min-width: var(--tracker-value-width);
@@ -169,28 +223,6 @@
     padding: 0.25rem 0;
 }
 
-/* ── Action/confirm button — matches custom-stats-section-btn ───────────────── */
-
-.tracker-action-btn {
-    cursor: pointer;
-    text-align: center;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
-    border: none;
-    font-size: 1.5rem;
-    box-sizing: border-box;
-    height: var(--tracker-input-height);
-    width: var(--tracker-action-width);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
-
-.tracker-action-btn:hover {
-    color: var(--secondary-color);
-}
-
 /* ── Row (horizontal group of fields) ──────────────────────────────────────── */
 
 .tracker-row {
@@ -206,37 +238,12 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
 }
 
-/* × remove button — absolutely positioned top-right of name field,
-   matches custom-stats-remove-btn pattern */
+/* × remove button — uses shared .section-remove-x from section_action_buttons.css */
 
-.tracker-item-remove-btn,
-.tracker-entry-remove-btn {
-    position: absolute;
-    top: 1.1rem;           /* below the label row */
-    right: 0;
-    width: var(--tracker-action-width);
-    height: var(--tracker-input-height);
-    line-height: 1;
-    font-size: 1.1rem;
-    border: none;
-    background: var(--primary-color-transparent);
-    color: var(--secondary-color);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-    transition: opacity 0.15s;
-}
-
-.tracker-item-remove-btn:hover,
-.tracker-entry-remove-btn:hover {
-    opacity: 0.6;
-}
-
+.tracker-name-field,
 .tracker-entry-name-field {
     position: relative;
 }
@@ -253,24 +260,33 @@
     min-width: 0;
 }
 
+/* No-label variant — no label above, just the toggles row */
+.tracker-toggles-no-label {
+    justify-content: flex-end;
+}
+
 .tracker-toggles-row {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.25rem;
-    background: var(--primary-color-transparent);
+    background: transparent;
     height: var(--tracker-input-height);
-    padding: 0 0.5rem;
+    padding: 0 0.25rem;
     box-sizing: border-box;
+}
+
+.tracker-toggles-row-no-label {
+    height: var(--tracker-entry-height);
 }
 
 /* ── Toggle boxes ───────────────────────────────────────────────────────────── */
 
 .tracker-toggle {
     display: inline-block;
-    width: 1.05rem;
-    height: 1.05rem;
+    width: var(--tracker-entry-height);
+    height: var(--tracker-entry-height);
     border: 1px solid var(--secondary-color-dark);
     background: transparent;
     cursor: pointer;
@@ -285,53 +301,24 @@
     border-color: var(--secondary-color);
 }
 
-/* ── "Add entry" reveal button ──────────────────────────────────────────────── */
+/* ── Add entry / add tracker — inline row using add-actions shared styles ──── */
 
-.tracker-add-entry-toggle-btn {
-    background: none;
-    border: none;
-    color: var(--secondary-color-dark);
-    font-size: 0.72rem;
-    cursor: pointer;
-    padding: 0.1rem 0.5rem;
-    margin-bottom: 0.1rem;
-    transition: color 0.15s;
-}
-
-.tracker-add-entry-toggle-btn:hover {
-    color: var(--secondary-color);
-}
-
-/* ── Add entry form (hidden by default) ─────────────────────────────────────── */
-
-.tracker-add-entry-form {
-    display: none;
-    flex-direction: row;
-    align-items: flex-start;
-    flex-wrap: nowrap;
-    margin-bottom: 0.25rem;
-}
-
-.tracker-add-entry-form.visible {
-    display: flex;
-}
-
-/* ── Divider between tracker items ─────────────────────────────────────────── */
-
-.tracker-item-divider {
-    width: 100%;
-    height: 1px;
-    background: var(--secondary-color-dark);
-    opacity: 0.4;
-    margin-bottom: 0.5rem;
-}
-
-/* ── Add tracker row ────────────────────────────────────────────────────────── */
-
-.tracker-add-tracker-row {
+.tracker-add-actions-row {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: flex-start;
-    flex-wrap: nowrap;
     margin-top: 0.25rem;
+}
+
+.tracker-add-entry-name-field {
+    width: var(--tracker-entry-name-width);
+    min-width: var(--tracker-entry-name-width);
+    max-width: var(--tracker-entry-name-width);
+}
+
+.tracker-add-tracker-name-field {
+    width: var(--tracker-name-width);
+    min-width: var(--tracker-name-width);
+    max-width: var(--tracker-name-width);
 }

@@ -24,13 +24,6 @@
     font-weight: bold;
 }
 
-.section-lock-toggle {
-    color: var(--secondary-color);
-    font-size: 1rem;
-    margin-left: 0.5rem;
-    cursor: pointer;
-}
-
 html {
     font-size: 17px;
     scrollbar-width: none;

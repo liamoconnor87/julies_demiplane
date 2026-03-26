@@ -84,14 +84,6 @@
 	color: var(--secondary-color-dark);
 }
 
-.buffs-lock-toggle {
-	display: flex;
-	align-self: flex-end;
-	margin-right: 0.25rem;
-	margin-bottom: 0.25rem;
-	margin-left: 0;
-}
-
 .custom-buffs-section-row {
 	width: 100%;
 }

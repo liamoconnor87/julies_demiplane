@@ -601,6 +601,46 @@ class CharacterSheet:
                 continue
             update_inventory_by_id(inventory_id)
 
+    def update_single_inventory_item(self, character_id: str, inventory_id: str, name: str, description: str):
+        """Update a single inventory item's name/description and return the updated record, or None."""
+        if not is_valid_uuid(inventory_id):
+            return None
+        existing = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
+        if not existing:
+            return None
+        clean_name = sanitize_optional_str(name, max_len=255)
+        clean_desc = sanitize_optional_str(description, max_len=2000)
+        if not clean_name:
+            return existing
+        ggi.go_update('inventory', {
+            'id': inventory_id,
+            'name': clean_name,
+            'description': clean_desc,
+            'quantity': existing.get('quantity', 1),
+            'character_id': character_id,
+        })
+        return {'id': inventory_id, 'name': clean_name, 'description': clean_desc, 'quantity': existing.get('quantity', 1), 'character_id': character_id}
+
+    def add_single_inventory_item(self, character_id: str, name: str, description: str, quantity):
+        """Add a new inventory item and return the new record, or None if at capacity or invalid."""
+        clean_name = sanitize_optional_str(name, max_len=255)
+        if not clean_name:
+            return None
+        if (ggi.go_get_all('inventory', {'character_id': character_id}, count=True) or 0) >= INVENTORY_MAX:
+            return None
+        clean_desc = sanitize_optional_str(description, max_len=2000)
+        parsed_quantity = clamp_int(quantity, 1, 9999, fallback=1)
+        inventory_id = uuid()
+        item = {
+            'id': inventory_id,
+            'name': clean_name,
+            'description': clean_desc,
+            'quantity': parsed_quantity,
+            'character_id': character_id,
+        }
+        ggi.go_add_new('inventory', item)
+        return item
+
     def save_feat_and_trait_values(self, character_id: str, request_form):
         table_name = 'feat_and_trait'
 
