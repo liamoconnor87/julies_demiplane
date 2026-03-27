@@ -320,6 +320,24 @@ def character_info_fragment(character_id: str):
         is_guest=False,
     )
 
+
+@app.route('/characters/<character_id>/combat/fragment', methods=['POST'])
+@login_required
+@limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
+def combat_fragment(character_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+    sheet = CharacterSheet(character_id=character_id)
+    sheet.save_combat_values(character_id, request.form)
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/combat_stats.html',
+        character_id=character_id,
+        character=data['character'],
+    )
+
+
 @app.route('/characters/<character_id>/classes/fragment', methods=['POST'])
 @guest_or_login_required
 @limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
@@ -737,6 +755,58 @@ def _render_tracker_page(character_id: str):
         character_id=character_id,
         trackers=_get_trackers(character_id),
     )
+
+
+def _get_single_tracker(character_id: str, tracker_id: str):
+    """Return a single tracker dict (with entries) or None."""
+    tracker = db.go_get_one('tracker', {'id': tracker_id, 'character_id': character_id})
+    if not tracker:
+        return None
+    entries = db.go_get_all('tracker_entry', {'tracker_id': tracker_id}) or []
+    return {'id': tracker['id'], 'name': tracker['name'], 'entries': list(entries)}
+
+
+def _render_tracker_item(character_id: str, tracker_id: str):
+    tracker = _get_single_tracker(character_id, tracker_id)
+    if not tracker:
+        abort(404)
+    return render_template(
+        'components/tracker_item.html',
+        character_id=character_id,
+        tracker=tracker,
+    )
+
+
+@app.route('/characters/<character_id>/tracker/<tracker_id>/update', methods=['POST'])
+@login_required
+def update_tracker(character_id: str, tracker_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+    tracker = db.go_get_one('tracker', {'id': tracker_id, 'character_id': character_id})
+    if not tracker:
+        abort(404)
+    # Update tracker name
+    name = request.form.get('tracker-name', '').strip()[:60]
+    if name:
+        db.go_update('tracker', {'id': tracker_id, 'name': name})
+    # Update entries
+    entries = db.go_get_all('tracker_entry', {'tracker_id': tracker_id}) or []
+    for entry in entries:
+        eid = entry['id']
+        entry_name = request.form.get(f'entry-name-{eid}', '').strip()[:40]
+        entry_value_raw = request.form.get(f'entry-value-{eid}', '')
+        updates = {}
+        if entry_name:
+            updates['name'] = entry_name
+        if entry_value_raw:
+            try:
+                updates['value'] = max(1, min(20, int(entry_value_raw)))
+            except (ValueError, TypeError):
+                pass
+        if updates:
+            updates['id'] = eid
+            db.go_update('tracker_entry', updates)
+    return _render_tracker_item(character_id, tracker_id)
 
 
 @app.route('/characters/<character_id>/tracker/add', methods=['POST'])

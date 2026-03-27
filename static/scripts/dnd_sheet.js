@@ -179,6 +179,17 @@ window.addEventListener("load", () => {
         if (target.id === 'tracker-page-container') {
             bindTrackerToggles();
             bindTrackerAddEntryToggles();
+            syncGlobalLockState();
+            bindTrackerAutoSave();
+            return;
+        }
+
+        // Individual tracker item update (outerHTML swap)
+        if (target.id && target.id.startsWith('tracker-item-')) {
+            bindTrackerToggles();
+            bindTrackerAddEntryToggles();
+            syncGlobalLockState();
+            bindTrackerAutoSave();
             return;
         }
 
@@ -200,6 +211,12 @@ window.addEventListener("load", () => {
             bindCombatFieldAutoSave();
             bindBuffCardEdit();
             decorateBuffedLabels();
+        }
+
+        if (target.id === 'combat-stats-section-container') {
+            bindCurrentHpCalculation();
+            bindCombatFieldAutoSave();
+            syncGlobalLockState();
         }
     });
 })
@@ -308,6 +325,7 @@ function initializeUiBindings() {
     bindFeatsContainerSettle();
     bindInventoryContainerSettle();
     bindGlobalLockToggle();
+    bindTrackerAutoSave();
 }
 
 const FEAT_TRAIT_MAX = 15;
@@ -774,6 +792,13 @@ function syncGlobalLockState() {
     document.querySelectorAll('[data-tracker-remove="true"], [data-tracker-entry-remove="true"]').forEach((button) => {
         button.disabled = isLocked;
         button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+    });
+    document.querySelectorAll('.tracker-name-input, .tracker-entry-name-input, .tracker-entry-value-input').forEach((input) => {
+        if (isLocked) {
+            input.setAttribute('readonly', '');
+        } else {
+            input.removeAttribute('readonly');
+        }
     });
     document.querySelectorAll('.tracker-add-actions-row').forEach((row) => {
         row.style.display = isLocked ? 'none' : 'flex';
@@ -1430,9 +1455,9 @@ function bindCombatFieldAutoSave() {
         }
         combatAutoSaveTimer = setTimeout(() => {
             combatAutoSaveTimer = null;
-            htmx.ajax('POST', `/characters/${characterId}/character-info/fragment`, {
+            htmx.ajax('POST', `/characters/${characterId}/combat/fragment`, {
                 source: form,
-                target: '#character-info-section-container',
+                target: '#combat-stats-section-container',
                 swap: 'innerHTML'
             });
         }, 1000);
@@ -1652,9 +1677,64 @@ function bindTrackerToggles() {
     });
 }
 
+function performFullRest() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+
+    // 1. Uncheck all tracker toggles and clear their cookies
+    document.querySelectorAll('.tracker-toggle.checked').forEach((toggle) => {
+        toggle.classList.remove('checked');
+        toggle.setAttribute('aria-checked', 'false');
+    });
+
+    // Clear all tracker toggle cookies
+    document.querySelectorAll('.tracker-toggle').forEach((toggle) => {
+        const trackerId = toggle.dataset.trackerId;
+        const entryId = toggle.dataset.entryId;
+        if (characterId && trackerId && entryId) {
+            const cookieKey = getTrackerToggleCookieKey(characterId, trackerId, entryId);
+            setCookieValue(cookieKey, JSON.stringify([]), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+        }
+    });
+
+    // Also clear tracker bar toggles
+    document.querySelectorAll('#tracker-bar-inner .tracker-toggle.checked').forEach((toggle) => {
+        toggle.classList.remove('checked');
+        toggle.setAttribute('aria-checked', 'false');
+    });
+
+    // 2. Reset temp HP to '--' and current HP to health points total
+    const healthPointsField = document.getElementById('character-health_points');
+    const tempHpField = document.getElementById('character-temporary_hit_points');
+    const currentHpField = document.getElementById('character-current_health_points');
+
+    if (tempHpField) {
+        tempHpField.value = '--';
+        tempHpField.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    if (healthPointsField && currentHpField) {
+        const hp = parseInt(healthPointsField.value, 10);
+        currentHpField.value = isNaN(hp) ? '' : hp;
+
+        // Save to cookie
+        if (characterId) {
+            const cookieKey = `current_hp_${characterId}`;
+            setCookieValue(cookieKey, currentHpField.value, CURRENT_HP_COOKIE_MAX_AGE_SECONDS);
+        }
+    }
+}
+
 function bindTrackerAddEntryToggles() {
     const showEl = (el) => { if (el) el.style.display = 'flex'; };
     const hideEl = (el) => { if (el) el.style.display = 'none'; };
+
+    // ── Full Rest button ──
+    const fullRestBtn = document.getElementById('full-rest-btn');
+    if (fullRestBtn && fullRestBtn.dataset.bound !== 'true') {
+        fullRestBtn.dataset.bound = 'true';
+        fullRestBtn.addEventListener('click', performFullRest);
+    }
 
     // ── Per-tracker "Add Entry" toggles ──
     document.querySelectorAll('.tracker-add-entry-btn').forEach((btn) => {
@@ -1712,6 +1792,60 @@ function bindTrackerAddEntryToggles() {
     }
 }
 
+// ── Tracker auto-save ────────────────────────────────────────────────────────
+
+let trackerAutoSaveTimers = {};
+
+function bindTrackerAutoSave() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) return;
+
+    document.querySelectorAll('.tracker-item').forEach((item) => {
+        const trackerId = item.dataset.trackerId;
+        if (!trackerId) return;
+
+        const nameInput = item.querySelector('.tracker-name-input');
+        const entryNameInputs = item.querySelectorAll('.tracker-entry-name-input');
+        const entryValueInputs = item.querySelectorAll('.tracker-entry-value-input');
+
+        const triggerAutoSave = () => {
+            if (trackerAutoSaveTimers[trackerId]) {
+                clearTimeout(trackerAutoSaveTimers[trackerId]);
+            }
+            trackerAutoSaveTimers[trackerId] = setTimeout(() => {
+                trackerAutoSaveTimers[trackerId] = null;
+
+                const values = {};
+                if (nameInput) {
+                    values['tracker-name'] = nameInput.value;
+                }
+                entryNameInputs.forEach((input) => {
+                    const eid = input.dataset.entryId;
+                    if (eid) values[`entry-name-${eid}`] = input.value;
+                });
+                entryValueInputs.forEach((input) => {
+                    const eid = input.dataset.entryId;
+                    if (eid) values[`entry-value-${eid}`] = input.value;
+                });
+
+                htmx.ajax('POST', `/characters/${characterId}/tracker/${trackerId}/update`, {
+                    target: `#tracker-item-${trackerId}`,
+                    swap: 'outerHTML',
+                    values: values,
+                });
+            }, 1000);
+        };
+
+        const allInputs = [nameInput, ...entryNameInputs, ...entryValueInputs];
+        allInputs.forEach((input) => {
+            if (!input || input.dataset.autoSaveBound === 'true') return;
+            input.dataset.autoSaveBound = 'true';
+            input.addEventListener('input', triggerAutoSave);
+        });
+    });
+}
+
 // ── Sub-bar tab navigation ───────────────────────────────────────────────────
 
 function bindSubBarTabs() {
@@ -1744,6 +1878,12 @@ function bindSubBarTabs() {
             el.classList.toggle('d-none', name !== tabName);
         });
 
+        // Show/hide Full Rest button (only on trackers tab)
+        const fullRestBtn = document.getElementById('full-rest-btn');
+        if (fullRestBtn) {
+            fullRestBtn.classList.toggle('d-none', tabName !== 'trackers');
+        }
+
         // Persist choice
         if (cookieKey) {
             setCookieValue(cookieKey, tabName, ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
@@ -1754,6 +1894,12 @@ function bindSubBarTabs() {
             bindTrackerToggles();
             bindTrackerAddEntryToggles();
             syncGlobalLockState();
+            bindTrackerAutoSave();
+            bindCurrentHpCalculation();
+            bindCombatFieldAutoSave();
+            selectCustomBuffField();
+            bindBuffCardEdit();
+            decorateBuffedLabels();
         } else if (tabName === 'inventory') {
             selectInventoryField();
             bindInventoryDescriptionDisplayAutoHeight();

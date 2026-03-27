@@ -449,6 +449,26 @@ class CharacterSheet:
 
         return character_id
 
+    def save_combat_values(self, character_id: str, request_form):
+        """Save only combat-related fields without touching other character data."""
+        table_name = 'character'
+        def _optional_int(field, fallback=None):
+            raw = request_form.get(f'{table_name}-{field}')
+            return parse_optional_int(raw, fallback)
+
+        health_points = _optional_int('health_points')
+        temporary_hit_points = _optional_int('temporary_hit_points')
+        hit_dice = sanitize_optional_str(request_form.get(f'{table_name}-hit_dice'), max_len=255)
+
+        existing = ggi.go_get_one('character', {'id': character_id})
+        if not existing:
+            return
+
+        existing['health_points'] = health_points
+        existing['temporary_hit_points'] = temporary_hit_points
+        existing['hit_dice'] = hit_dice
+        ggi.go_update('character', existing)
+
     def save_class_to_character_values(self, character_id: str, request_form):
         table_name = 'class_to_character'
 

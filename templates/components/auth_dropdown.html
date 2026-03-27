@@ -10,6 +10,9 @@
         <div class="dropdown-menu dropdown-menu-end auth-dropdown-menu">
             <div class="auth-dropdown-body">
                 <p class="auth-greeting">Signed in as <strong>{{ current_user.username }}</strong></p>
+                {% if current_user.is_admin %}
+                <p class="auth-admin-flag"><i class="bi bi-shield-fill"></i>Admin</p>
+                {% endif %}
                 <button class="btn auth-btn auth-btn-logout w-100"
                         hx-post="/logout"
                         hx-target="#auth-dropdown"

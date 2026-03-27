@@ -9,9 +9,10 @@ class User(UserMixin):
 
     MAX_CHARACTERS = 10
 
-    def __init__(self, id: str, username: str):
+    def __init__(self, id: str, username: str, is_admin: bool = False):
         self.id = id
         self.username = username
+        self.is_admin = is_admin
 
     # ── Lookup helpers ────────────────────────────────────────────────────
 
@@ -19,14 +20,14 @@ class User(UserMixin):
     def get_by_id(db, user_id: str):
         row = db.go_get_one('user', {'id': user_id})
         if row:
-            return User(id=row['id'], username=row['username'])
+            return User(id=row['id'], username=row['username'], is_admin=bool(row.get('admin')))
         return None
 
     @staticmethod
     def get_by_username(db, username: str):
         row = db.go_get_one('user', {'username': username})
         if row:
-            return User(id=row['id'], username=row['username'])
+            return User(id=row['id'], username=row['username'], is_admin=bool(row.get('admin')))
         return None
 
     # ── Mutation helpers ──────────────────────────────────────────────────
@@ -48,7 +49,7 @@ class User(UserMixin):
         """Return a User if credentials are valid, else None."""
         row = db.go_get_one('user', {'username': username})
         if row and check_password_hash(row['password_hash'], password):
-            return User(id=row['id'], username=row['username'])
+            return User(id=row['id'], username=row['username'], is_admin=bool(row.get('admin')))
         return None
 
     # ── Character helpers ─────────────────────────────────────────────────

@@ -77,10 +77,6 @@
                                 {% include 'components/add_actions.html' %}
                             </div>
                         </div>
-
-                        {% if not is_guest %}
-                        {# custom-buffs moved to column 4 #}
-                        {% endif %}
                     </div>
 
                     <div class="sheet-column sheet-column-two{% if is_new_character %} new-char-hidden{% endif %}">
@@ -93,17 +89,6 @@
                         <div id="feats-section-container">
                             {% include 'components/feats_traits_section.html' %}
                         </div>
-                    </div>
-
-                    <div class="sheet-column sheet-column-four{% if is_new_character %} new-char-hidden{% endif %}">
-                        <div id="combat-stats-section-container">
-                            {% include 'components/combat_stats.html' %}
-                        </div>
-                        {% if not is_guest %}
-                        <div id="custom-buffs-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                            {% include 'components/custom_buffs_section.html' %}
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
             </form>
@@ -126,6 +111,17 @@
         {# ── Trackers tab ──────────────────────────────────────────────────── #}
         {% if current_user.is_authenticated and active_character_id %}
         <div id="sheet-page-trackers" class="sub-page d-none">
+            <form id="combat-buffs-form" action="/" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="tracker-top-row{% if is_new_character %} new-char-hidden{% endif %}">
+                    <div id="combat-stats-section-container">
+                        {% include 'components/combat_stats.html' %}
+                    </div>
+                    <div id="custom-buffs-section-container">
+                        {% include 'components/custom_buffs_section.html' %}
+                    </div>
+                </div>
+            </form>
             <div id="tracker-page-container">
                 {% include 'components/tracker_page.html' %}
             </div>

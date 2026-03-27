@@ -10,6 +10,9 @@
     transition: background 0.2s, color 0.2s;
 }
 
+.auth-admin-flag {
+    color: var(--secondary-color);
+}
 .auth-dropdown-toggle:hover,
 .auth-dropdown-toggle:focus,
 .auth-dropdown-toggle.show {
