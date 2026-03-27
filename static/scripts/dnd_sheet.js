@@ -778,6 +778,9 @@ function syncGlobalLockState() {
     document.querySelectorAll('.tracker-add-actions-row').forEach((row) => {
         row.style.display = isLocked ? 'none' : 'flex';
     });
+    document.querySelectorAll('.tracker-add-entry-inline-btn').forEach((el) => {
+        el.style.display = isLocked ? 'none' : 'flex';
+    });
 }
 
 function bindGlobalLockToggle() {
@@ -1754,6 +1757,9 @@ function bindSubBarTabs() {
         } else if (tabName === 'inventory') {
             selectInventoryField();
             bindInventoryDescriptionDisplayAutoHeight();
+            syncGlobalLockState();
+        } else if (tabName === 'info') {
+            bindFeatDescriptionDisplayAutoHeight();
             syncGlobalLockState();
         }
     };

@@ -328,7 +328,7 @@
 @media (max-width: 900px) {
     .card-item-section {
         width: 100%;
-        --card-item-action-width: 2.4rem;
+        --card-item-action-width: 3rem;
         --card-item-field-gap: 0.2rem;
         --card-item-quantity-width: 2.4rem;
         --card-item-quantity-control-width: 5.4rem;

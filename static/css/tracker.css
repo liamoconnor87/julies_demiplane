@@ -107,7 +107,7 @@
     --tracker-value-width: 5rem;
     --tracker-action-width: 3rem;
     --tracker-input-height: 2.55rem;
-    --tracker-entry-height: 3rem;
+    --tracker-entry-height: 3.65rem;
 }
 
 /* ── Shared label — matches custom-stats-section-label ─────────────────────── */
@@ -199,9 +199,25 @@
     margin-right: 0;
 }
 
+/* Bold tracker name */
+.tracker-name-field .tracker-input {
+    font-weight: bold;
+}
+
+/* Add-entry "+" button inline on last entry row */
+.tracker-add-entry-inline-btn {
+    align-self: center;
+    margin-left: 0.25rem;
+}
+
 /* Entry rows have no labels — align to bottom of tracker name row */
 .tracker-entry-row {
     align-items: flex-end;
+}
+
+/* Zero out bottom margin on add-actions children so nothing shifts on reveal */
+.tracker-entry-row > .add-actions-field {
+    margin-bottom: 0;
 }
 
 .tracker-value-field {
@@ -315,6 +331,7 @@
     width: var(--tracker-entry-name-width);
     min-width: var(--tracker-entry-name-width);
     max-width: var(--tracker-entry-name-width);
+    margin-left: 0.25rem;
 }
 
 .tracker-add-tracker-name-field {
