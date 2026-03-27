@@ -178,6 +178,12 @@
     cursor: pointer;
 }
 
+.abilities-section[data-locked='true'] .proficiency-toggle-item,
+.abilities-section[data-locked='true'] .abilities-section-secondary-field,
+.abilities-section[data-locked='true'] .abilities-section-skills-item {
+    cursor: default;
+}
+
 .abilities-section[data-locked='false'] .abilities-section-secondary-field:hover,
 .abilities-section[data-locked='false'] .abilities-section-skills-item:hover {
     transform: scale(1.02);

@@ -7,7 +7,9 @@
             <label class="tracker-label">Tracker</label>
             <input type="text" class="tracker-input tracker-name-input"
                    data-tracker-id="{{ tracker.id }}"
-                   value="{{ tracker.name }}">
+                   value="{{ tracker.name }}"
+                   {% if tracker.fixed %}readonly{% endif %}>
+            {% if not tracker.fixed %}
             <button type="button" class="section-remove-x"
                     data-tracker-remove="true"
                     hx-post="/characters/{{ character_id }}/tracker/{{ tracker.id }}/remove"
@@ -15,6 +17,7 @@
                     hx-swap="innerHTML"
                     hx-include="closest form"
                     aria-label="Delete tracker">&times;</button>
+            {% endif %}
         </div>
     </div>
 
@@ -25,14 +28,17 @@
             <input type="text" class="tracker-input tracker-input-no-label tracker-entry-name-input"
                    data-tracker-id="{{ tracker.id }}"
                    data-entry-id="{{ entry.id }}"
-                   value="{{ entry.name }}">
+                   value="{{ entry.name }}"
+                   {% if tracker.fixed %}readonly{% endif %}>
         </div>
         <div class="tracker-field tracker-entry-value-field">
             <input type="number" class="tracker-input tracker-input-no-label tracker-entry-value-input"
                    data-tracker-id="{{ tracker.id }}"
                    data-entry-id="{{ entry.id }}"
                    value="{{ entry.value }}"
-                   min="1" max="20">
+                   min="1" max="20"
+                   {% if tracker.fixed %}readonly{% endif %}>
+            {% if not tracker.fixed %}
             <button type="button" class="section-remove-x"
                     data-tracker-entry-remove="true"
                     hx-post="/characters/{{ character_id }}/tracker/{{ tracker.id }}/entry/{{ entry.id }}/remove"
@@ -40,6 +46,7 @@
                     hx-swap="innerHTML"
                     hx-include="closest form"
                     aria-label="Delete entry">&times;</button>
+            {% endif %}
         </div>
         <div class="tracker-field tracker-toggles-field tracker-toggles-no-label">
             <div class="tracker-toggles-row tracker-toggles-row-no-label">
@@ -55,7 +62,7 @@
                 {% endfor %}
             </div>
         </div>
-        {% if loop.last %}
+        {% if loop.last and not tracker.fixed %}
         <div class="add-actions-field section-action-field tracker-add-entry-inline-btn" id="add-entry-btn-wrapper-{{ tracker.id }}">
             <button type="button" class="add-actions-btn section-action-btn tracker-add-entry-btn" data-tracker-id="{{ tracker.id }}">+</button>
             <label class="add-actions-label section-action-label">Add Entry</label>
@@ -87,7 +94,7 @@
     {% endfor %}
 
     {# ── Add entry — standalone when no entries exist ── #}
-    {% if not tracker.entries %}
+    {% if not tracker.entries and not tracker.fixed %}
     <div class="tracker-add-actions-row" id="tracker-add-entry-row-{{ tracker.id }}">
         <div class="add-actions-field section-action-field" id="add-entry-btn-wrapper-{{ tracker.id }}">
             <button type="button" class="add-actions-btn section-action-btn tracker-add-entry-btn" data-tracker-id="{{ tracker.id }}">+</button>

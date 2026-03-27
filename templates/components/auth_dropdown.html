@@ -11,7 +11,7 @@
             <div class="auth-dropdown-body">
                 <p class="auth-greeting">Signed in as <strong>{{ current_user.username }}</strong></p>
                 {% if current_user.is_admin %}
-                <p class="auth-admin-flag"><i class="bi bi-shield-fill"></i>Admin</p>
+                <a href="/admin" class="btn auth-btn auth-btn-admin w-100 mb-2" style="text-decoration:none;text-align:center;">Admin Panel</a>
                 {% endif %}
                 <button class="btn auth-btn auth-btn-logout w-100"
                         hx-post="/logout"

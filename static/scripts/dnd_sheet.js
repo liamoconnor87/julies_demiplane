@@ -1803,7 +1803,7 @@ function bindTrackerAutoSave() {
 
     document.querySelectorAll('.tracker-item').forEach((item) => {
         const trackerId = item.dataset.trackerId;
-        if (!trackerId) return;
+        if (!trackerId || trackerId === 'death-saves') return;
 
         const nameInput = item.querySelector('.tracker-name-input');
         const entryNameInputs = item.querySelectorAll('.tracker-entry-name-input');

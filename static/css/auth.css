@@ -83,6 +83,7 @@
     font-weight: 600;
     padding: 0.35rem 0.75rem;
     border-radius: 0;
+    color: var(--text-colour-two);
 }
 
 .auth-btn-primary {
@@ -93,7 +94,7 @@
 
 .auth-btn-primary:hover {
     background: rgb(100, 220, 180);
-    color: var(--primary-color);
+    color: var(--secondary-color);
 }
 
 .auth-btn-logout {
@@ -104,6 +105,17 @@
 
 .auth-btn-logout:hover {
     background: var(--text-colour-one);
+    color: var(--primary-color);
+}
+
+.auth-btn-admin {
+    background: transparent;
+    color: var(--secondary-color);
+    border: 1px solid var(--secondary-color-dark);
+}
+
+.auth-btn-admin:hover {
+    background: var(--secondary-color);
     color: var(--primary-color);
 }
 
