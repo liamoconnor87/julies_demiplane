@@ -6,6 +6,9 @@
     }
 }
 """
+from misc.admin import ADMIN_SEED
+
+
 SEED = {
     "class": {
         "artificer": "name",
@@ -21,5 +24,8 @@ SEED = {
         "sorcerer": "name",
         "warlock": "name",
         "wizard": "name"
-    }
+    },
 }
+
+# Full-row seeds (tables where each entry needs multiple fields)
+SEED_ROWS = ADMIN_SEED

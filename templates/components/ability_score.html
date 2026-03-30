@@ -6,8 +6,13 @@
 
     {# Ability Value #}
     <div class="abilities-section-name-field">
-        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="abilities-section-name-input">
-        <label for="{{ ability_name }}-value" class="abilities-section-name-label">{{ ability_name | title }}</label>
+        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="field-input abilities-section-name-input"
+            hx-post="/characters/{{ character_id }}/abilities-skills/fragment"
+            hx-target="#abilities-section-container"
+            hx-swap="innerHTML"
+            hx-include="closest form"
+            hx-trigger="change">
+        <label for="{{ ability_name }}-value" class="field-label abilities-section-name-label">{{ ability_name | title }}</label>
     </div>
 
     <div class="abilities-section-secondary-column">
@@ -22,7 +27,7 @@
         {% set display_checkbox_id = '' %}
         {% set display_checkbox_name = '' %}
         {% set display_checkbox_checked = false %}
-        {% include 'components/abilities_display_field.html' %}
+        {% include 'base/field_display.html' %}
 
         {# Saving Throw #}
         {% set display_wrapper_classes = 'abilities-section-secondary-field' %}
@@ -35,6 +40,6 @@
         {% set display_checkbox_id = ability_name ~ '-proficient' %}
         {% set display_checkbox_name = ability_name ~ '-proficient' %}
         {% set display_checkbox_checked = ability.proficient == 1 %}
-        {% include 'components/abilities_display_field.html' %}
+        {% include 'base/field_display.html' %}
     </div>
 </div>

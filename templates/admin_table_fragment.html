@@ -1,0 +1,91 @@
+<h2>{{ table_name | replace('_', ' ') | title }}</h2>
+{% if filter_col and filter_val %}
+<p>Filtered: <strong>{{ filter_col }}</strong> = <code>{{ filter_val }}</code></p>
+{% endif %}
+
+{% if rows %}
+<table>
+    <thead>
+        <tr>
+            {% for col in columns %}
+            <th>{{ col }}</th>
+            {% endfor %}
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr id="row-{{ row.id }}">
+            <form method="POST" action="/admin/table/{{ table_name }}/{{ row.id }}/update">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="redirect" value="{{ current_url }}">
+                {% for col in columns %}
+                <td>
+                    {% if col == 'id' %}
+                        <span style="font-size:0.7rem;word-break:break-all">{{ row[col] or '' }}</span>
+                        <input type="hidden" name="field-{{ col }}" value="{{ row[col] or '' }}">
+                    {% elif col == 'password_hash' %}
+                        <span style="font-size:0.7rem">••••••</span>
+                        <input type="hidden" name="field-{{ col }}" value="{{ row[col] or '' }}">
+                    {% elif col in fk_links and row[col] %}
+                        <a href="{{ fk_links[col] }}{{ row[col] }}" style="font-size:0.7rem;word-break:break-all">{{ row[col] }}</a>
+                        {% if row._display and row._display[col] %}
+                        <div style="color:#ff00c8;font-size:0.75rem;font-style:italic">{{ row._display[col] }}</div>
+                        {% endif %}
+                        <input type="hidden" name="field-{{ col }}" value="{{ row[col] or '' }}">
+                    {% else %}
+                        {% if row._display and row._display[col] %}
+                        <div style="color:#ff00c8;font-size:0.75rem;font-style:italic">{{ row._display[col] }}</div>
+                        {% endif %}
+                        <input type="text" name="field-{{ col }}" value="{{ row[col] if row[col] is not none else '' }}">
+                    {% endif %}
+                </td>
+                {% endfor %}
+                <td style="white-space:nowrap">
+                    <button type="submit">Save</button>
+            </form>
+            <form style="display:inline" method="POST" action="/admin/table/{{ table_name }}/{{ row.id }}/delete">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="redirect" value="{{ current_url }}">
+                <button type="submit" class="btn-danger" onclick="return confirm('Delete this row?')">Del</button>
+            </form>
+                </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No rows.</p>
+{% endif %}
+
+<h3>Add New Row</h3>
+<form method="POST" action="/admin/table/{{ table_name }}/create">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="redirect" value="{{ current_url }}">
+    <table>
+        <thead>
+            <tr>
+                {% for col in columns %}
+                <th>{{ col }}</th>
+                {% endfor %}
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for col in columns %}
+                <td>
+                    {% if col == 'id' %}
+                        <input type="text" name="new-{{ col }}" value="" placeholder="(auto)">
+                    {% elif filter_col and col == filter_col %}
+                        <input type="text" name="new-{{ col }}" value="{{ filter_val }}" readonly>
+                    {% else %}
+                        <input type="text" name="new-{{ col }}" value="">
+                    {% endif %}
+                </td>
+                {% endfor %}
+                <td><button type="submit">Add</button></td>
+            </tr>
+        </tbody>
+    </table>
+</form>

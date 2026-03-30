@@ -5,9 +5,9 @@
                 <div class="custom-stats-section-row custom-stats-section-saved-row custom-stats-stat-card">
                     <div class="custom-stats-section-field custom-stats-section-value-field custom-stats-square-field custom-stats-saved-field">
                         <input type="number" id="custom_stat-value-{{ stat.id }}"
-                            name="custom_stat-value-{{ stat.id }}" value="{{ stat.value }}" class="custom-stats-section-input">
-                        <label for="custom_stat-value-{{ stat.id }}" class="custom-stats-section-label">{{ stat.name }}</label>
-                        <button type="button" id="custom-stat-delete-{{ stat.id }}" class="custom-stats-remove-btn" data-custom-stat-remove="true"
+                            name="custom_stat-value-{{ stat.id }}" value="{{ stat.value }}" class="field-input custom-stats-section-input">
+                        <label for="custom_stat-value-{{ stat.id }}" class="field-label custom-stats-section-label">{{ stat.name }}</label>
+                        <button type="button" id="custom-stat-delete-{{ stat.id }}" class="section-remove-x" data-custom-stat-remove="true"
                             hx-post="/characters/{{ character_id }}/custom-stat/{{ stat.id }}/remove"
                             hx-target="#custom-stats-section-container"
                             hx-swap="innerHTML"
@@ -18,7 +18,6 @@
                     <input type="hidden" id="custom_stat-name-{{ stat.id }}" name="custom_stat-name-{{ stat.id }}" value="{{ stat.name }}">
                 </div>
             {% endfor %}
-            <span id="custom-stats-lock-toggle" class="section-lock-toggle custom-stats-lock-toggle" role="button" tabindex="0" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
         {% endif %}
     </div>
 </div>

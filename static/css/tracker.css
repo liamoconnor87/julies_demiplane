@@ -1,0 +1,409 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   tracker.css — sub-bar navigation tabs + tracker page styles
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Sub-bar (tab extensions below the character bar) ──────────────────────── */
+
+.sub-bar {
+    position: fixed;
+    top: calc(var(--navbar-height) + var(--character-bar-height));
+    left: 0;
+    right: 0;
+    z-index: 997;
+    background: transparent;
+    pointer-events: none;
+}
+
+.sub-bar .page-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding-top: 0;
+    pointer-events: none;
+    max-width: none;
+}
+
+.sub-bar-tab {
+    pointer-events: all;
+    background: var(--primary-color-transparent);
+    border: 1px solid var(--secondary-color-dark);
+    border-top: none;
+    color: var(--secondary-color-dark);
+    font-size: 0.78rem;
+    padding: 0.2rem 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 2px;
+    transition: color 0.15s, background 0.15s;
+}
+
+.sub-bar-tab:hover {
+    color: var(--secondary-color);
+}
+
+.sub-bar-tab.active {
+    background: var(--primary-color);
+    color: var(--secondary-color);
+}
+
+.sub-bar-tab-delete {
+    pointer-events: all;
+    background: var(--primary-color-transparent);
+    border: 1px solid rgba(255, 80, 80, 0.4);
+    border-top: none;
+    color: rgba(255, 80, 80, 0.7);
+    font-size: 0.78rem;
+    padding: 0.2rem 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.sub-bar-tab-delete:hover {
+    color: rgb(255, 80, 80);
+    border-color: rgba(255, 80, 80, 0.7);
+    background: rgba(255, 80, 80, 0.08);
+}
+
+.sub-bar-tab-lock {
+    margin-left: auto;
+    pointer-events: all;
+    background: var(--primary-color-transparent);
+    border: 1px solid var(--secondary-color-dark);
+    border-top: none;
+    color: var(--secondary-color-dark);
+    font-size: 0.78rem;
+    padding: 0.2rem 0.65rem;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 4px;
+    transition: color 0.15s, background 0.15s;
+}
+
+.sub-bar-tab-lock:hover {
+    color: var(--secondary-color);
+}
+
+.sub-bar-tab-lock[aria-pressed="true"] {
+    background: var(--primary-color);
+    color: var(--secondary-color);
+}
+
+.sub-bar-tab-rest {
+    pointer-events: all;
+    background: var(--primary-color-transparent);
+    border: 1px solid var(--secondary-color-dark);
+    border-top: none;
+    color: var(--secondary-color-dark);
+    font-size: 0.78rem;
+    padding: 0.2rem 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 4px;
+    transition: color 0.15s, background 0.15s;
+}
+
+.sub-bar-tab-rest:hover {
+    color: var(--secondary-color);
+}
+
+/* ── Sub-pages (shown/hidden by JS tab switching) ──────────────────────────── */
+
+.sub-page {
+    width: 100%;
+}
+
+/* ── Tracker top row (combat stats + buffs above trackers) ─────────────────── */
+
+.tracker-top-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.tracker-top-row > #combat-stats-section-container,
+.tracker-top-row > #custom-buffs-section-container {
+    flex: 0 0 auto;
+}
+
+/* ── Tracker section (full-page) ───────────────────────────────────────────── */
+
+.tracker-section {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0 1.5rem;
+    padding: 0 1rem;
+    --tracker-name-width: 14rem;
+    --tracker-entry-name-width: 9rem;
+    --tracker-value-width: 5rem;
+    --tracker-action-width: 3rem;
+    --tracker-input-height: 2.55rem;
+    --tracker-entry-height: 3.65rem;
+}
+
+.tracker-section > h4 {
+    width: 100%;
+    flex-basis: 100%;
+    flex-shrink: 0;
+}
+
+.tracker-section > .tracker-add-actions-row {
+    width: 100%;
+    flex-basis: 100%;
+}
+
+/* ── Shared label — overrides from .field-label ───────────────────────────── */
+
+.tracker-label {
+    /* inherits from .field-label */
+}
+
+/* ── Shared input — overrides from .field-input ───────────────────────────── */
+
+.tracker-input {
+    height: var(--tracker-input-height);
+}
+
+/* No-label variant — taller entry fields */
+.tracker-input-no-label {
+    height: var(--tracker-entry-height);
+}
+
+.tracker-input[type='number']::-webkit-outer-spin-button,
+.tracker-input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* ── Shared field column ────────────────────────────────────────────────────── */
+
+.tracker-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.tracker-name-field {
+    width: var(--tracker-name-width);
+    min-width: var(--tracker-name-width);
+    max-width: var(--tracker-name-width);
+    position: relative;
+}
+
+.tracker-entry-name-field {
+    width: var(--tracker-entry-name-width);
+    min-width: var(--tracker-entry-name-width);
+    max-width: var(--tracker-entry-name-width);
+}
+
+.tracker-entry-value-field {
+    width: var(--tracker-value-width);
+    min-width: var(--tracker-value-width);
+    max-width: var(--tracker-value-width);
+    position: relative;
+    margin-right: 0;
+}
+
+.tracker-entry-value-field .tracker-input {
+    text-align: center;
+    padding: 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+/* Remove gap between entry name and value */
+.tracker-entry-name-no-gap {
+    margin-right: 0;
+}
+
+/* Bold tracker name */
+.tracker-name-field .tracker-input {
+    font-weight: bold;
+}
+
+/* Add-entry "+" button inline on last entry row */
+.tracker-add-entry-inline-btn {
+    align-self: center;
+    margin-left: 0.25rem;
+}
+
+/* Entry rows have no labels — align to bottom of tracker name row */
+.tracker-entry-row {
+    align-items: flex-end;
+}
+
+/* Zero out bottom margin on add-actions children so nothing shifts on reveal */
+.tracker-entry-row > .add-actions-field {
+    margin-bottom: 0;
+}
+
+.tracker-value-field {
+    width: var(--tracker-value-width);
+    min-width: var(--tracker-value-width);
+    max-width: var(--tracker-value-width);
+}
+
+.tracker-action-field {
+    width: var(--tracker-action-width);
+    min-width: var(--tracker-action-width);
+    max-width: var(--tracker-action-width);
+}
+
+.tracker-action-field .tracker-label {
+    text-align: center;
+    padding-left: 0;
+    font-size: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+/* ── Row (horizontal group of fields) ──────────────────────────────────────── */
+
+.tracker-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+}
+
+/* ── Tracker item (one named tracker + its entries) ─────────────────────────── */
+
+.tracker-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+/* × remove button — uses shared .section-remove-x from section_action_buttons.css */
+
+.tracker-name-field,
+.tracker-entry-name-field {
+    position: relative;
+}
+
+/* ── Toggles field — inline box same height as input ───────────────────────── */
+
+.tracker-toggles-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* No-label variant — no label above, just the toggles row */
+.tracker-toggles-no-label {
+    justify-content: flex-end;
+}
+
+.tracker-toggles-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    background: transparent;
+    height: var(--tracker-input-height);
+    padding: 0 0.25rem;
+    box-sizing: border-box;
+}
+
+.tracker-toggles-row-no-label {
+    height: auto;
+    min-height: var(--tracker-entry-height);
+}
+
+/* ── Toggle boxes ───────────────────────────────────────────────────────────── */
+
+.tracker-toggle {
+    display: inline-block;
+    width: var(--tracker-entry-height);
+    height: var(--tracker-entry-height);
+    border: 1px solid var(--secondary-color-dark);
+    background: transparent;
+    cursor: pointer;
+    vertical-align: middle;
+    flex-shrink: 0;
+    transition: background 0.12s, border-color 0.12s;
+    box-sizing: border-box;
+}
+
+.tracker-toggle.checked {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* ── Add entry / add tracker — inline row using add-actions shared styles ──── */
+
+.tracker-add-actions-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin-top: 0.25rem;
+}
+
+.tracker-add-entry-name-field {
+    width: var(--tracker-entry-name-width);
+    min-width: var(--tracker-entry-name-width);
+    max-width: var(--tracker-entry-name-width);
+    margin-left: 0.25rem;
+}
+
+.tracker-add-tracker-name-field {
+    width: var(--tracker-name-width);
+    min-width: var(--tracker-name-width);
+    max-width: var(--tracker-name-width);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Responsive — tracker layout
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+    /* Let entry rows wrap so toggles drop below name+value */
+    .tracker-entry-row {
+        flex-wrap: wrap;
+    }
+
+    /* Toggles field takes full row width when wrapped */
+    .tracker-entry-row .tracker-toggles-field {
+        flex-basis: 100%;
+        margin-right: 0;
+    }
+
+
+    .tracker-name-field {
+        max-width: 14rem;
+    }
+
+    /* Prevent entry fields from shrinking below their set widths */
+    .tracker-entry-name-field,
+    .tracker-entry-value-field {
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 400px) {
+    /* Constrain toggle row width so squares wrap in rows of 3 */
+    .tracker-entry-row .tracker-toggles-row,
+    .tracker-entry-row .tracker-toggles-row-no-label {
+        max-width: calc(var(--tracker-entry-height) * 3 + 0.5rem);
+    }
+
+    .tracker-section {
+        padding: 0 0.25rem;
+    }
+
+    .tracker-top-row {
+        flex-direction: column;
+    }
+}

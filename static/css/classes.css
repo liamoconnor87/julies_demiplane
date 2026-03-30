@@ -19,60 +19,11 @@
 }
 
 .classes-section-name-field {
-    width: 8rem;
-    min-width: 8rem;
-    max-width: 8rem;
+    width: 9rem;
+    min-width: 9rem;
+    max-width: 9rem;
     flex: 0 0 auto;
-    margin-right: 0.25rem;
-}
-
-.classes-section-level-field {
-    max-width: 3rem;
-    min-width: 3rem;
-    align-items: center;
-    margin-right: 0.25rem;
-}
-
-.classes-section-action-field,
-.classes-section-button-field {
-    max-width: 3.0rem;
-    min-width: 3.0rem;
-    flex: 0 0 auto;
-    margin-right: 0.25rem;
-}
-
-.classes-section-input {
-    width: 100%;
-    box-sizing: border-box;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0;
-    outline: none;
-    font-size: 1.05rem;
-    transition: background 0.2s;
-    display: block;
-}
-
-.classes-section-label {
-    background: var(--primary-color-transparent);
-    color: var(--secondary-color);
-    padding: 0;
-    border: none;
-    border-radius: 0;
-    font-weight: bold;
-    margin-bottom: 0;
-    display: block;
-    font-size: 0.6rem;
-    width: 100%;
-    box-sizing: border-box;
-    transition: background 0.2s;
-    line-height: 1;
-    text-align: left;
-    overflow-wrap: break-word;
-    padding-left: 0.5rem;
-    padding-top: 0.5rem;
+    margin-right: 0;
 }
 
 .classes-section-name-field .classes-section-input {
@@ -83,13 +34,41 @@
     height: 2.58rem;
 }
 
+.classes-section-level-field {
+    max-width: 4.5rem;
+    min-width: 4.5rem;
+    align-items: center;
+    margin-right: 0;
+    position: relative;
+}
+
+.classes-section-level-field > .section-remove-x {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.1rem 0.25rem;
+    z-index: 1;
+}
+
+.classes-section-level-wrapper {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+}
+
+.classes-section-level-wrapper .classes-section-input {
+    width: 4.5rem;
+}
+
 .classes-section-level-field .classes-section-input {
     text-align: center;
-    padding: 0.5rem 0;
-    width: 100%;
+    padding: 0.3rem 0 0 0;
+    width: 4.5rem;
     appearance: textfield;
     -moz-appearance: textfield;
-    height: 2.58rem;
+    height: 100%;
+    font-size: 1.6rem;
 }
 
 .classes-section-level-field .classes-section-input::-webkit-outer-spin-button,
@@ -102,23 +81,32 @@
     text-align: center;
     padding-left: 0;
     width: 100%;
+    font-size: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.classes-section-action-field,
+.classes-section-button-field {
+    max-width: 3.0rem;
+    min-width: 3.0rem;
+    flex: 0 0 auto;
+    margin-right: 0.25rem;
+}
+
+.classes-section-input {
+    font-size: 1.15rem;
+}
+
+.classes-section-label {
+    /* inherits from .field-label */
 }
 
 .classes-section-btn {
-    cursor: pointer;
-    text-align: center;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
-    border: none;
+    height: 2.7rem;
+    width: 3.0rem;
     min-width: 0;
     justify-content: center;
     align-items: center;
-    font-size: 1.5rem;
-    box-sizing: border-box;
-    height: 2.7rem;
-    width: 3.0rem;
-    display: flex;
-    padding: 0;
 }
 
 .classes-section-action-field .classes-section-btn {

@@ -1,0 +1,380 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   card_item.css — shared card-item layout for inventory, feats/traits, etc.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Section container ─────────────────────────────────────────────────────── */
+
+.card-item-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 1rem;
+    --card-item-action-width: 3rem;
+    --card-item-field-gap: 0.25rem;
+    --card-item-field-input-height: 2.55rem;
+    --card-item-total-width: 19.75rem;
+    --card-item-quantity-width: 3rem;
+    --card-item-quantity-control-width: 7rem;
+}
+
+/* ── Lock state ────────────────────────────────────────────────────────────── */
+
+[data-inventory-remove]:disabled {
+    color: var(--secondary-color-dark);
+}
+
+/* ── Row ───────────────────────────────────────────────────────────────────── */
+
+.card-item-row {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    margin-bottom: 0.25rem;
+}
+
+.inventory-section {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0 0.75rem;
+}
+
+.inventory-section > h4 {
+    width: 100%;
+    flex-basis: 100%;
+    flex-shrink: 0;
+    margin-bottom: 0.5rem;
+}
+
+.inventory-section > .card-item-add-row {
+    width: 100%;
+    flex-basis: 100%;
+}
+
+.feats-section {
+    width: 100%;
+    --card-item-total-width: 16rem;
+}
+
+#inventory-list,
+#feats-list {
+    columns: var(--card-item-total-width);
+    column-gap: 0.75rem;
+    width: 100%;
+}
+
+#inventory-list > .card-item-row,
+#feats-list > .card-item-row {
+    break-inside: avoid;
+}
+
+.card-item-saved-row {
+    margin-bottom: 0.75rem;
+}
+
+.card-item-top-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    width: var(--card-item-total-width);
+    max-width: 100%;
+}
+
+/* ── Field ─────────────────────────────────────────────────────────────────── */
+
+.card-item-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-right: var(--card-item-field-gap);
+    margin-bottom: 0.25rem;
+}
+
+.card-item-field:last-child {
+    margin-right: 0;
+}
+
+/* ── Name field — flexible, fills remaining space ──────────────────────────── */
+
+.card-item-name-field {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* ── Name wrapper — contains name input + absolute-positioned × ──────────── */
+
+.card-item-name-wrapper {
+    position: relative;
+}
+
+.card-item-saved-row .card-item-name-wrapper {
+    width: var(--card-item-total-width);
+    min-width: 0;
+    max-width: var(--card-item-total-width);
+}
+
+.card-item-saved-row .card-item-name-wrapper .card-item-input {
+    padding-right: 1.5rem;
+}
+
+.card-item-saved-row .card-item-name-field {
+    align-self: stretch;
+    margin-bottom: 0;
+}
+
+.card-item-saved-row .card-item-name-field .card-item-input {
+    font-weight: bold;
+    flex: 1;
+    height: auto;
+    min-height: var(--card-item-field-input-height);
+}
+
+/* ── Action field — fixed width ────────────────────────────────────────────── */
+
+.card-item-action-field {
+    width: var(--card-item-action-width);
+    min-width: var(--card-item-action-width);
+    max-width: var(--card-item-action-width);
+}
+
+/* ── Description field — full row width ────────────────────────────────────── */
+
+.card-item-description-field {
+    width: var(--card-item-total-width);
+    min-width: var(--card-item-total-width);
+    max-width: var(--card-item-total-width);
+}
+
+/* ── Input ─────────────────────────────────────────────────────────────────── */
+
+.card-item-input {
+    /* inherits from .field-input */
+}
+
+.card-item-field .card-item-input {
+    height: var(--card-item-field-input-height);
+}
+
+.card-item-description-input {
+    resize: vertical;
+    line-height: 1.2;
+    white-space: pre-wrap;
+    min-height: calc(var(--card-item-field-input-height) * 2);
+    padding-bottom: 1rem;
+}
+
+.card-item-saved-row .card-item-description-input {
+    height: auto;
+    min-height: var(--card-item-field-input-height);
+    overflow: hidden;
+    resize: none;
+}
+
+.card-item-description-input[readonly] {
+    height: auto;
+    min-height: var(--card-item-field-input-height);
+    overflow: hidden;
+    resize: none;
+}
+
+.card-item-description-display {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-three);
+    border: none;
+    border-radius: 0;
+    outline: none;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    display: block;
+    padding: 0.5rem 0.75rem 1rem;
+    min-height: var(--card-item-field-input-height);
+    white-space: pre-wrap;
+}
+
+/* ── Label ─────────────────────────────────────────────────────────────────── */
+
+.card-item-label {
+    font-size: 0.65rem;
+}
+
+.card-item-action-field .card-item-label {
+    min-width: 0;
+    text-align: center;
+    width: var(--card-item-action-width);
+    font-size: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+/* ── Button ────────────────────────────────────────────────────────────────── */
+
+.card-item-btn {
+    /* inherits from .field-btn */
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Inventory-specific: quantity control
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.card-item-quantity-field {
+    width: var(--card-item-quantity-width);
+    min-width: var(--card-item-quantity-width);
+    max-width: var(--card-item-quantity-width);
+}
+
+.card-item-saved-row .card-item-quantity-field {
+    width: var(--card-item-quantity-control-width);
+    min-width: var(--card-item-quantity-control-width);
+    max-width: var(--card-item-quantity-control-width);
+}
+
+.card-item-quantity-field .card-item-input {
+    text-align: center;
+    padding-left: 0;
+    padding-right: 0;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.card-item-quantity-field .card-item-input::-webkit-outer-spin-button,
+.card-item-quantity-field .card-item-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.card-item-quantity-control {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+.card-item-quantity-display {
+    flex: 1 1 auto;
+    text-align: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.card-item-quantity-btn {
+    flex: 0 0 2rem;
+    width: 2rem;
+    min-width: 2rem;
+    height: var(--card-item-field-input-height);
+    font-size: 1.35rem;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.card-item-quantity-btn:hover {
+    transform: scale(1.02);
+}
+
+.card-item-quantity-btn:active {
+    transform: scale(0.98);
+}
+
+.card-item-btn.card-item-quantity-btn {
+    flex: 0 0 2rem;
+    width: 2rem;
+    min-width: 2rem;
+    height: var(--card-item-field-input-height);
+    font-size: 1.35rem;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Hidden fields for add forms (section-specific IDs)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+#add-inventory-field-name,
+#add-inventory-field-quantity,
+#add-inventory-field-description,
+#add-inventory-submit-btn-wrapper,
+#close-inventory-btn-wrapper {
+    display: none;
+}
+
+#add-feat-field-name,
+#add-feat-field-description,
+#add-feat-submit-btn-wrapper,
+#close-feat-btn-wrapper {
+    display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Responsive
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+    .card-item-section {
+        width: 100%;
+        --card-item-action-width: 3rem;
+        --card-item-field-gap: 0.2rem;
+        --card-item-quantity-width: 2.4rem;
+        --card-item-quantity-control-width: 5.4rem;
+    }
+
+    .card-item-row,
+    .card-item-top-row {
+        width: 100%;
+    }
+
+    .card-item-top-row {
+        flex-wrap: nowrap;
+        max-width: 19.75rem;
+    }
+
+    .card-item-description-field {
+        width: 100%;
+        min-width: 0;
+        max-width: 19.75rem;
+    }
+
+    .card-item-saved-row .card-item-name-wrapper {
+        width: 100%;
+        min-width: 0;
+        max-width: 19.75rem;
+    }
+
+    .card-item-field {
+        margin-right: var(--card-item-field-gap);
+    }
+
+    .card-item-field:last-child {
+        margin-right: 0;
+    }
+
+    .card-item-btn {
+        width: var(--card-item-action-width);
+        min-width: var(--card-item-action-width);
+    }
+
+    .card-item-label,
+    .card-item-action-field .card-item-label {
+        width: 100%;
+    }
+
+    .card-item-saved-row .card-item-quantity-field .card-item-label {
+        width: var(--card-item-quantity-control-width);
+        min-width: var(--card-item-quantity-control-width);
+        max-width: var(--card-item-quantity-control-width);
+    }
+}
+
+@media (max-width: 499px) {
+    .card-item-section {
+        padding: 0 0.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .feats-section .card-item-top-row,
+    .feats-section .card-item-description-field,
+    .feats-section .card-item-saved-row .card-item-name-wrapper {
+        max-width: 100%;
+    }
+}

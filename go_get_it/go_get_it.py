@@ -1,7 +1,7 @@
 import sqlite3
 from typing import Optional
 from functions.functions import uuid
-from go_get_it.seed import SEED
+from go_get_it.seed import SEED, SEED_ROWS
 from go_get_it.tables import TABLES
 from misc.config import DB_ROUTE
 
@@ -13,6 +13,7 @@ class GoGetDB():
     DB_ROUTE = DB_ROUTE
     TABLES = TABLES
     SEED = SEED
+    SEED_ROWS = SEED_ROWS
 
     def go_connect_db(self):
         return sqlite3.connect(self.DB_ROUTE)
@@ -136,11 +137,29 @@ class GoGetDB():
         db.commit()
         db.close()
 
+    def go_delete_by(self, table: str, params: dict):
+        """Delete all rows matching the given column=value pairs."""
+        db = self.go_connect_db()
+        cursor = db.cursor()
+
+        where = ' AND '.join([f'{key} = ?' for key in params.keys()])
+        cursor.execute(f"DELETE FROM {table} WHERE {where}", tuple(params.values()))
+
+        db.commit()
+        db.close()
+
     def go_seed_db(self):
         for table, seed in self.SEED.items():
             for data, field in seed.items():
                 if not self.go_get_one(table, {field:data}):
                     self.go_add_new(table, {"id": uuid(), field:data})
+
+        # Full-row seeds (e.g. admin user, user_to_character)
+        for table, rows in self.SEED_ROWS.items():
+            for row in rows:
+                record = {field: value for value, field in row.items()}
+                if not self.go_get_one(table, {"id": record["id"]}):
+                    self.go_add_new(table, record)
 
 
 

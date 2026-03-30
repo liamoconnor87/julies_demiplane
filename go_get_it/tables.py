@@ -23,6 +23,18 @@ TABLES = {
 """
 
 TABLES = {
+    "user": {
+        "id": _id,
+        "username": _text(30),
+        "password_hash": _text(256),
+        "created_at": _text(),
+        "admin": _boolean,
+    },
+    "user_to_character": {
+        "id": _id,
+        "user_id": _fk,
+        "character_id": _fk,
+    },
     "character": {
         "id": _id,
         "name": _text(),
@@ -195,5 +207,16 @@ TABLES = {
         "stat_table_id": _fk,
         "stat_name": _text(),
         "character_id": _fk,
+    },
+    "tracker": {
+        "id": _id,
+        "character_id": _fk,
+        "name": _text(),
+    },
+    "tracker_entry": {
+        "id": _id,
+        "tracker_id": _fk,
+        "name": _text(),
+        "value": _integer,
     }
 }

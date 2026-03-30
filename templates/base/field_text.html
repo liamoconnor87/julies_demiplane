@@ -1,0 +1,8 @@
+{# Generic text field — set field_id, field_name, field_label, field_value,
+   field_wrapper_class, field_input_class, field_label_class before including.
+   Optional: field_extra_attrs (e.g. 'readonly') #}
+<div class="{{ field_wrapper_class }}">
+    <label for="{{ field_id }}" class="field-label {{ field_label_class }}">{{ field_label }}</label>
+    <input type="text" id="{{ field_id }}" name="{{ field_name }}" value="{{ field_value or '' }}" class="field-input {{ field_input_class }}"
+        {{ field_extra_attrs|default('') }}>
+</div>

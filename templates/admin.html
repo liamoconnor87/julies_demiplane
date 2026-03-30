@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Julie's Demiplane</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <style>
+        body { font-family: monospace; background: #1a1a2e; color: #eee; margin: 0; padding: 1rem; }
+        a { color: #80ffd4; }
+        h1, h2, h3 { color: #80ffd4; margin: 0.5rem 0; }
+        .breadcrumb { margin-bottom: 1rem; font-size: 0.9rem; }
+        .breadcrumb a { margin-right: 0.25rem; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; font-size: 0.8rem; }
+        th, td { border: 1px solid #333; padding: 0.3rem 0.5rem; text-align: left; vertical-align: top; }
+        th { background: #16213e; color: #80ffd4; white-space: nowrap; }
+        td { background: #1a1a2e; }
+        input, select { background: #0f0f23; color: #eee; border: 1px solid #444; padding: 0.2rem 0.4rem; font-size: 0.8rem; font-family: monospace; width: 100%; box-sizing: border-box; }
+        button { background: #16213e; color: #80ffd4; border: 1px solid #80ffd4; padding: 0.2rem 0.6rem; cursor: pointer; font-family: monospace; font-size: 0.8rem; }
+        button:hover { background: #80ffd4; color: #1a1a2e; }
+        .btn-danger { border-color: #f55; color: #f55; }
+        .btn-danger:hover { background: #f55; color: #fff; }
+        .btn-link { background: none; border: none; color: #80ffd4; text-decoration: underline; cursor: pointer; padding: 0; }
+        .child-tables { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+        .child-tables a { display: inline-block; padding: 0.4rem 0.8rem; border: 1px solid #80ffd4; text-decoration: none; }
+        .child-tables a:hover { background: #80ffd4; color: #1a1a2e; }
+        .flash { padding: 0.5rem; margin-bottom: 0.5rem; border: 1px solid #80ffd4; background: #16213e; }
+        .flash-error { border-color: #f55; color: #f55; }
+        .back-link { margin-bottom: 1rem; display: inline-block; }
+        .admin-nav { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <div class="admin-nav">
+        <h1>Admin</h1>
+        <a href="/">← Back to Site</a>
+    </div>
+
+    {% if breadcrumbs %}
+    <div class="breadcrumb">
+        {% for crumb in breadcrumbs %}
+            {% if not loop.last %}
+                <a href="{{ crumb.url }}">{{ crumb.label }}</a> &rsaquo;
+            {% else %}
+                <strong>{{ crumb.label }}</strong>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Users list (admin home) ── #}
+    {% if view == 'users' %}
+    <h2>Users</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Admin</th>
+                <th>Created</th>
+                <th>Characters</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td><a href="/admin/user/{{ user.id }}">{{ user.username }}</a></td>
+                <td>{{ '✓' if user.admin else '' }}</td>
+                <td>{{ user.created_at or '' }}</td>
+                <td>{{ user.character_count }}</td>
+                <td>
+                    <form style="display:inline" method="POST" action="/admin/table/user/{{ user.id }}/toggle-admin">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">{{ 'Remove Admin' if user.admin else 'Make Admin' }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>All Tables</h3>
+    <div class="child-tables">
+        {% for tbl in all_tables %}
+        <a href="/admin/table/{{ tbl }}">{{ tbl | replace('_', ' ') | title }}</a>
+        {% endfor %}
+    </div>
+
+    <h3 style="margin-top:1rem">
+        <a href="/admin/orphans" style="color:#f55;text-decoration:none">
+            Orphaned Data
+            {% if orphan_count %}
+            <span style="background:#f55;color:#fff;padding:0.1rem 0.5rem;border-radius:4px;font-size:0.8rem;margin-left:0.3rem">{{ orphan_count }}</span>
+            {% endif %}
+        </a>
+    </h3>
+
+    {# ── User detail → their characters ── #}
+    {% elif view == 'user_detail' %}
+    <h2>User: {{ user.username }}</h2>
+    <table>
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>ID</td><td>{{ user.id }}</td></tr>
+            <tr><td>Username</td><td>{{ user.username }}</td></tr>
+            <tr><td>Admin</td><td>{{ '✓' if user.admin else '✗' }}</td></tr>
+            <tr><td>Created</td><td>{{ user.created_at or '' }}</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Characters</h3>
+    {% if characters %}
+    <table>
+        <thead><tr><th>Name</th><th>Level</th><th>Race</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for char in characters %}
+            <tr>
+                <td><a href="/admin/character/{{ char.id }}">{{ char.name or '(unnamed)' }}</a></td>
+                <td>{{ char.level or 0 }}</td>
+                <td>{{ char.race or '' }}</td>
+                <td>
+                    <form style="display:inline" method="POST" action="/admin/table/character/{{ char.id }}/delete">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="redirect" value="/admin/user/{{ user.id }}">
+                        <button type="submit" class="btn-danger" onclick="return confirm('Delete this character and ALL its data?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No characters.</p>
+    {% endif %}
+
+    {# ── Character detail → child tables ── #}
+    {% elif view == 'character_detail' %}
+    <h2>Character: {{ character.name or '(unnamed)' }}</h2>
+    <table>
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>
+            {% for key, val in character.items() %}
+            <tr><td>{{ key }}</td><td>{{ val if val is not none else '' }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Related Tables</h3>
+    <div class="child-tables">
+        {% for link in child_links %}
+        <a href="{{ link.url }}">{{ link.label }} ({{ link.count }})</a>
+        {% endfor %}
+    </div>
+
+    {# ── Generic table view/edit ── #}
+    {% elif view == 'table' %}
+    <div id="table-container">
+        {% include 'admin_table_fragment.html' %}
+    </div>
+
+    {# ── Orphaned data view ── #}
+    {% elif view == 'orphans' %}
+    <h2 style="color:#f55">Orphaned Data ({{ orphan_count }})</h2>
+    {% if orphan_groups %}
+        {% for table_name, items in orphan_groups.items() %}
+        <h3 style="margin-top:1rem">{{ table_name | replace('_', ' ') | title }} ({{ items | length }})</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Row ID</th>
+                    <th>FK Column</th>
+                    <th>Missing Parent</th>
+                    <th>Missing ID</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td style="font-size:0.7rem">{{ item.row.id }}</td>
+                    <td>{{ item.fk_col }}</td>
+                    <td>{{ item.missing_parent | replace('_', ' ') | title }}</td>
+                    <td style="font-size:0.7rem">{{ item.missing_id }}</td>
+                    <td>
+                        <form style="display:inline" method="POST" action="/admin/table/{{ item.table }}/{{ item.row.id }}/delete">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="redirect" value="/admin/orphans">
+                            <button type="submit" class="btn-danger" onclick="return confirm('Delete this orphaned row?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}
+    {% else %}
+        <p style="color:#80ffd4">No orphaned data found.</p>
+    {% endif %}
+
+    {% endif %}
+</body>
+</html>

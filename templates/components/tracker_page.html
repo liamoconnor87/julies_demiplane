@@ -1,0 +1,51 @@
+{# Tracker page — inline full-page tracker management (no modal). #}
+<form id="tracker-csrf-form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="tracker-section">
+    <h4>Trackers</h4>
+
+    {% if trackers %}
+    {% for tracker in trackers %}
+    {% include 'components/tracker_item.html' %}
+    {% endfor %}
+    {% endif %}
+
+    {# ── Add tracker — + button reveals inline form ── #}
+    <div class="tracker-add-actions-row" id="tracker-add-tracker-row">
+        {% set btn_wrapper_class = 'add-actions-field' %}
+        {% set btn_btn_class = 'add-actions-btn' %}
+        {% set btn_wrapper_id = 'add-tracker-btn-wrapper' %}
+        {% set btn_id = 'add-tracker-btn' %}
+        {% set btn_icon = '+' %}
+        {% set btn_label = 'Add Tracker' %}
+        {% include 'base/field_button.html' %}
+
+        <div class="add-actions-field tracker-add-tracker-name-field" id="add-tracker-field-name" style="display:none;">
+            <label for="add-tracker-name-input" class="field-label add-actions-label">Tracker Name</label>
+            <input type="text" class="field-input add-actions-input" id="add-tracker-name-input" name="add-tracker-name-input" placeholder="Tracker name…" maxlength="60">
+        </div>
+        {% set btn_wrapper_id = 'add-tracker-submit-wrapper' %}
+        {% set btn_wrapper_style = 'display:none;' %}
+        {% set btn_id = 'add-tracker-submit-btn' %}
+        {% set btn_hx_post = '/characters/' ~ character_id ~ '/tracker/add' %}
+        {% set btn_hx_target = '#tracker-page-container' %}
+        {% set btn_hx_swap = 'innerHTML' %}
+        {% set btn_hx_include = 'closest form' %}
+        {% set btn_aria_label = 'Add tracker' %}
+        {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+        {% set btn_label = 'Add' %}
+        {% include 'base/field_button.html' %}
+        {% set btn_hx_post = '' %}
+        {% set btn_hx_target = '' %}
+        {% set btn_hx_swap = '' %}
+        {% set btn_hx_include = '' %}
+        {% set btn_aria_label = '' %}
+        {% set btn_wrapper_id = 'add-tracker-close-wrapper' %}
+        {% set btn_id = 'add-tracker-close-btn' %}
+        {% set btn_icon = '&times;' %}
+        {% set btn_label = 'Close' %}
+        {% include 'base/field_button.html' %}
+    </div>
+
+</div>
+</form>

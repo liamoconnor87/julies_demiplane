@@ -2,7 +2,13 @@
 {% for buff in custom_buffs %}
 	{% for target in buff.targets %}
 		{% for stat in target.stat_names %}
-			{% set _ = buff_fields.append({'table': target.stat_table_name, 'stat': stat}) %}
+			{% set _ = buff_fields.append({
+				'table': target.stat_table_name,
+				'stat': stat,
+				'buff_id': buff.id,
+				'buff_name': buff.name,
+				'buff_value': buff.value
+			}) %}
 		{% endfor %}
 	{% endfor %}
 {% endfor %}
@@ -13,11 +19,15 @@
 	<div class="custom-buffs-grid">
 		{% if custom_buffs %}
 			{% for buff in custom_buffs %}
-				<div class="custom-buffs-card">
+				<div class="custom-buffs-card" data-buff-edit="true"
+					data-buff-id="{{ buff.id }}"
+					data-buff-name="{{ buff.name }}"
+					data-buff-value="{{ buff.value }}"
+					data-buff-targets='{{ buff.targets | tojson | forceescape }}'>
 					<div class="custom-buffs-card-main-field">
 						<div class="custom-buffs-card-value">{% if (buff.value | int) == 0 %}--{% else %}{{ buff.value }}{% endif %}</div>
 						<div class="custom-buffs-card-title">{{ buff.name }}</div>
-						<button type="button" class="custom-buffs-remove-btn" data-buff-remove="true"
+					<button type="button" class="section-remove-x" data-buff-remove="true"
 							data-buff-value="{{ buff.value }}"
 							data-buff-targets='{{ buff.targets | tojson | forceescape }}'
 							hx-post="/characters/{{ character_id }}/custom-buff/{{ buff.id }}/remove"
@@ -28,35 +38,37 @@
 					</div>
 				</div>
 			{% endfor %}
-			<span id="buffs-lock-toggle" class="section-lock-toggle buffs-lock-toggle" role="button" tabindex="0" aria-pressed="false"
-				aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
 		{% endif %}
 	</div>
 
-	{% if not custom_buffs_at_capacity %}
 	<div class="custom-buffs-section-row custom-buffs-section-add-row">
 		<div class="custom-buffs-section-top-row">
-			<div class="custom-buffs-section-field custom-buffs-section-action-field section-action-field" id="add-custom-buff-btn-wrapper">
-				<button type="button" id="add-custom-buff-btn" class="custom-buffs-section-btn section-action-btn">+</button>
-				<label for="add-custom-buff-btn" class="custom-buffs-section-label section-action-label">Buff</label>
-			</div>
+			{% if not custom_buffs_at_capacity %}
+			{% set btn_wrapper_class = 'custom-buffs-section-field custom-buffs-section-action-field' %}
+			{% set btn_btn_class = 'custom-buffs-section-btn' %}
+			{% set btn_wrapper_id = 'add-custom-buff-btn-wrapper' %}
+			{% set btn_id = 'add-custom-buff-btn' %}
+			{% set btn_icon = '+' %}
+			{% set btn_label = 'Add Buff' %}
+			{% include 'base/field_button.html' %}
+			{% endif %}
 
 			<div class="custom-buffs-section-fields" id="add-custom-buff-fields-wrapper">
 				<div class="custom-buffs-basic-fields-row">
 					<div class="custom-buffs-section-field custom-buffs-name-field">
-						<label for="custom_buff-name" class="custom-buffs-section-label">Buff/Debuff</label>
-						<input type="text" id="custom_buff-name" name="custom_buff-name" class="custom-buffs-section-input" placeholder="Enter name">
+						<label for="custom_buff-name" class="field-label custom-buffs-section-label">Buff/Debuff</label>
+						<input type="text" id="custom_buff-name" name="custom_buff-name" class="field-input custom-buffs-section-input" placeholder="Enter name">
 					</div>
 
 					<div class="custom-buffs-section-field custom-buffs-value-field">
-						<label for="custom_buff-value" class="custom-buffs-section-label">Value</label>
-						<input type="text" inputmode="numeric" pattern="-?[0-9]*" id="custom_buff-value" name="custom_buff-value" value="0" class="custom-buffs-section-input">
+						<label for="custom_buff-value" class="field-label custom-buffs-section-label">Value</label>
+						<input type="text" inputmode="numeric" pattern="-?[0-9]*" id="custom_buff-value" name="custom_buff-value" value="0" class="field-input custom-buffs-section-input">
 					</div>
 				</div>
 
 				<div class="custom-buffs-target-fields-column">
 					<div class="custom-buffs-section-field custom-buffs-target-tables-field">
-						<label class="custom-buffs-section-label">Stat Tables</label>
+						<label class="field-label custom-buffs-section-label">Stat Tables</label>
 						<div class="custom-buffs-checkbox-grid">
 							{% for table_name, columns in buff_target_options.items() %}
 								<label class="custom-buffs-checkbox-item" for="custom_buff-table-{{ table_name }}">
@@ -73,21 +85,28 @@
 					</div>
 
 					<div class="custom-buffs-section-field custom-buffs-target-columns-field" id="add-custom-buff-target-columns-field">
-						<label class="custom-buffs-section-label">Columns / Stats</label>
+						<label class="field-label custom-buffs-section-label">Columns / Stats</label>
 						<div class="custom-buffs-table-stat-groups">
 							{% for table_name, columns in buff_target_options.items() %}
 								<div class="custom-buffs-table-stat-group" data-table-name="{{ table_name }}">
 									<div class="custom-buffs-table-stat-title">{{ table_name | replace('_', ' ') | title }}</div>
 									<div class="custom-buffs-checkbox-grid custom-buffs-columns-checkbox-grid">
-										{% for stat_name in columns %}
-											<label class="custom-buffs-checkbox-item custom-buffs-columns-checkbox-item" for="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}">
-												<input type="checkbox"
-													id="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}"
-													name="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}"
-													value="{{ stat_name }}"
-													class="custom-buffs-stat-checkbox"
-													data-table-name="{{ table_name }}">
-												<span>{{ stat_name | replace('_', ' ') | title }}</span>
+									{% for stat_option in columns %}
+										{% if stat_option is mapping %}
+											{% set stat_value = stat_option.id %}
+											{% set stat_display = stat_option.name %}
+										{% else %}
+											{% set stat_value = stat_option %}
+											{% set stat_display = stat_option | replace('_', ' ') | title %}
+										{% endif %}
+										<label class="custom-buffs-checkbox-item custom-buffs-columns-checkbox-item" for="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}">
+											<input type="checkbox"
+												id="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}"
+												name="custom_buff-stat-{{ table_name }}-{{ loop.index0 }}"
+												value="{{ stat_value }}"
+												class="custom-buffs-stat-checkbox"
+												data-table-name="{{ table_name }}">
+											<span>{{ stat_display }}</span>
 											</label>
 										{% endfor %}
 									</div>
@@ -98,21 +117,26 @@
 				</div>
 			</div>
 
-			<div class="custom-buffs-section-field custom-buffs-section-action-field section-action-field" id="add-custom-buff-submit-btn-wrapper">
-				<button type="button" id="custom-buff-add" class="custom-buffs-section-btn section-action-btn"
-					hx-post="/characters/{{ character_id }}/custom-buffs/fragment"
-					hx-target="#custom-buffs-section-container"
-					hx-swap="innerHTML"
-					hx-include="closest form"><i class="bi bi-check-lg"></i></button>
-				<label for="custom-buff-add" class="custom-buffs-section-label section-action-label">Add</label>
-			</div>
+			{% set btn_wrapper_id = 'add-custom-buff-submit-btn-wrapper' %}
+			{% set btn_id = 'custom-buff-add' %}
+			{% set btn_hx_post = '/characters/' ~ character_id ~ '/custom-buffs/fragment' %}
+			{% set btn_hx_target = '#custom-buffs-section-container' %}
+			{% set btn_hx_swap = 'innerHTML' %}
+			{% set btn_hx_include = 'closest form' %}
+			{% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+			{% set btn_label = 'Add' %}
+			{% include 'base/field_button.html' %}
 
-			<div class="custom-buffs-section-field custom-buffs-section-action-field section-action-field" id="close-custom-buff-btn-wrapper">
-				<button type="button" id="close-custom-buff-field-x-btn" class="custom-buffs-section-btn section-action-btn">×</button>
-				<label for="close-custom-buff-field-x-btn" class="custom-buffs-section-label section-action-label">Close</label>
-			</div>
+			{% set btn_hx_post = '' %}
+			{% set btn_hx_target = '' %}
+			{% set btn_hx_swap = '' %}
+			{% set btn_hx_include = '' %}
+			{% set btn_wrapper_id = 'close-custom-buff-btn-wrapper' %}
+			{% set btn_id = 'close-custom-buff-field-x-btn' %}
+			{% set btn_icon = '×' %}
+			{% set btn_label = 'Close' %}
+			{% include 'base/field_button.html' %}
 		</div>
 	</div>
-	{% endif %}
 </div>
 <br>

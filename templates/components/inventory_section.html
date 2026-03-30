@@ -1,89 +1,61 @@
-<div class="inventory-section">
+<div class="card-item-section inventory-section">
     <h4>
         Inventory
-        <span id="inventory-lock-toggle" class="section-lock-toggle" role="button" tabindex="0" aria-pressed="false" aria-label="Unlocked"><i class="bi bi-unlock-fill" aria-hidden="true"></i></span>
     </h4>
 
+    <div id="inventory-list">
     {% if inventory %}
         {% for item in inventory %}
-            <div class="inventory-section-row inventory-section-saved-row">
-                <div class="inventory-section-top-row">
-                    <div class="inventory-section-field inventory-section-name-field">
-                        <label for="inventory-name-{{ item.id }}" class="inventory-section-label">Item Name</label>
-                        <input type="text" id="inventory-name-{{ item.id }}"
-                            name="inventory-name-{{ item.id }}" value="{{ item.name }}" readonly class="inventory-section-input">
-                    </div>
-
-                    <div class="inventory-section-field inventory-section-quantity-field">
-                        <label for="inventory-quantity-{{ item.id }}" class="inventory-section-label">Qty</label>
-                            <div class="inventory-quantity-control" aria-label="Adjust quantity for {{ item.name }}">
-                                <button type="button" id="inventory-decrease-{{ item.id }}" class="inventory-section-btn inventory-quantity-btn" data-inventory-remove="true"
-                                    hx-post="/characters/{{ character_id }}/inventory/fragment"
-                                    hx-target="#inventory-section-container"
-                                    hx-swap="innerHTML"
-                                    hx-include="closest form"
-                                    hx-vals='{"inventory-action":"step","inventory-update-id":"{{ item.id }}","inventory-step":"-1"}'>−</button>
-                                <input type="number" id="inventory-quantity-{{ item.id }}"
-                                    name="inventory-quantity-{{ item.id }}" value="{{ item.quantity }}" class="inventory-section-input inventory-quantity-display" min="0" readonly>
-                                <button type="button" id="inventory-increase-{{ item.id }}" class="inventory-section-btn inventory-quantity-btn" data-inventory-remove="true"
-                                    hx-post="/characters/{{ character_id }}/inventory/fragment"
-                                    hx-target="#inventory-section-container"
-                                    hx-swap="innerHTML"
-                                    hx-include="closest form"
-                                    hx-vals='{"inventory-action":"step","inventory-update-id":"{{ item.id }}","inventory-step":"1"}'>+</button>
-                            </div>
-                    </div>
-
-                </div>
-
-                {% if item.description %}
-                    <div class="inventory-section-field inventory-section-description-field">
-                        <label for="inventory-description-{{ item.id }}" class="inventory-section-label">Description</label>
-                        <div id="inventory-description-{{ item.id }}" class="inventory-section-description-display">{{ item.description }}</div>
-                    </div>
-                {% endif %}
-            </div>
+            {% include 'components/inventory_row.html' %}
         {% endfor %}
     {% endif %}
+    </div>
 
     {% if not inventory_at_capacity %}
-    <div class="inventory-section-row inventory-section-add-row">
-        <div class="inventory-section-top-row">
-            <div class="inventory-section-field inventory-section-action-field section-action-field" id="add-inventory-btn-wrapper">
-                <button type="button" id="add-inventory-btn" class="inventory-section-btn section-action-btn">+</button>
-                <label for="add-inventory-btn" class="inventory-section-label section-action-label">Add Item</label>
+    <div class="card-item-row card-item-add-row">
+        <div class="card-item-top-row">
+            {% set btn_wrapper_class = 'card-item-field card-item-action-field' %}
+            {% set btn_btn_class = 'card-item-btn' %}
+            {% set btn_wrapper_id = 'add-inventory-btn-wrapper' %}
+            {% set btn_id = 'add-inventory-btn' %}
+            {% set btn_icon = '+' %}
+            {% set btn_label = 'Add Item' %}
+            {% include 'base/field_button.html' %}
+
+            <div class="card-item-field card-item-name-field" id="add-inventory-field-name">
+                <label for="inventory-name" class="field-label card-item-label">New Item</label>
+                <input type="text" id="inventory-name" name="inventory-name" placeholder="Enter item" class="field-input card-item-input">
             </div>
 
-            <div class="inventory-section-field inventory-section-name-field" id="add-inventory-field-name">
-                <label for="inventory-name" class="inventory-section-label">New Item</label>
-                <input type="text" id="inventory-name" name="inventory-name" placeholder="Enter item" class="inventory-section-input">
+            <div class="card-item-field card-item-quantity-field" id="add-inventory-field-quantity">
+                <label for="inventory-quantity" class="field-label card-item-label">Qty</label>
+                <input type="number" id="inventory-quantity" name="inventory-quantity" value="1" min="0" class="field-input card-item-input">
             </div>
 
-            <div class="inventory-section-field inventory-section-quantity-field" id="add-inventory-field-quantity">
-                <label for="inventory-quantity" class="inventory-section-label">Qty</label>
-                <input type="number" id="inventory-quantity" name="inventory-quantity" value="1" min="0" class="inventory-section-input">
-            </div>
+            {% set btn_wrapper_id = 'add-inventory-submit-btn-wrapper' %}
+            {% set btn_id = 'inventory-add' %}
+            {% set btn_hx_post = '/characters/' ~ character_id ~ '/inventory/add' %}
+            {% set btn_hx_target = '#inventory-list' %}
+            {% set btn_hx_swap = 'beforeend' %}
+            {% set btn_hx_include = '#inventory-name, #inventory-description, #inventory-quantity' %}
+            {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+            {% set btn_label = 'Add' %}
+            {% include 'base/field_button.html' %}
 
-            <div class="inventory-section-field inventory-section-action-field section-action-field" id="add-inventory-submit-btn-wrapper">
-                <button type="button" id="inventory-add" class="inventory-section-btn section-action-btn"
-                    name="inventory-action"
-                    value="add"
-                    hx-post="/characters/{{ character_id }}/inventory/fragment"
-                    hx-target="#inventory-section-container"
-                    hx-swap="innerHTML"
-                    hx-include="closest form"><i class="bi bi-check-lg"></i></button>
-                <label for="inventory-add" class="inventory-section-label section-action-label">Add</label>
-            </div>
-
-            <div class="inventory-section-field inventory-section-action-field section-action-field" id="close-inventory-btn-wrapper">
-                <button type="button" id="close-inventory-field-x-btn" class="inventory-section-btn section-action-btn">×</button>
-                <label for="close-inventory-field-x-btn" class="inventory-section-label section-action-label">Close</label>
-            </div>
+            {% set btn_hx_post = '' %}
+            {% set btn_hx_target = '' %}
+            {% set btn_hx_swap = '' %}
+            {% set btn_hx_include = '' %}
+            {% set btn_wrapper_id = 'close-inventory-btn-wrapper' %}
+            {% set btn_id = 'close-inventory-field-x-btn' %}
+            {% set btn_icon = '×' %}
+            {% set btn_label = 'Close' %}
+            {% include 'base/field_button.html' %}
         </div>
 
-        <div class="inventory-section-field inventory-section-description-field" id="add-inventory-field-description">
-            <label for="inventory-description" class="inventory-section-label">Description</label>
-            <textarea id="inventory-description" name="inventory-description" rows="2" placeholder="Enter description" class="inventory-section-input inventory-section-description-input"></textarea>
+        <div class="card-item-field card-item-description-field" id="add-inventory-field-description">
+            <label for="inventory-description" class="field-label card-item-label">Description</label>
+            <textarea id="inventory-description" name="inventory-description" rows="2" placeholder="Enter description" class="field-input card-item-input card-item-description-input"></textarea>
         </div>
     </div>
     {% endif %}

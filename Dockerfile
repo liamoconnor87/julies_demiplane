@@ -14,6 +14,9 @@ RUN apk add --no-cache sqlite
 # Copy application files
 COPY . .
 
+# Create session storage directory
+RUN mkdir -p /app/flask_session
+
 # Expose port 8888
 EXPOSE 8888
 

@@ -84,34 +84,6 @@
 	color: var(--secondary-color-dark);
 }
 
-.buffs-lock-toggle {
-	display: flex;
-	align-self: flex-end;
-	margin-right: 0.25rem;
-	margin-bottom: 0.25rem;
-	margin-left: 0;
-}
-
-.custom-buffs-remove-btn {
-	position: absolute;
-	top: 0.15rem;
-	right: 0.15rem;
-	width: 1.35rem;
-	min-width: 1.35rem;
-	height: 1.35rem;
-	border: none;
-	background: var(--primary-color-transparent);
-	color: var(--secondary-color);
-	cursor: pointer;
-	padding: 0;
-	line-height: 1;
-	font-size: 1rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 1;
-}
-
 .custom-buffs-section-row {
 	width: 100%;
 }
@@ -190,20 +162,9 @@
 }
 
 .custom-buffs-section-btn {
-	cursor: pointer;
-	text-align: center;
-	background: var(--primary-color-transparent);
-	color: var(--text-colour-three);
-	border: none;
-	font-size: 1.5rem;
-	box-sizing: border-box;
 	height: var(--custom-buffs-top-control-height);
 	width: 3rem;
 	line-height: 1;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0;
 }
 
 .custom-buffs-section-action-field .custom-buffs-section-label {
@@ -215,34 +176,21 @@
 }
 
 .custom-buffs-section-label {
-	background: var(--primary-color-transparent);
-	color: var(--secondary-color);
-	border: none;
-	border-radius: 0;
-	font-weight: bold;
-	margin-bottom: 0;
-	display: block;
-	font-size: 0.6rem;
-	width: 100%;
-	box-sizing: border-box;
 	line-height: 1;
 	text-align: left;
 	overflow-wrap: break-word;
 	padding-left: 0.5rem;
-	padding-top: 0.5rem;
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
+}
+
+.custom-buffs-basic-fields-row .custom-buffs-section-label {
+	font-size: 0.5rem;
+	padding: 0.25rem 0 0.25rem 0.5rem;
 }
 
 .custom-buffs-section-input {
-	width: 100%;
-	box-sizing: border-box;
-	background: var(--primary-color-transparent);
-	color: var(--text-colour-three);
-	padding: 0.5rem 0.75rem;
-	border: none;
-	border-radius: 0;
-	outline: none;
-	font-size: 0.8rem;
-	display: block;
+	/* inherits from .field-input */
 }
 
 .custom-buffs-basic-fields-row .custom-buffs-section-input {
@@ -325,34 +273,26 @@
 	display: none;
 }
 
-@media (max-width: 760px) {
-	.custom-buffs-name-field,
-	.custom-buffs-target-fields-column,
-	.custom-buffs-target-tables-field,
-	.custom-buffs-target-columns-field {
-		width: 100%;
-		min-width: 0;
-		max-width: 100%;
-	}
-
-	.custom-buffs-basic-fields-row {
-		flex-wrap: nowrap;
-	}
-
-	.custom-buffs-card {
-		width: 100%;
-		min-width: 0;
-	}
-}
-
 @media (max-width: 499px) {
 	.custom-buffs-section {
 		padding: 0 0.25rem;
 	}
-
-	.custom-buffs-value-field {
-		width: 4rem;
-		min-width: 4rem;
-		max-width: 4rem;
-	}
 }
+
+/* ── Card hover (editable) ─────────────────────────────────────────────────── */
+
+.custom-buffs-card[data-buff-edit="true"] {
+	cursor: pointer;
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.custom-buffs-card[data-buff-edit="true"]:hover {
+	transform: scale(1.04);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.custom-buffs-section[data-locked='true'] .custom-buffs-card[data-buff-edit="true"] {
+	cursor: default;
+	pointer-events: none;
+}
+

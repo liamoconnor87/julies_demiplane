@@ -1,0 +1,42 @@
+{# Character selection bar — thin strip below the main navbar. #}
+<nav id="character-bar" class="character-bar{% if not current_user.is_authenticated and not is_guest %} d-none{% endif %}">
+    <div class="page-container">
+        <ul class="character-bar-list">
+            {% if is_guest %}
+                {# Guest: show single character tab #}
+                <li>
+                    <span class="character-bar-tab">
+                        Sign up to save your character permanently!
+                    </span>
+                </li>
+            {% elif current_user.is_authenticated and characters %}
+                {% for char in characters %}
+                    <li>
+                        <a id="char-tab-{{ char.id }}"
+                           href="/?character_id={{ char.id }}"
+                           class="character-bar-tab{% if char.id == active_character_id %} active{% endif %}">
+                            {{ char.name or 'New Character' }}
+                        </a>
+                    </li>
+                {% endfor %}
+            {% endif %}
+            {% if is_unsaved is defined and is_unsaved %}
+                <li>
+                    <span class="character-bar-tab active">Untitled</span>
+                </li>
+            {% endif %}
+            {% if current_user.is_authenticated and not at_character_limit %}
+                {% if not (is_unsaved is defined and is_unsaved) %}
+                <li>
+                    <button class="character-bar-tab character-bar-add-btn"
+                            hx-post="/characters/new"
+                            hx-swap="none"
+                            title="Add Character">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </li>
+                {% endif %}
+            {% endif %}
+        </ul>
+    </div>
+</nav>

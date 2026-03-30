@@ -6,14 +6,10 @@ services:
       - "8888:8888"
     volumes:
       - ./misc/data:/app/misc/data
+      - flask_session_data:/app/flask_session
+    environment:
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY must be set}
+      - DEBUG=${DEBUG:-true}
 
-  # ngrok:
-  #   image: ngrok/ngrok:latest
-  #   restart: unless-stopped
-  #   command: http web:8888
-  #   environment:
-  #     - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
-  #   ports:
-  #     - "4040:4040"
-  #   depends_on:
-  #     - web
+volumes:
+  flask_session_data:

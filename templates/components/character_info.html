@@ -10,91 +10,116 @@
         {% set field_name = 'character-name' %}
         {% set field_label = 'Name' %}
         {% set field_value = character.name %}
-        {% include 'components/character_info_name_field.html' %}
+        {% set field_wrapper_class = 'character-info-main-field character-info-name-field' %}
+        {% set field_input_class = 'character-info-input' %}
+        {% set field_label_class = 'character-info-label' %}
+        {% include 'base/field_text.html' %}
 
-        {# Level (calculated, disabled) #}
+        {% if is_new_character %}
+        {# Inline save button shown only for new characters (name-only view) #}
+        {% set btn_wrapper_class = 'character-info-stat-field character-info-action-field character-info-new-save' %}
+        {% set btn_id = 'character-info-save-btn' %}
+        {% set btn_btn_class = 'character-info-save-btn' %}
+        {% set btn_hx_post = '/characters/first-save' if (is_unsaved is defined and is_unsaved) else '/characters/' ~ character_id ~ '/character-info/fragment' %}
+        {% set btn_hx_target = '#character-info-section-container' %}
+        {% set btn_hx_swap = 'none' if (is_unsaved is defined and is_unsaved) else 'innerHTML' %}
+        {% set btn_hx_include = 'closest form' %}
+        {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+        {% set btn_label = 'Save' %}
+        {% include 'base/field_button.html' %}
+        {% endif %}
+
+        {# Level (calculated, disabled) — hidden until a class is added #}
         {% set field_id = 'character-level' %}
         {% set field_name = 'character-level' %}
         {% set field_label = 'Level' %}
         {% set field_value = character.level %}
-        {% include 'components/character_info_level_field.html' %}
+        {% set field_wrapper_id = 'character-level-field-container' %}
+        {% set field_wrapper_class = 'character-info-main-field character-info-square-field character-info-level-field' ~ (' d-none' if (not character.level or is_new_character) else '') %}
+        {% set field_input_class = 'character-info-input' %}
+        {% set field_label_class = 'character-info-label' %}
+        {% set field_extra_attrs = 'disabled' %}
+        {% include 'base/field_number.html' %}
     </div>
 
-    <div class="character-info-secondary-row">
+    <div class="character-info-secondary-row{% if is_new_character %} new-char-hidden{% endif %}">
+        {# Shared classes for text fields #}
+        {% set field_wrapper_class = 'character-info-main-field character-info-main-text-field' %}
+        {% set field_input_class = 'character-info-input' %}
+        {% set field_label_class = 'character-info-label' %}
+        {% set field_extra_attrs = '' %}
 
         {# Race #}
         {% set field_id = 'character-race' %}
         {% set field_name = 'character-race' %}
         {% set field_label = 'Race' %}
         {% set field_value = character.race %}
-        {% include 'components/character_info_text_field.html' %}
+        {% include 'base/field_text.html' %}
 
         {# Background #}
         {% set field_id = 'character-background' %}
         {% set field_name = 'character-background' %}
         {% set field_label = 'Background' %}
         {% set field_value = character.background %}
-        {% include 'components/character_info_text_field.html' %}
+        {% include 'base/field_text.html' %}
 
         {# Alignment #}
         {% set field_id = 'character-alignment' %}
         {% set field_name = 'character-alignment' %}
         {% set field_label = 'Alignment' %}
         {% set field_value = character.alignment %}
-        {% include 'components/character_info_text_field.html' %}
+        {% include 'base/field_text.html' %}
     </div>
 
-    <div class="character-info-stats-row">
+    <div class="character-info-stats-row{% if is_new_character %} new-char-hidden{% endif %}">
+        {# Shared classes for stat fields — reset level-specific overrides #}
+        {% set field_wrapper_id = '' %}
+        {% set field_extra_attrs = '' %}
+        {% set field_wrapper_class = 'character-info-stat-field character-info-square-field' %}
+        {% set field_input_class = 'character-info-input' %}
+        {% set field_label_class = 'character-info-label' %}
+
         {# Armour Class #}
-        {% set stat_id = 'character-armour_class' %}
-        {% set stat_name = 'character-armour_class' %}
-        {% set stat_label = 'Armour Class' %}
-        {% set stat_value = character.armour_class %}
-        {% include 'components/character_info_square_stat_field.html' %}
+        {% set field_id = 'character-armour_class' %}
+        {% set field_name = 'character-armour_class' %}
+        {% set field_label = 'Armour Class' %}
+        {% set field_value = character.armour_class %}
+        {% include 'base/field_number.html' %}
 
         {# Initiative #}
-        {% set stat_id = 'character-initiative' %}
-        {% set stat_name = 'character-initiative' %}
-        {% set stat_label = 'Initiative' %}
-        {% set stat_value = character.initiative %}
-        {% include 'components/character_info_square_stat_field.html' %}
+        {% set field_id = 'character-initiative' %}
+        {% set field_name = 'character-initiative' %}
+        {% set field_label = 'Initiative' %}
+        {% set field_value = character.initiative %}
+        {% include 'base/field_number.html' %}
 
         {# Speed #}
-        {% set stat_id = 'character-speed' %}
-        {% set stat_name = 'character-speed' %}
-        {% set stat_label = 'Speed' %}
-        {% set stat_value = character.speed %}
-        {% include 'components/character_info_square_stat_field.html' %}
+        {% set field_id = 'character-speed' %}
+        {% set field_name = 'character-speed' %}
+        {% set field_label = 'Speed' %}
+        {% set field_value = character.speed %}
+        {% include 'base/field_number.html' %}
 
         {# Proficiency Bonus #}
-        {% set stat_id = 'character-proficiency' %}
-        {% set stat_name = 'character-proficiency' %}
-        {% set stat_label = 'Proficiency' %}
-        {% set stat_value = character.proficiency %}
-        {% include 'components/character_info_square_stat_field.html' %}
+        {% set field_id = 'character-proficiency' %}
+        {% set field_name = 'character-proficiency' %}
+        {% set field_label = 'Proficiency' %}
+        {% set field_value = character.proficiency %}
+        {% include 'base/field_number.html' %}
 
         {# Passive Wisdom #}
-        {% set stat_id = 'character-passive_wisdom' %}
-        {% set stat_name = 'character-passive_wisdom' %}
-        {% set stat_label = 'Passive Wisdom' %}
-        {% set stat_value = character.passive_wisdom %}
-        {% include 'components/character_info_square_stat_field.html' %}
+        {% set field_id = 'character-passive_wisdom' %}
+        {% set field_name = 'character-passive_wisdom' %}
+        {% set field_label = 'Passive Wisdom' %}
+        {% set field_value = character.passive_wisdom %}
+        {% include 'base/field_number.html' %}
 
         {# XP #}
-        {% set stat_id = 'character-xp' %}
-        {% set stat_name = 'character-xp' %}
-        {% set stat_label = 'XP' %}
-        {% set stat_value = character.xp %}
-        {% include 'components/character_info_xp_stat_field.html' %}
-
-        {# Save Button #}
-        <div class="character-info-stat-field character-info-action-field section-action-field">
-            <button type="button" id="character-info-save-btn" class="character-info-save-btn section-action-btn"
-                hx-post="/characters/{{ character_id }}/character-info/fragment"
-                hx-target="#character-info-section-container"
-                hx-swap="innerHTML"
-                hx-include="closest form"><i class="bi bi-check-lg"></i></button>
-            <label for="character-info-save-btn" class="character-info-label section-action-label">Save</label>
-        </div>
+        {% set field_wrapper_class = 'character-info-stat-field character-info-xp-field' %}
+        {% set field_id = 'character-xp' %}
+        {% set field_name = 'character-xp' %}
+        {% set field_label = 'XP' %}
+        {% set field_value = character.xp %}
+        {% include 'base/field_number.html' %}
     </div>
 </div>

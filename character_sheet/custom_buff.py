@@ -74,11 +74,16 @@ class BuffProcessor:
                     stat_name = stat['stat_name']
 
                     if table_name == 'custom_stat':
-                        for cs in custom_stats_by_name.get(stat_name, []):
-                            form_key = f"custom_stat-value-{cs['id']}"
+                        # stat_name is the custom_stat record ID
+                        cs = custom_stats_by_id.get(stat_name)
+                        if cs:
+                            form_key = f"custom_stat-value-{stat_name}"
                             if form_key not in buff_info:
-                                buff_info[form_key] = {'total_buff': 0, 'base': get_base('custom_stat', stat_name, cs['id'])}
+                                buff_info[form_key] = {'total_buff': 0, 'base': get_base('custom_stat', stat_name, stat_name)}
                             buff_info[form_key]['total_buff'] += buff_value
+                    elif table_name in ('feat_and_trait', 'inventory'):
+                        # stat_name is the record ID — no numeric transform needed
+                        pass
                     else:
                         form_key = f"{table_name}-{stat_name}"
                         if form_key not in buff_info:
@@ -118,11 +123,11 @@ class BuffProcessor:
         }
         ability_names = set(abilities_by_name.keys())
 
-        custom_stats_by_name: dict = {}
+        custom_stats_by_id: dict = {}
         for stat in data.get('custom_stats', []):
-            name = str(stat.get('name') or '').strip()
-            if name:
-                custom_stats_by_name.setdefault(name, []).append(stat)
+            cs_id = stat.get('id')
+            if cs_id:
+                custom_stats_by_id[cs_id] = stat
 
         character = data.get('character') or {}
 
@@ -141,6 +146,9 @@ class BuffProcessor:
             row[key] = int(row.get(key) or 0) + delta
 
         for (table_name, stat_name), delta in direct_deltas.items():
+            if table_name in ('feat_and_trait', 'inventory'):
+                continue
+
             if table_name == 'character':
                 add_delta(character, stat_name, delta)
                 continue
@@ -153,8 +161,10 @@ class BuffProcessor:
                 continue
 
             if table_name == 'custom_stat':
-                for stat in custom_stats_by_name.get(stat_name, []):
-                    add_delta(stat, 'value', delta)
+                # stat_name is the custom_stat record ID
+                cs = custom_stats_by_id.get(stat_name)
+                if cs:
+                    add_delta(cs, 'value', delta)
 
         character_proficiency = int(character.get('proficiency') or 0)
         for ability_name, entry in abilities_by_name.items():
