@@ -109,74 +109,47 @@ body {
 }
 
 .sheet-layout {
-    display: grid;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
     gap: 0.75rem;
+    width: 100%;
 }
 
-.sheet-column-one {
-    grid-column: 1;
+#char-group-container,
+#abilities-section-container {
+    flex: 0 1 auto;
+    min-width: 0;
 }
 
-.sheet-column-two {
-    grid-column: 2;
-}
-
-.sheet-column-three {
-    grid-column: 3;
+#feats-section-container {
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .sheet-column {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.sheet-section {
     min-width: 0;
 }
 
-.sheet-column-three {
-    min-width: 0;
-}
+/* ══════════════════════════════════════════════════════════════════════════════
+   Generic field primitives — shared across all sections
+   ══════════════════════════════════════════════════════════════════════════════ */
 
-#feats-section-container,
-#inventory-section-container {
-    width: 100%;
-    min-width: 0;
-}
-
-#character-custom-section-container {
-    width: 100%;
-    min-width: 0;
-}
-
-.sheet-column > div[id$="-section-container"] {
-    width: 100%;
-    padding: 0.5rem;
-    margin-bottom: 0.75rem;
-    box-sizing: border-box;
-}
-
-.sheet-column > div[id$="-section-container"]:last-child {
-    margin-bottom: 0;
-}
-
-/* Ensure form labels are always above fields */
-.form-field-vertical {
+.field {
     display: flex;
     flex-direction: column;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-}
-
-.form-field-vertical label {
+    align-items: stretch;
+    margin-right: 0.25rem;
     margin-bottom: 0.25rem;
-    font-weight: bold;
 }
 
-.fixed-input {
+.field-input {
     width: 100%;
     box-sizing: border-box;
     background: var(--primary-color-transparent);
@@ -185,24 +158,12 @@ body {
     border: none;
     border-radius: 0;
     outline: none;
-    font-size: 1.05rem;
+    font-size: 0.8rem;
     transition: background 0.2s;
     display: block;
-    max-width: 15.5rem;
 }
 
-.fixed-input[disabled] {
-   color: var(--text-colour-one);
-}
-
-.row {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 0 1rem;
-}
-
-.row label {
+.field-label {
     background: var(--primary-color-transparent);
     color: var(--secondary-color);
     padding: 0;
@@ -211,9 +172,8 @@ body {
     font-weight: bold;
     margin-bottom: 0;
     display: block;
-    font-size: 0.6rem;
+    font-size: 0.5rem;
     width: 100%;
-    max-width: 15.5rem;
     box-sizing: border-box;
     transition: background 0.2s;
     line-height: 1;
@@ -223,389 +183,68 @@ body {
     padding-top: 0.5rem;
 }
 
-/* Responsive flexbox for character info fields */
-.char-info-row {
-    display: flex;
-    flex-direction: column;
-}
-
-.char-info-field {
-    flex: 1 1 100%;
-    min-width: 120px;
-    max-width: 15.5rem;
-    margin-right: 0.25rem;
-    margin-bottom: 0.25rem;
-}
-
-.char-info-field.character-main-text-field {
-    max-width: 10.85rem;
-}
-
-/* Make the level field square: width = height (label + input) across all screen sizes */
-.level-square {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    max-width: 5rem;
-    flex: 0 0 auto;
-    margin: 0;
-    margin-right: 0.25rem;
-    margin-bottom: 0.25rem;
-}
-
-/* Stats row for level and combat stats */
-.stats-row {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-}
-
-/* Combat stats section */
-.combat-stats-row {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: flex-start;
-    margin-bottom: 0.25rem;
-}
-
-.combat-stat-field {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    flex: 0 0 auto;
-    max-width: none;
-    margin-right: 0.25rem;
-    margin-bottom: 0.25rem;
-}
-
-.combat-stat-field label,
-.combat-stat-field input {
-    min-width: 0;
-    width: 5rem;
-    text-align: center;
-    padding: 0.25rem 0;
-    justify-content: center;
-    align-items: center;
-}
-
-.combat-stat-field input {
-    font-size: 2.5rem;
-    box-sizing: border-box;
-    padding: 0.3rem;
-    -moz-appearance: textfield;
-}
-
-.combat-stat-field input::-webkit-outer-spin-button,
-.combat-stat-field input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.combat-stat-field label {
-    font-size: 0.6rem;
-    width: 5rem;
-    background: var(--primary-color-transparent);
-    color: var(--secondary-color-dark);
-    padding: 0.5rem 0;
-    font-weight: bold;
-    line-height: 1;
-}
-
-.combat-xp-field {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    flex: 0 0 auto;
-    max-width: 10.25rem;
-    margin-right: 0.25rem;
-    margin-bottom: 0.25rem;
-}
-
-.combat-xp-field input {
-    width: 10.25rem;
-    text-align: center;
-    font-size: 2.5rem;
-    box-sizing: border-box;
-    padding: 0.3rem;
-    -moz-appearance: textfield;
-}
-
-.combat-xp-field input::-webkit-outer-spin-button,
-.combat-xp-field input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.combat-xp-field label {
-    background: var(--primary-color-transparent);
-    font-weight: bold;
-    font-size: 0.6rem;
-    width: 10.25rem;
-    padding: 0.25rem 0;
-    text-align: right;
-    padding-right: 0.5rem;
-    line-height: 1;
-    box-sizing: border-box;
-}
-
-/* Combat form layout (two-column) */
-.combat-layout-row {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    --combat-col-field-width: 100px;
-    --combat-col-input-height: 2.58rem;
-    --combat-col-label-height: 1.1rem;
-    --combat-col-gap: 0.25rem;
-}
-
-.combat-col-one {
-    display: flex;
-    flex-direction: column;
-    margin-right: 0.3rem;
-}
-
-.combat-col-one-field {
-    display: flex;
-    flex-direction: column;
-    max-width: var(--combat-col-field-width);
-    min-width: var(--combat-col-field-width);
-    margin-bottom: var(--combat-col-gap);
-}
-
-.combat-col-one-field:last-child {
-    margin-bottom: 0;
-}
-
-.combat-col-one-field .fixed-input {
-    order: 1;
-    min-width: 0;
-    width: 100%;
-    max-width: var(--combat-col-field-width);
-    height: var(--combat-col-input-height);
-    font-size: 1.55rem;
-    box-sizing: border-box;
-    padding: 0.3rem;
-    text-align: center;
-}
-
-.combat-col-one-field input[type="number"] {
-    appearance: textfield;
-    -moz-appearance: textfield;
-}
-
-.combat-col-one-field input[type="number"]::-webkit-outer-spin-button,
-.combat-col-one-field input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.combat-col-one-field label {
-    order: 2;
-    min-width: 0;
-    width: 100%;
-    max-width: var(--combat-col-field-width);
-    min-height: var(--combat-col-label-height);
-    line-height: 1;
-    text-align: center;
-    padding: 0.25rem 0;
-}
-
-.combat-col-two-field {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    width: 10.4rem;
-    max-width: 10.4rem;
-    min-width: 10.4rem;
-}
-
-.combat-col-two-field input,
-.combat-col-two-field label {
-    width: 10.4rem;
-}
-
-.combat-col-two-field input {
-    height: 8.4rem;
-    font-size: 4rem;
-    text-align: center;
-    padding: 0;
-    appearance: textfield;
-    -moz-appearance: textfield;
-}
-
-.combat-col-two-field input::-webkit-outer-spin-button,
-.combat-col-two-field input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.combat-col-two-field label {
-    text-align: center;
-    padding: 0.25rem 0;
-}
-
-.current-hp-controls {
-    display: flex;
-    width: 10.4rem;
-}
-
-.current-hp-btn {
-    flex: 1 1 50%;
-    height: 2rem;
-    font-size: 1.35rem;
-}
-
-.class-btn {
+.field-btn {
     cursor: pointer;
     text-align: center;
     background: var(--primary-color-transparent);
     color: var(--text-colour-three);
     border: none;
-}
-
-@media (max-width: 499px) {
-    .combat-layout-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .combat-col-one {
-        margin-right: 0;
-        margin-bottom: 0.3rem;
-    }
-}
-
-.level-square label,
-.level-square input {
-    min-width: 0;
-    width: 5rem;
-    text-align: center;
-    padding: 0.25rem 0;
-    justify-content: center;
-    align-items: center;
-}
-
-.level-square input {
-    font-size: 2.5rem;
+    font-size: 1.5rem;
     box-sizing: border-box;
-    padding: 0.3rem;
+    height: 2.65rem;
+    width: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.field-input--no-spinner {
+    appearance: textfield;
     -moz-appearance: textfield;
 }
 
-.level-square input::-webkit-outer-spin-button,
-.level-square input::-webkit-inner-spin-button {
+.field-input--no-spinner::-webkit-outer-spin-button,
+.field-input--no-spinner::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-.character-level-field {
-    margin-top: 0;
-    max-width: 2.58rem;
-    min-width: 2.58rem;
-}
-
-.character-level-field input,
-.character-level-field label {
-    width: 2.58rem;
-}
-
-.character-level-field input {
-    height: 2.58rem;
-    padding: 0;
-    font-size: 2rem;
+.field-input--center {
     text-align: center;
+    padding-left: 0;
+    padding-right: 0;
 }
 
-.character-level-field label {
-    font-size: 0.5rem;
-    padding: 0.25rem 0;
-    text-align: center;
-}
-
-@media (min-width: 500px) {
-    .char-info-row {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-    }
-    .char-info-field {
-        flex: 1 1 45%;
-    }
-    .char-info-field.level-square {
-        flex: 0 0 auto;
-    }
-}
-
-@media (min-width: 900px) {
-    .char-info-row {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-    }
-    .char-info-field {
-        flex: 1 1 0;
-    }
-    .char-info-field.level-square {
-        flex: 0 0 auto;
-    }
-}
-
-@media (max-width: 1900px) {
-    .sheet-layout {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .sheet-column-one {
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-    .sheet-column-two {
-        grid-column: 2;
-        grid-row: 1;
-    }
-
-    .sheet-column-three {
-        grid-column: 3;
-        grid-row: 1;
-    }
-}
+/* ══════════════════════════════════════════════════════════════════════════════
+   Responsive breakpoints
+   ══════════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 1500px) {
     .sheet-layout {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        flex-wrap: wrap;
     }
 
-    .sheet-column-one {
-        grid-column: 1;
-        grid-row: 1;
+    #char-group-container,
+    #abilities-section-container {
+        flex: 1 1 0;
     }
 
-    .sheet-column-two {
-        grid-column: 2;
-        grid-row: 1;
-    }
-
-    .sheet-column-three {
-        grid-column: 1;
-        grid-row: 2;
+    #feats-section-container {
+        flex: 0 0 100%;
     }
 }
 
 @media (max-width: 1000px) {
-    .sheet-layout {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0;
+    #char-group-container,
+    #abilities-section-container,
+    #feats-section-container {
+        flex: 0 0 100%;
     }
+}
 
-    .sheet-column-one,
-    .sheet-column-two,
-    .sheet-column-three {
-        grid-column: 1;
-        grid-row: auto;
+@media (max-width: 768px) {
+    .sheet-layout {
+        gap: 0;
     }
 }

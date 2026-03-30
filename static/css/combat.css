@@ -35,37 +35,11 @@
 }
 
 .combat-section-input {
-    width: 100%;
-    box-sizing: border-box;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0;
-    outline: none;
     font-size: 1.05rem;
-    transition: background 0.2s;
-    display: block;
 }
 
 .combat-section-label {
-    background: var(--primary-color-transparent);
-    color: var(--secondary-color);
-    padding: 0;
-    border: none;
-    border-radius: 0;
-    font-weight: bold;
-    margin-bottom: 0;
-    display: block;
-    font-size: 0.6rem;
-    width: 100%;
-    box-sizing: border-box;
-    transition: background 0.2s;
-    line-height: 1;
-    text-align: left;
-    overflow-wrap: break-word;
-    padding-left: 0.5rem;
-    padding-top: 0.5rem;
+    /* inherits from .field-label */
 }
 
 .combat-section-col-one-field .combat-section-input {

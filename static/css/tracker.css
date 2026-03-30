@@ -157,40 +157,16 @@
     flex-basis: 100%;
 }
 
-/* ── Shared label — matches custom-stats-section-label ─────────────────────── */
+/* ── Shared label — overrides from .field-label ───────────────────────────── */
 
 .tracker-label {
-    background: var(--primary-color-transparent);
-    color: var(--secondary-color);
-    font-weight: bold;
-    display: block;
-    font-size: 0.6rem;
-    width: 100%;
-    box-sizing: border-box;
-    line-height: 1;
-    text-align: left;
-    overflow-wrap: break-word;
-    padding-left: 0.5rem;
-    padding-top: 0.5rem;
+    /* inherits from .field-label */
 }
 
-/* ── Shared input — matches custom-stats-section-input ─────────────────────── */
+/* ── Shared input — overrides from .field-input ───────────────────────────── */
 
 .tracker-input {
-    width: 100%;
-    box-sizing: border-box;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0;
-    outline: none;
-    font-size: 0.8rem;
-    transition: background 0.2s;
-    display: block;
     height: var(--tracker-input-height);
-    appearance: textfield;
-    -moz-appearance: textfield;
 }
 
 /* No-label variant — taller entry fields */

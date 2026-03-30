@@ -3,9 +3,9 @@
         {% for char_class in classes %}
         <div class="classes-section-row">
             <div class="classes-section-field classes-section-name-field">
-                <label for="classes-class_name-{{ char_class.id }}" class="classes-section-label">Class</label>
+                <label for="classes-class_name-{{ char_class.id }}" class="field-label classes-section-label">Class</label>
                 <input type="text" id="classes-class_name-{{ char_class.id }}"
-                       name="classes-class_name-{{ char_class.id }}" value="{{ char_class.class_name | title() }}" readonly class="classes-section-input">
+                       name="classes-class_name-{{ char_class.id }}" value="{{ char_class.class_name | title() }}" readonly class="field-input classes-section-input">
             </div>
             <div class="classes-section-field classes-section-level-field">
                 <button type="button" id="classes-action-{{ char_class.id }}"
@@ -17,9 +17,9 @@
                         class="section-remove-x" aria-label="Remove class">&times;</button>
                 <div class="classes-section-level-wrapper">
                     <input type="number" id="classes-level-{{ char_class.id }}"
-                           name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="classes-section-input class-level-input">
+                           name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="field-input classes-section-input class-level-input">
                 </div>
-                <label for="classes-level-{{ char_class.id }}" class="classes-section-label">Level</label>
+                <label for="classes-level-{{ char_class.id }}" class="field-label classes-section-label">Level</label>
             </div>
         </div>
         {% endfor %}

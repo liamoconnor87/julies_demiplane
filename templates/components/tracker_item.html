@@ -4,8 +4,8 @@
     {# ── Tracker name row ── #}
     <div class="tracker-row">
         <div class="tracker-field tracker-name-field">
-            <label class="tracker-label">Tracker</label>
-            <input type="text" class="tracker-input tracker-name-input"
+            <label class="field-label tracker-label">Tracker</label>
+            <input type="text" class="field-input tracker-input tracker-name-input"
                    data-tracker-id="{{ tracker.id }}"
                    value="{{ tracker.name }}"
                    {% if tracker.fixed %}readonly{% endif %}>
@@ -25,14 +25,14 @@
     {% for entry in tracker.entries %}
     <div class="tracker-row tracker-entry-row" data-entry-id="{{ entry.id }}">
         <div class="tracker-field tracker-entry-name-field tracker-entry-name-no-gap">
-            <input type="text" class="tracker-input tracker-input-no-label tracker-entry-name-input"
+            <input type="text" class="field-input tracker-input tracker-input-no-label tracker-entry-name-input"
                    data-tracker-id="{{ tracker.id }}"
                    data-entry-id="{{ entry.id }}"
                    value="{{ entry.name }}"
                    {% if tracker.fixed %}readonly{% endif %}>
         </div>
         <div class="tracker-field tracker-entry-value-field">
-            <input type="number" class="tracker-input tracker-input-no-label tracker-entry-value-input"
+            <input type="number" class="field-input tracker-input tracker-input-no-label tracker-entry-value-input"
                    data-tracker-id="{{ tracker.id }}"
                    data-entry-id="{{ entry.id }}"
                    value="{{ entry.value }}"
@@ -63,32 +63,46 @@
             </div>
         </div>
         {% if loop.last and not tracker.fixed %}
-        <div class="add-actions-field section-action-field tracker-add-entry-inline-btn" id="add-entry-btn-wrapper-{{ tracker.id }}">
-            <button type="button" class="add-actions-btn section-action-btn tracker-add-entry-btn" data-tracker-id="{{ tracker.id }}">+</button>
-            <label class="add-actions-label section-action-label">Add Entry</label>
-        </div>
+        {% set btn_wrapper_class = 'add-actions-field tracker-add-entry-inline-btn' %}
+        {% set btn_btn_class = 'add-actions-btn tracker-add-entry-btn' %}
+        {% set btn_wrapper_id = 'add-entry-btn-wrapper-' ~ tracker.id %}
+        {% set btn_id = '' %}
+        {% set btn_extra_attrs = 'data-tracker-id="' ~ tracker.id ~ '"' %}
+        {% set btn_icon = '+' %}
+        {% set btn_label = 'Add Entry' %}
+        {% include 'base/field_button.html' %}
         <div class="add-actions-field tracker-add-entry-name-field" id="add-entry-field-name-{{ tracker.id }}" style="display:none;">
-            <label for="entry-name-{{ tracker.id }}" class="add-actions-label">Name</label>
-            <input type="text" class="add-actions-input" id="entry-name-{{ tracker.id }}" name="entry-name-{{ tracker.id }}" placeholder="e.g. Pass" maxlength="40">
+            <label for="entry-name-{{ tracker.id }}" class="field-label add-actions-label">Name</label>
+            <input type="text" class="field-input add-actions-input" id="entry-name-{{ tracker.id }}" name="entry-name-{{ tracker.id }}" placeholder="e.g. Pass" maxlength="40">
         </div>
         <div class="add-actions-field add-actions-level-field" id="add-entry-field-value-{{ tracker.id }}" style="display:none;">
-            <label for="entry-value-{{ tracker.id }}" class="add-actions-label">Count</label>
-            <input type="number" class="add-actions-input" id="entry-value-{{ tracker.id }}" name="entry-value-{{ tracker.id }}" value="3" min="1" max="20">
+            <label for="entry-value-{{ tracker.id }}" class="field-label add-actions-label">Count</label>
+            <input type="number" class="field-input add-actions-input" id="entry-value-{{ tracker.id }}" name="entry-value-{{ tracker.id }}" value="3" min="1" max="20">
         </div>
-        <div class="add-actions-field section-action-field" id="add-entry-submit-wrapper-{{ tracker.id }}" style="display:none;">
-            <button type="button" class="add-actions-btn section-action-btn"
-                    data-tracker-id="{{ tracker.id }}"
-                    hx-post="/characters/{{ character_id }}/tracker/{{ tracker.id }}/entry/add"
-                    hx-target="#tracker-page-container"
-                    hx-swap="innerHTML"
-                    hx-include="closest form"
-                    aria-label="Add entry"><i class="bi bi-check-lg"></i></button>
-            <label class="add-actions-label section-action-label">Add</label>
-        </div>
-        <div class="add-actions-field section-action-field" id="add-entry-close-wrapper-{{ tracker.id }}" style="display:none;">
-            <button type="button" class="add-actions-btn section-action-btn tracker-add-entry-close-btn" data-tracker-id="{{ tracker.id }}">&times;</button>
-            <label class="add-actions-label section-action-label">Close</label>
-        </div>
+        {% set btn_wrapper_class = 'add-actions-field' %}
+        {% set btn_btn_class = 'add-actions-btn' %}
+        {% set btn_wrapper_id = 'add-entry-submit-wrapper-' ~ tracker.id %}
+        {% set btn_wrapper_style = 'display:none;' %}
+        {% set btn_extra_attrs = 'data-tracker-id="' ~ tracker.id ~ '"' %}
+        {% set btn_hx_post = '/characters/' ~ character_id ~ '/tracker/' ~ tracker.id ~ '/entry/add' %}
+        {% set btn_hx_target = '#tracker-page-container' %}
+        {% set btn_hx_swap = 'innerHTML' %}
+        {% set btn_hx_include = 'closest form' %}
+        {% set btn_aria_label = 'Add entry' %}
+        {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+        {% set btn_label = 'Add' %}
+        {% include 'base/field_button.html' %}
+        {% set btn_hx_post = '' %}
+        {% set btn_hx_target = '' %}
+        {% set btn_hx_swap = '' %}
+        {% set btn_hx_include = '' %}
+        {% set btn_aria_label = '' %}
+        {% set btn_wrapper_id = 'add-entry-close-wrapper-' ~ tracker.id %}
+        {% set btn_btn_class = 'add-actions-btn tracker-add-entry-close-btn' %}
+        {% set btn_extra_attrs = 'data-tracker-id="' ~ tracker.id ~ '"' %}
+        {% set btn_icon = '&times;' %}
+        {% set btn_label = 'Close' %}
+        {% include 'base/field_button.html' %}
         {% endif %}
     </div>
     {% endfor %}
@@ -96,32 +110,46 @@
     {# ── Add entry — standalone when no entries exist ── #}
     {% if not tracker.entries and not tracker.fixed %}
     <div class="tracker-add-actions-row" id="tracker-add-entry-row-{{ tracker.id }}">
-        <div class="add-actions-field section-action-field" id="add-entry-btn-wrapper-{{ tracker.id }}">
-            <button type="button" class="add-actions-btn section-action-btn tracker-add-entry-btn" data-tracker-id="{{ tracker.id }}">+</button>
-            <label class="add-actions-label section-action-label">Add Entry</label>
-        </div>
+        {% set btn_wrapper_class = 'add-actions-field' %}
+        {% set btn_btn_class = 'add-actions-btn tracker-add-entry-btn' %}
+        {% set btn_wrapper_id = 'add-entry-btn-wrapper-' ~ tracker.id %}
+        {% set btn_wrapper_style = '' %}
+        {% set btn_id = '' %}
+        {% set btn_extra_attrs = 'data-tracker-id="' ~ tracker.id ~ '"' %}
+        {% set btn_icon = '+' %}
+        {% set btn_label = 'Add Entry' %}
+        {% include 'base/field_button.html' %}
         <div class="add-actions-field tracker-add-entry-name-field" id="add-entry-field-name-{{ tracker.id }}" style="display:none;">
-            <label for="entry-name-{{ tracker.id }}" class="add-actions-label">Name</label>
-            <input type="text" class="add-actions-input" id="entry-name-{{ tracker.id }}" name="entry-name-{{ tracker.id }}" placeholder="e.g. Pass" maxlength="40">
+            <label for="entry-name-{{ tracker.id }}" class="field-label add-actions-label">Name</label>
+            <input type="text" class="field-input add-actions-input" id="entry-name-{{ tracker.id }}" name="entry-name-{{ tracker.id }}" placeholder="e.g. Pass" maxlength="40">
         </div>
         <div class="add-actions-field add-actions-level-field" id="add-entry-field-value-{{ tracker.id }}" style="display:none;">
-            <label for="entry-value-{{ tracker.id }}" class="add-actions-label">Count</label>
-            <input type="number" class="add-actions-input" id="entry-value-{{ tracker.id }}" name="entry-value-{{ tracker.id }}" value="3" min="1" max="20">
+            <label for="entry-value-{{ tracker.id }}" class="field-label add-actions-label">Count</label>
+            <input type="number" class="field-input add-actions-input" id="entry-value-{{ tracker.id }}" name="entry-value-{{ tracker.id }}" value="3" min="1" max="20">
         </div>
-        <div class="add-actions-field section-action-field" id="add-entry-submit-wrapper-{{ tracker.id }}" style="display:none;">
-            <button type="button" class="add-actions-btn section-action-btn"
-                    data-tracker-id="{{ tracker.id }}"
-                    hx-post="/characters/{{ character_id }}/tracker/{{ tracker.id }}/entry/add"
-                    hx-target="#tracker-page-container"
-                    hx-swap="innerHTML"
-                    hx-include="closest form"
-                    aria-label="Add entry"><i class="bi bi-check-lg"></i></button>
-            <label class="add-actions-label section-action-label">Add</label>
-        </div>
-        <div class="add-actions-field section-action-field" id="add-entry-close-wrapper-{{ tracker.id }}" style="display:none;">
-            <button type="button" class="add-actions-btn section-action-btn tracker-add-entry-close-btn" data-tracker-id="{{ tracker.id }}">&times;</button>
-            <label class="add-actions-label section-action-label">Close</label>
-        </div>
+        {% set btn_wrapper_id = 'add-entry-submit-wrapper-' ~ tracker.id %}
+        {% set btn_wrapper_style = 'display:none;' %}
+        {% set btn_btn_class = 'add-actions-btn' %}
+        {% set btn_extra_attrs = 'data-tracker-id="' ~ tracker.id ~ '"' %}
+        {% set btn_hx_post = '/characters/' ~ character_id ~ '/tracker/' ~ tracker.id ~ '/entry/add' %}
+        {% set btn_hx_target = '#tracker-page-container' %}
+        {% set btn_hx_swap = 'innerHTML' %}
+        {% set btn_hx_include = 'closest form' %}
+        {% set btn_aria_label = 'Add entry' %}
+        {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+        {% set btn_label = 'Add' %}
+        {% include 'base/field_button.html' %}
+        {% set btn_hx_post = '' %}
+        {% set btn_hx_target = '' %}
+        {% set btn_hx_swap = '' %}
+        {% set btn_hx_include = '' %}
+        {% set btn_aria_label = '' %}
+        {% set btn_wrapper_id = 'add-entry-close-wrapper-' ~ tracker.id %}
+        {% set btn_btn_class = 'add-actions-btn tracker-add-entry-close-btn' %}
+        {% set btn_extra_attrs = 'data-tracker-id="' ~ tracker.id ~ '"' %}
+        {% set btn_icon = '&times;' %}
+        {% set btn_label = 'Close' %}
+        {% include 'base/field_button.html' %}
     </div>
     {% endif %}
 

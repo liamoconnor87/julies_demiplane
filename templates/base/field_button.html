@@ -1,0 +1,13 @@
+{# Generic action button — set btn_icon, btn_label, btn_wrapper_class before including.
+   Optional: btn_id, btn_wrapper_id, btn_btn_class, btn_aria_label, btn_extra_attrs,
+   btn_wrapper_style.  HTMX: btn_hx_post, btn_hx_target, btn_hx_swap, btn_hx_include. #}
+<div class="field section-action-field {{ btn_wrapper_class|default('') }}"{% if btn_wrapper_id is defined and btn_wrapper_id %} id="{{ btn_wrapper_id }}"{% endif %}{% if btn_wrapper_style is defined and btn_wrapper_style %} style="{{ btn_wrapper_style }}"{% endif %}>
+    <button type="button" {% if btn_id is defined and btn_id %}id="{{ btn_id }}"{% endif %} class="field-btn section-action-btn {{ btn_btn_class|default('') }}"
+        {% if btn_hx_post is defined and btn_hx_post %}hx-post="{{ btn_hx_post }}"{% endif %}
+        {% if btn_hx_target is defined and btn_hx_target %}hx-target="{{ btn_hx_target }}"{% endif %}
+        {% if btn_hx_swap is defined and btn_hx_swap %}hx-swap="{{ btn_hx_swap }}"{% endif %}
+        {% if btn_hx_include is defined and btn_hx_include %}hx-include="{{ btn_hx_include }}"{% endif %}
+        {% if btn_aria_label is defined and btn_aria_label %}aria-label="{{ btn_aria_label }}"{% endif %}
+        {{ btn_extra_attrs|default('')|safe }}>{{ btn_icon|safe }}</button>
+    <label {% if btn_id is defined and btn_id %}for="{{ btn_id }}"{% endif %} class="field-label section-action-label">{{ btn_label }}</label>
+</div>

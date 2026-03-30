@@ -13,36 +13,45 @@
     {% if not feats_and_traits_at_capacity %}
     <div class="card-item-row card-item-add-row">
         <div class="card-item-top-row">
-            <div class="card-item-field card-item-action-field section-action-field" id="add-feat-btn-wrapper">
-                <button type="button" id="add-feat-btn" class="card-item-btn section-action-btn">+</button>
-                <label for="add-feat-btn" class="card-item-label section-action-label">Add Feat</label>
-            </div>
+            {% set btn_wrapper_class = 'card-item-field card-item-action-field' %}
+            {% set btn_btn_class = 'card-item-btn' %}
+            {% set btn_wrapper_id = 'add-feat-btn-wrapper' %}
+            {% set btn_id = 'add-feat-btn' %}
+            {% set btn_icon = '+' %}
+            {% set btn_label = 'Add Feat' %}
+            {% include 'base/field_button.html' %}
 
             <div class="card-item-field card-item-name-field" id="add-feat-field-name">
-                <label for="feat_and_trait-name" class="card-item-label">New Feat/Trait</label>
+                <label for="feat_and_trait-name" class="field-label card-item-label">New Feat/Trait</label>
                 <input type="text" id="feat_and_trait-name"
-                       name="feat_and_trait-name" placeholder="Enter name" class="card-item-input">
+                       name="feat_and_trait-name" placeholder="Enter name" class="field-input card-item-input">
             </div>
 
-            <div class="card-item-field card-item-action-field section-action-field" id="add-feat-submit-btn-wrapper">
-                <button type="button" id="feat-and-trait-add" class="card-item-btn section-action-btn"
-                        hx-post="/characters/{{ character_id }}/feat-and-trait/add"
-                        hx-target="#feats-list"
-                        hx-swap="beforeend"
-                        hx-include="#feat_and_trait-name, #feat_and_trait-description"><i class="bi bi-check-lg"></i></button>
-                <label for="feat-and-trait-add" class="card-item-label section-action-label">Add</label>
-            </div>
+            {% set btn_wrapper_id = 'add-feat-submit-btn-wrapper' %}
+            {% set btn_id = 'feat-and-trait-add' %}
+            {% set btn_hx_post = '/characters/' ~ character_id ~ '/feat-and-trait/add' %}
+            {% set btn_hx_target = '#feats-list' %}
+            {% set btn_hx_swap = 'beforeend' %}
+            {% set btn_hx_include = '#feat_and_trait-name, #feat_and_trait-description' %}
+            {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+            {% set btn_label = 'Add' %}
+            {% include 'base/field_button.html' %}
 
-            <div class="card-item-field card-item-action-field section-action-field" id="close-feat-btn-wrapper">
-                <button type="button" id="close-feat-field-x-btn" class="card-item-btn section-action-btn">×</button>
-                <label for="close-feat-field-x-btn" class="card-item-label section-action-label">Close</label>
-            </div>
+            {% set btn_hx_post = '' %}
+            {% set btn_hx_target = '' %}
+            {% set btn_hx_swap = '' %}
+            {% set btn_hx_include = '' %}
+            {% set btn_wrapper_id = 'close-feat-btn-wrapper' %}
+            {% set btn_id = 'close-feat-field-x-btn' %}
+            {% set btn_icon = '×' %}
+            {% set btn_label = 'Close' %}
+            {% include 'base/field_button.html' %}
         </div>
 
         <div class="card-item-field card-item-description-field" id="add-feat-field-description">
-            <label for="feat_and_trait-description" class="card-item-label">Description</label>
+            <label for="feat_and_trait-description" class="field-label card-item-label">Description</label>
             <textarea id="feat_and_trait-description"
-                      name="feat_and_trait-description" rows="3" placeholder="Enter description" class="card-item-input card-item-description-input"></textarea>
+                      name="feat_and_trait-description" rows="3" placeholder="Enter description" class="field-input card-item-input card-item-description-input"></textarea>
         </div>
     </div>
     {% endif %}

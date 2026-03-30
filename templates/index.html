@@ -59,36 +59,30 @@
             <form action="/" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div id="sheet-content" class="sheet-layout" data-is-new="{{ 'true' if is_new_character else 'false' }}">
-                    <div class="sheet-column sheet-column-one">
-                        <div id="character-custom-section-container">
-                            <div id="character-info-section-container">
-                                {% include 'components/character_info.html' %}
-                            </div>
+                    <div id="char-group-container" class="sheet-column">
+                        <div id="character-info-section-container">
+                            {% include 'components/character_info.html' %}
+                        </div>
 
-                            <div id="classes-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                                {% include 'components/classes_section.html' %}
-                            </div>
+                        <div id="classes-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                            {% include 'components/classes_section.html' %}
+                        </div>
 
-                            <div id="custom-stats-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                                {% include 'components/custom_stats_section.html' %}
-                            </div>
+                        <div id="custom-stats-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                            {% include 'components/custom_stats_section.html' %}
+                        </div>
 
-                            <div id="add-actions-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                                {% include 'components/add_actions.html' %}
-                            </div>
+                        <div id="add-actions-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                            {% include 'components/add_actions.html' %}
                         </div>
                     </div>
 
-                    <div class="sheet-column sheet-column-two{% if is_new_character %} new-char-hidden{% endif %}">
-                        <div id="abilities-section-container">
-                            {% include 'components/abilities_section.html' %}
-                        </div>
+                    <div id="abilities-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
+                        {% include 'components/abilities_section.html' %}
                     </div>
 
-                    <div class="sheet-column sheet-column-three{% if is_new_character %} new-char-hidden{% endif %}">
-                        <div id="feats-section-container">
-                            {% include 'components/feats_traits_section.html' %}
-                        </div>
+                    <div id="feats-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
+                        {% include 'components/feats_traits_section.html' %}
                     </div>
                 </div>
             </form>

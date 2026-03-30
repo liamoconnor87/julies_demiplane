@@ -54,17 +54,7 @@
 }
 
 .add-actions-input {
-    width: 100%;
-    box-sizing: border-box;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0;
-    outline: none;
     font-size: 1.05rem;
-    transition: background 0.2s;
-    display: block;
     height: 2.58rem;
 }
 
@@ -92,23 +82,7 @@
 }
 
 .add-actions-label {
-    background: var(--primary-color-transparent);
-    color: var(--secondary-color);
-    padding: 0;
-    border: none;
-    border-radius: 0;
-    font-weight: bold;
-    margin-bottom: 0;
-    display: block;
-    font-size: 0.6rem;
-    width: 100%;
-    box-sizing: border-box;
-    transition: background 0.2s;
-    line-height: 1;
-    text-align: left;
-    overflow-wrap: break-word;
-    padding-left: 0.5rem;
-    padding-top: 0.5rem;
+    /* inherits from .field-label */
 }
 
 .add-actions-level-field .add-actions-label {
@@ -118,19 +92,7 @@
 }
 
 .add-actions-btn {
-    cursor: pointer;
-    text-align: center;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
-    border: none;
-    font-size: 1.5rem;
-    box-sizing: border-box;
-    height: 2.65rem;
-    width: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
+    /* inherits from .field-btn */
 }
 
 .add-actions-field.section-action-field .add-actions-label {

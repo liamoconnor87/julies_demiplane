@@ -1,3 +1,8 @@
+{# Generic display field — value + label + optional proficiency toggle.
+   Set display_wrapper_classes, display_value_id, display_value_classes,
+   display_value, display_label_classes, display_label_text,
+   display_toggle, display_checkbox_id, display_checkbox_name,
+   display_checkbox_checked before including. #}
 <div class="{{ display_wrapper_classes }}{% if display_toggle %} proficiency-toggle-item{% endif %}"
     {% if display_toggle %}
     data-checkbox-id="{{ display_checkbox_id }}"

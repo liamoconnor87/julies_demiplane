@@ -12,29 +12,39 @@
 
     {# ── Add tracker — + button reveals inline form ── #}
     <div class="tracker-add-actions-row" id="tracker-add-tracker-row">
-        <div class="add-actions-field section-action-field" id="add-tracker-btn-wrapper">
-            <button type="button" id="add-tracker-btn" class="add-actions-btn section-action-btn">+</button>
-            <label class="add-actions-label section-action-label">Add Tracker</label>
-        </div>
+        {% set btn_wrapper_class = 'add-actions-field' %}
+        {% set btn_btn_class = 'add-actions-btn' %}
+        {% set btn_wrapper_id = 'add-tracker-btn-wrapper' %}
+        {% set btn_id = 'add-tracker-btn' %}
+        {% set btn_icon = '+' %}
+        {% set btn_label = 'Add Tracker' %}
+        {% include 'base/field_button.html' %}
 
         <div class="add-actions-field tracker-add-tracker-name-field" id="add-tracker-field-name" style="display:none;">
-            <label for="add-tracker-name-input" class="add-actions-label">Tracker Name</label>
-            <input type="text" class="add-actions-input" id="add-tracker-name-input" name="add-tracker-name-input" placeholder="Tracker name…" maxlength="60">
+            <label for="add-tracker-name-input" class="field-label add-actions-label">Tracker Name</label>
+            <input type="text" class="field-input add-actions-input" id="add-tracker-name-input" name="add-tracker-name-input" placeholder="Tracker name…" maxlength="60">
         </div>
-        <div class="add-actions-field section-action-field" id="add-tracker-submit-wrapper" style="display:none;">
-            <button type="button" class="add-actions-btn section-action-btn"
-                    id="add-tracker-submit-btn"
-                    hx-post="/characters/{{ character_id }}/tracker/add"
-                    hx-target="#tracker-page-container"
-                    hx-swap="innerHTML"
-                    hx-include="closest form"
-                    aria-label="Add tracker"><i class="bi bi-check-lg"></i></button>
-            <label class="add-actions-label section-action-label">Add</label>
-        </div>
-        <div class="add-actions-field section-action-field" id="add-tracker-close-wrapper" style="display:none;">
-            <button type="button" id="add-tracker-close-btn" class="add-actions-btn section-action-btn">&times;</button>
-            <label class="add-actions-label section-action-label">Close</label>
-        </div>
+        {% set btn_wrapper_id = 'add-tracker-submit-wrapper' %}
+        {% set btn_wrapper_style = 'display:none;' %}
+        {% set btn_id = 'add-tracker-submit-btn' %}
+        {% set btn_hx_post = '/characters/' ~ character_id ~ '/tracker/add' %}
+        {% set btn_hx_target = '#tracker-page-container' %}
+        {% set btn_hx_swap = 'innerHTML' %}
+        {% set btn_hx_include = 'closest form' %}
+        {% set btn_aria_label = 'Add tracker' %}
+        {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+        {% set btn_label = 'Add' %}
+        {% include 'base/field_button.html' %}
+        {% set btn_hx_post = '' %}
+        {% set btn_hx_target = '' %}
+        {% set btn_hx_swap = '' %}
+        {% set btn_hx_include = '' %}
+        {% set btn_aria_label = '' %}
+        {% set btn_wrapper_id = 'add-tracker-close-wrapper' %}
+        {% set btn_id = 'add-tracker-close-btn' %}
+        {% set btn_icon = '&times;' %}
+        {% set btn_label = 'Close' %}
+        {% include 'base/field_button.html' %}
     </div>
 
 </div>

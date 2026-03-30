@@ -52,16 +52,25 @@
     flex-basis: 100%;
 }
 
-#inventory-list {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0 0.75rem;
+.feats-section {
+    width: 100%;
+    --card-item-total-width: 16rem;
+}
+
+#inventory-list,
+#feats-list {
+    columns: var(--card-item-total-width);
+    column-gap: 0.75rem;
     width: 100%;
 }
 
+#inventory-list > .card-item-row,
+#feats-list > .card-item-row {
+    break-inside: avoid;
+}
+
 .card-item-saved-row {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .card-item-top-row {
@@ -141,17 +150,7 @@
 /* ── Input ─────────────────────────────────────────────────────────────────── */
 
 .card-item-input {
-    width: 100%;
-    box-sizing: border-box;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0;
-    outline: none;
-    font-size: 0.8rem;
-    transition: background 0.2s;
-    display: block;
+    /* inherits from .field-input */
 }
 
 .card-item-field .card-item-input {
@@ -199,23 +198,7 @@
 /* ── Label ─────────────────────────────────────────────────────────────────── */
 
 .card-item-label {
-    background: var(--primary-color-transparent);
-    color: var(--secondary-color);
-    padding: 0;
-    border: none;
-    border-radius: 0;
-    font-weight: bold;
-    margin-bottom: 0;
-    display: block;
     font-size: 0.65rem;
-    width: 100%;
-    box-sizing: border-box;
-    transition: background 0.2s;
-    line-height: 1;
-    text-align: left;
-    overflow-wrap: break-word;
-    padding-left: 0.5rem;
-    padding-top: 0.5rem;
 }
 
 .card-item-action-field .card-item-label {
@@ -229,19 +212,7 @@
 /* ── Button ────────────────────────────────────────────────────────────────── */
 
 .card-item-btn {
-    cursor: pointer;
-    text-align: center;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
-    border: none;
-    font-size: 1.5rem;
-    box-sizing: border-box;
-    height: 2.65rem;
-    width: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
+    /* inherits from .field-btn */
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -397,5 +368,13 @@
 @media (max-width: 499px) {
     .card-item-section {
         padding: 0 0.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .feats-section .card-item-top-row,
+    .feats-section .card-item-description-field,
+    .feats-section .card-item-saved-row .card-item-name-wrapper {
+        max-width: 100%;
     }
 }

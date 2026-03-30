@@ -1,8 +1,8 @@
 <div id="feat-row-{{ feat.id }}" class="card-item-row card-item-saved-row">
     <div class="card-item-field card-item-name-field card-item-name-wrapper">
-        <label for="feat_and_trait-name-{{ feat.id }}" class="card-item-label">Feat/Trait</label>
+        <label for="feat_and_trait-name-{{ feat.id }}" class="field-label card-item-label">Feat/Trait</label>
         <input type="text" id="feat_and_trait-name-{{ feat.id }}"
-               name="feat_and_trait-name-{{ feat.id }}" value="{{ feat.name }}" class="card-item-input feat-name-input"
+               name="feat_and_trait-name-{{ feat.id }}" value="{{ feat.name }}" class="field-input card-item-input feat-name-input"
                data-feat-id="{{ feat.id }}">
         <button type="button" id="feat-and-trait-delete-{{ feat.id }}" class="section-remove-x" data-feat-remove="true"
                 hx-post="/characters/{{ character_id }}/feat-and-trait/{{ feat.id }}/remove"
@@ -13,7 +13,7 @@
 
     <div class="card-item-field card-item-description-field">
         <textarea id="feat_and_trait-description-{{ feat.id }}"
-                  name="feat_and_trait-description-{{ feat.id }}" rows="1" class="card-item-input card-item-description-input feat-description-input"
+                  name="feat_and_trait-description-{{ feat.id }}" rows="1" class="field-input card-item-input card-item-description-input feat-description-input"
                   data-feat-id="{{ feat.id }}">{{ feat.description }}</textarea>
     </div>
 </div>
