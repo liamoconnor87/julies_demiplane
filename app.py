@@ -17,6 +17,8 @@ from functions.functions import uuid as generate_uuid
 from functions.validators import is_valid_uuid
 from auth import setup_auth
 from auth.models import User
+from auth.models import UserTheme
+from auth.validators import is_valid_css_colour
 from misc.config import DEBUG, secret_key, SESSION_FILE_DIR  # type: ignore
 from go_get_it.tables import TABLES
 
@@ -138,6 +140,7 @@ def character_sheet():
 
     characters = User.get_characters(db, current_user.id)
     at_character_limit = User.at_character_limit(db, current_user.id)
+    user_theme = UserTheme.get_by_user_id(db, current_user.id)
     character_id = request.args.get('character_id')
 
     # If no character_id specified, default to first owned character
@@ -183,6 +186,7 @@ def character_sheet():
             custom_buffs_at_capacity=False,
             buff_target_options={},
             trackers=[],
+            user_theme=user_theme,
         )
 
     if not character_id:
@@ -194,6 +198,7 @@ def character_sheet():
             is_guest=False,
             character=None,
             trackers=[],
+            user_theme=user_theme,
         )
 
     _, character_sheet_data = _build_character_sheet_data(character_id)
@@ -223,7 +228,29 @@ def character_sheet():
         custom_buffs_at_capacity=character_sheet_data['custom_buffs_at_capacity'],
         buff_target_options=character_sheet_data['buff_target_options'],
         trackers=_get_trackers(character_id),
+        user_theme=user_theme,
     )
+
+
+@app.route('/user/theme/save', methods=['POST'])
+@login_required
+def save_user_theme():
+    """Persist the user's colour theme and return an OOB style block update."""
+    colour_fields = [
+        'background_colour', 'border_colour', 'label_colour',
+        'tracker_fill_colour', 'asterisk_colour', 'field_text_colour',
+        'level_colour', 'button_icon_colour', 'title_colour',
+        'field_bg_colour',
+    ]
+    colours = {}
+    for field in colour_fields:
+        value = (request.form.get(field) or '').strip()
+        if not is_valid_css_colour(value):
+            abort(400)
+        colours[field] = value
+
+    UserTheme.save(db, current_user.id, colours)
+    return render_template('components/theme_vars_oob.html', colours=colours), 200
 
 
 @app.route('/guest/start', methods=['POST'])

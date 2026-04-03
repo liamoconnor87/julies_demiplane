@@ -119,8 +119,8 @@
 .combat-section-btn {
     cursor: pointer;
     text-align: center;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
+    background: var(--field-bg-colour);
+    color: var(--button-icon-colour);
     border: none;
 }
 

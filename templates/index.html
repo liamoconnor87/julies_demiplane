@@ -22,8 +22,26 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/section_action_buttons.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tracker.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme_panel.css') }}">
     <!-- CSRF token for htmx fragment requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    {# User colour theme overrides — injected from DB on load, swapped on save #}
+    <style id="user-theme-vars">
+    {% if user_theme is defined and user_theme %}
+    :root {
+        {% if user_theme.background_colour %}--primary-color: {{ user_theme.background_colour | e }};{% endif %}
+        {% if user_theme.border_colour %}--secondary-color-dark: {{ user_theme.border_colour | e }};{% endif %}
+        {% if user_theme.label_colour %}--label-colour: {{ user_theme.label_colour | e }};{% endif %}
+        {% if user_theme.tracker_fill_colour %}--tracker-fill-colour: {{ user_theme.tracker_fill_colour | e }};{% endif %}
+        {% if user_theme.asterisk_colour %}--text-colour-one: {{ user_theme.asterisk_colour | e }};{% endif %}
+        {% if user_theme.field_text_colour %}--text-colour-three: {{ user_theme.field_text_colour | e }};{% endif %}
+        {% if user_theme.level_colour %}--level-colour: {{ user_theme.level_colour | e }};{% endif %}
+        {% if user_theme.button_icon_colour %}--button-icon-colour: {{ user_theme.button_icon_colour | e }};{% endif %}
+        {% if user_theme.title_colour %}--title-colour: {{ user_theme.title_colour | e }};{% endif %}
+        {% if user_theme.field_bg_colour %}--field-bg-colour: {{ user_theme.field_bg_colour | e }};{% endif %}
+    }
+    {% endif %}
+    </style>
 </head>
 
 <body>
@@ -37,6 +55,12 @@
     </nav>
     {% include 'components/character_bar.html' %}
     {% include 'components/sub_bar.html' %}
+    {# Theme panel — only for authenticated users #}
+    {% if current_user.is_authenticated and active_character_id %}
+    <div id="theme-panel-container" class="theme-panel-container d-none">
+        {% include 'components/theme_panel.html' %}
+    </div>
+    {% endif %}
     </div>
     {% if debug %}
         ## {{ debug }} ##
@@ -76,7 +100,7 @@
                             {% include 'components/add_actions.html' %}
                         </div>
                     </div>
-
+                    <br>
                     <div id="abilities-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
                         {% include 'components/abilities_section.html' %}
                     </div>

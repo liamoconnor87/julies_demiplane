@@ -23,9 +23,50 @@
     max-width: none;
 }
 
+.sub-bar-tab-buttons {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.2rem;
+    pointer-events: all;
+}
+
+.sub-bar-mobile-tabs {
+    display: none;
+    width: 100%;
+    pointer-events: all;
+}
+
+.sub-bar-mobile-tab-select {
+    width: 100%;
+    height: 1.85rem;
+    border: 1px solid var(--secondary-color-dark);
+    background: var(--field-bg-colour);
+    color: var(--text-colour-three);
+    font-size: 0.8rem;
+    padding: 0 0.45rem;
+    border-radius: 0;
+    outline: none;
+}
+
+.sub-bar-mobile-tab-select:focus {
+    border-color: var(--label-colour);
+}
+
+.sub-bar-actions-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    margin-left: auto;
+    pointer-events: all;
+}
+
+.sub-bar-actions-row > * {
+    flex: 0 0 auto;
+}
+
 .sub-bar-tab {
     pointer-events: all;
-    background: var(--primary-color-transparent);
+    background: var(--field-bg-colour);
     border: 1px solid var(--secondary-color-dark);
     border-top: none;
     color: var(--secondary-color-dark);
@@ -33,25 +74,27 @@
     padding: 0.2rem 0.9rem;
     cursor: pointer;
     white-space: nowrap;
-    margin-right: 2px;
-    transition: color 0.15s, background 0.15s;
+    margin-right: 0;
 }
 
 .sub-bar-tab:hover {
-    color: var(--secondary-color);
+    background: var(--field-bg-colour);
+    color: var(--secondary-color-dark);
+    border-color: var(--secondary-color-dark);
 }
 
 .sub-bar-tab.active {
-    background: var(--primary-color);
-    color: var(--secondary-color);
+    background: var(--field-bg-colour);
+    color: var(--label-colour);
+    border-color: var(--label-colour);
 }
 
 .sub-bar-tab-delete {
     pointer-events: all;
-    background: var(--primary-color-transparent);
-    border: 1px solid rgba(255, 80, 80, 0.4);
+    background: var(--field-bg-colour);
+    border: 1px solid rgb(255, 80, 80);
     border-top: none;
-    color: rgba(255, 80, 80, 0.7);
+    color: rgb(255, 80, 80);
     font-size: 0.78rem;
     padding: 0.2rem 0.9rem;
     cursor: pointer;
@@ -61,14 +104,14 @@
 
 .sub-bar-tab-delete:hover {
     color: rgb(255, 80, 80);
-    border-color: rgba(255, 80, 80, 0.7);
-    background: rgba(255, 80, 80, 0.08);
+    border-color: rgb(255, 80, 80);
+    background: var(--field-bg-colour);
 }
 
 .sub-bar-tab-lock {
-    margin-left: auto;
+    margin-left: 0;
     pointer-events: all;
-    background: var(--primary-color-transparent);
+    background: var(--field-bg-colour);
     border: 1px solid var(--secondary-color-dark);
     border-top: none;
     color: var(--secondary-color-dark);
@@ -76,22 +119,30 @@
     padding: 0.2rem 0.65rem;
     cursor: pointer;
     white-space: nowrap;
-    margin-right: 4px;
-    transition: color 0.15s, background 0.15s;
+    margin-right: 0;
 }
 
 .sub-bar-tab-lock:hover {
-    color: var(--secondary-color);
+    background: var(--field-bg-colour);
+    color: var(--secondary-color-dark);
+    border-color: var(--secondary-color-dark);
 }
 
 .sub-bar-tab-lock[aria-pressed="true"] {
-    background: var(--primary-color);
-    color: var(--secondary-color);
+    background: var(--field-bg-colour);
+    color: var(--label-colour);
+    border-color: var(--label-colour);
+}
+
+.sub-bar-tab-lock[aria-pressed="true"]:hover {
+    background: var(--field-bg-colour);
+    color: var(--label-colour);
+    border-color: var(--label-colour);
 }
 
 .sub-bar-tab-rest {
     pointer-events: all;
-    background: var(--primary-color-transparent);
+    background: var(--field-bg-colour);
     border: 1px solid var(--secondary-color-dark);
     border-top: none;
     color: var(--secondary-color-dark);
@@ -99,12 +150,13 @@
     padding: 0.2rem 0.9rem;
     cursor: pointer;
     white-space: nowrap;
-    margin-right: 4px;
-    transition: color 0.15s, background 0.15s;
+    margin-right: 0;
 }
 
 .sub-bar-tab-rest:hover {
-    color: var(--secondary-color);
+    background: var(--field-bg-colour);
+    color: var(--secondary-color-dark);
+    border-color: var(--secondary-color-dark);
 }
 
 /* ── Sub-pages (shown/hidden by JS tab switching) ──────────────────────────── */
@@ -124,9 +176,9 @@
     margin-bottom: 1rem;
 }
 
-.tracker-top-row > #combat-stats-section-container,
-.tracker-top-row > #custom-buffs-section-container {
+.tracker-top-row > #combat-stats-section-container {
     flex: 0 0 auto;
+    min-width: 0;
 }
 
 /* ── Tracker section (full-page) ───────────────────────────────────────────── */
@@ -155,12 +207,6 @@
 .tracker-section > .tracker-add-actions-row {
     width: 100%;
     flex-basis: 100%;
-}
-
-/* ── Shared label — overrides from .field-label ───────────────────────────── */
-
-.tracker-label {
-    /* inherits from .field-label */
 }
 
 /* ── Shared input — overrides from .field-input ───────────────────────────── */
@@ -337,8 +383,8 @@
 }
 
 .tracker-toggle.checked {
-    background: var(--secondary-color);
-    border-color: var(--secondary-color);
+    background: var(--tracker-fill-colour);
+    border-color: var(--tracker-fill-colour);
 }
 
 /* ── Add entry / add tracker — inline row using add-actions shared styles ──── */
@@ -402,8 +448,54 @@
     .tracker-section {
         padding: 0 0.25rem;
     }
+}
+
+@media (max-width: 700px) {
+    .sub-bar .page-container {
+        pointer-events: all;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.2rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .sub-bar-tab-buttons {
+        display: none;
+    }
+
+    .sub-bar-mobile-tabs {
+        display: block;
+    }
+
+    .sub-bar-actions-row {
+        margin-left: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x proximity;
+    }
+
+    .sub-bar-actions-row::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sub-bar-actions-row > * {
+        scroll-snap-align: start;
+    }
+
+    .sub-bar-tab,
+    .sub-bar-tab-lock,
+    .sub-bar-tab-theme,
+    .sub-bar-tab-rest,
+    .sub-bar-tab-delete {
+        margin-right: 0;
+    }
 
     .tracker-top-row {
         flex-direction: column;
     }
 }
+
+

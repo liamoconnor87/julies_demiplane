@@ -2,6 +2,7 @@ window.addEventListener("load", () => {
     initializeUiBindings();
     bindDeleteCharacterDropdown();
     bindSubBarTabs();
+    bindThemePanel();
 
     // Inject the CSRF token into every htmx AJAX request as a header.
     // Flask-WTF's CSRFProtect accepts tokens from the X-CSRFToken header,
@@ -88,7 +89,7 @@ window.addEventListener("load", () => {
             return;
         }
 
-        if (target.id === 'feats-list') {
+        if (target.id === 'feats-list' || target.id === 'add-feat-row') {
             // Clear and close the add-feat form after a successful add
             const nameInput = document.getElementById('feat_and_trait-name');
             const descInput = document.getElementById('feat_and_trait-description');
@@ -326,6 +327,23 @@ function initializeUiBindings() {
     bindInventoryContainerSettle();
     bindGlobalLockToggle();
     bindTrackerAutoSave();
+    bindMobileCharacterSelect();
+}
+
+function bindMobileCharacterSelect() {
+    const selector = document.getElementById('character-mobile-select');
+    if (!selector || selector.dataset.bound === 'true') {
+        return;
+    }
+
+    selector.dataset.bound = 'true';
+    selector.addEventListener('change', () => {
+        const selectedCharacterId = String(selector.value || '').trim();
+        if (!selectedCharacterId || selectedCharacterId === '__unsaved__') {
+            return;
+        }
+        window.location.assign(`/?character_id=${encodeURIComponent(selectedCharacterId)}`);
+    });
 }
 
 const FEAT_TRAIT_MAX = 15;
@@ -600,6 +618,7 @@ function bindBuffCardEdit() {
         htmx.process(submitBtn);
         if (submitLabel) submitLabel.textContent = 'Add';
         section.dataset.editMode = 'false';
+        section.dataset.editBuffId = '';
     };
 
     const cards = section.querySelectorAll('.custom-buffs-card[data-buff-edit="true"]');
@@ -608,12 +627,24 @@ function bindBuffCardEdit() {
         card.dataset.editBound = 'true';
 
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.custom-buffs-remove-btn')) return;
+            if (e.target.closest('[data-buff-remove="true"]')) return;
             if (section.dataset.locked === 'true') return;
 
             const buffId = card.dataset.buffId;
             const buffName = card.dataset.buffName;
             const buffValue = card.dataset.buffValue;
+
+            // Clicking the currently selected buff toggles edit mode off.
+            if (section.dataset.editMode === 'true' && section.dataset.editBuffId === String(buffId || '')) {
+                const closeBtn = document.getElementById('close-custom-buff-field-x-btn');
+                if (closeBtn) {
+                    closeBtn.click();
+                } else {
+                    resetToAddMode();
+                }
+                return;
+            }
+
             let buffTargets = [];
             try {
                 buffTargets = JSON.parse(card.dataset.buffTargets || '[]');
@@ -659,6 +690,7 @@ function bindBuffCardEdit() {
             }
             if (submitLabel) submitLabel.textContent = 'Save';
             section.dataset.editMode = 'true';
+            section.dataset.editBuffId = String(buffId || '');
 
             // Show the form (same as clicking the + Add button)
             if (addBtnWrapper) addBtnWrapper.style.display = 'none';
@@ -1730,11 +1762,11 @@ function bindTrackerAddEntryToggles() {
     const hideEl = (el) => { if (el) el.style.display = 'none'; };
 
     // ── Full Rest button ──
-    const fullRestBtn = document.getElementById('full-rest-btn');
-    if (fullRestBtn && fullRestBtn.dataset.bound !== 'true') {
+    document.querySelectorAll('[data-full-rest-btn="true"]').forEach((fullRestBtn) => {
+        if (fullRestBtn.dataset.bound === 'true') return;
         fullRestBtn.dataset.bound = 'true';
         fullRestBtn.addEventListener('click', performFullRest);
-    }
+    });
 
     // ── Per-tracker "Add Entry" toggles ──
     document.querySelectorAll('.tracker-add-entry-btn').forEach((btn) => {
@@ -1849,8 +1881,9 @@ function bindTrackerAutoSave() {
 // ── Sub-bar tab navigation ───────────────────────────────────────────────────
 
 function bindSubBarTabs() {
-    const tabs = document.querySelectorAll('.sub-bar-tab');
+    const tabs = document.querySelectorAll('.sub-bar-tab[data-tab]');
     if (!tabs.length) return;
+    const mobileTabSelect = document.getElementById('sub-bar-mobile-tab-select');
 
     const characterIdField = document.getElementById('character-id');
     const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
@@ -1872,6 +1905,10 @@ function bindSubBarTabs() {
             btn.classList.toggle('active', btn.dataset.tab === tabName);
         });
 
+        if (mobileTabSelect && mobileTabSelect.value !== tabName) {
+            mobileTabSelect.value = tabName;
+        }
+
         // Show/hide sub-pages
         Object.entries(pages).forEach(([name, el]) => {
             if (!el) return;
@@ -1879,10 +1916,9 @@ function bindSubBarTabs() {
         });
 
         // Show/hide Full Rest button (only on trackers tab)
-        const fullRestBtn = document.getElementById('full-rest-btn');
-        if (fullRestBtn) {
+        document.querySelectorAll('[data-full-rest-btn="true"]').forEach((fullRestBtn) => {
             fullRestBtn.classList.toggle('d-none', tabName !== 'trackers');
-        }
+        });
 
         // Persist choice
         if (cookieKey) {
@@ -1917,6 +1953,249 @@ function bindSubBarTabs() {
         btn.addEventListener('click', () => switchTo(btn.dataset.tab));
     });
 
+    if (mobileTabSelect && mobileTabSelect.dataset.bound !== 'true') {
+        mobileTabSelect.dataset.bound = 'true';
+        mobileTabSelect.addEventListener('change', () => {
+            const selected = String(mobileTabSelect.value || '').trim();
+            if (validTabs.includes(selected)) {
+                switchTo(selected);
+            }
+        });
+    }
+
     // Apply saved/default tab on load
     switchTo(initialTab);
+}
+
+// ── Theme panel ─────────────────────────────────────────────────────────────
+
+/**
+ * Map of CSS-var-name → { field: 'form_field_name', defaultValue: '...' }
+ * Must stay in sync with THEME_DEFAULTS in auth/models.py.
+ */
+const THEME_VAR_MAP = {
+    '--primary-color':        { field: 'background_colour',   default: 'rgb(173, 173, 173)' },
+    '--secondary-color-dark': { field: 'border_colour',       default: 'rgb(0, 189, 91)' },
+    '--label-colour':         { field: 'label_colour',        default: 'rgb(255, 255, 255)' },
+    '--tracker-fill-colour':  { field: 'tracker_fill_colour', default: 'rgb(0, 153, 74)' },
+    '--text-colour-one':      { field: 'asterisk_colour',     default: 'rgb(255, 0, 234)' },
+    '--text-colour-three':    { field: 'field_text_colour',   default: 'rgb(255, 255, 255)' },
+    '--level-colour':         { field: 'level_colour',        default: 'rgb(255, 255, 255)' },
+    '--button-icon-colour':   { field: 'button_icon_colour',  default: 'rgb(255, 255, 255)' },
+    '--title-colour':         { field: 'title_colour',        default: 'rgb(0, 0, 0)' },
+    '--field-bg-colour':      { field: 'field_bg_colour',     default: 'rgba(0, 0, 0, 0.85)' },
+};
+
+/** Convert any rgb/rgba/hex/named colour to a hex string for <input type=color>. */
+function colourToHex(colour) {
+    if (!colour) return '#000000';
+    const c = colour.trim();
+    // Already a 6-digit hex
+    if (/^#[0-9a-fA-F]{6}$/.test(c)) return c.toLowerCase();
+    // 3-digit hex → expand
+    if (/^#[0-9a-fA-F]{3}$/.test(c)) {
+        return '#' + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+    }
+    // rgb / rgba — extract r,g,b and convert
+    const m = c.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);
+    if (m) {
+        return '#' + [m[1], m[2], m[3]]
+            .map(n => {
+                const h = Math.round(Math.min(255, Math.max(0, parseFloat(n)))).toString(16);
+                return h.length === 1 ? '0' + h : h;
+            })
+            .join('');
+    }
+    // Named colour — render into a temporary element
+    try {
+        const tmp = document.createElement('div');
+        tmp.style.color = c;
+        document.body.appendChild(tmp);
+        const computed = getComputedStyle(tmp).color;
+        document.body.removeChild(tmp);
+        const m2 = computed.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);
+        if (m2) {
+            return '#' + [m2[1], m2[2], m2[3]]
+                .map(n => {
+                    const h = Math.round(parseFloat(n)).toString(16);
+                    return h.length === 1 ? '0' + h : h;
+                })
+                .join('');
+        }
+    } catch (_) {}
+    return '#000000';
+}
+
+/** Read the current live value of a CSS custom property from :root. */
+function getLiveCssVar(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
+
+/** Apply a colour to a CSS var and immediately update the panel picker + text. */
+function applyColour(varName, value) {
+    document.documentElement.style.setProperty(varName, value);
+}
+
+function bindThemePanel() {
+    const toggle = document.getElementById('theme-panel-toggle');
+    const container = document.getElementById('theme-panel-container');
+    if (!toggle || !container) return;
+
+    const panel = container.querySelector('#theme-panel');
+    const closeBtn = document.getElementById('theme-panel-close-btn');
+    const cancelBtn = document.getElementById('theme-panel-cancel-btn');
+    const saveBtn = document.getElementById('theme-panel-save-btn');
+    const feedback = document.getElementById('theme-save-feedback');
+
+    let savedSnapshot = {};
+
+    /** Capture the current live CSS vars as a snapshot for revert. */
+    function snapshotCurrentVars() {
+        savedSnapshot = {};
+        for (const varName of Object.keys(THEME_VAR_MAP)) {
+            savedSnapshot[varName] = getLiveCssVar(varName) || THEME_VAR_MAP[varName].default;
+        }
+    }
+
+    /** Populate all pickers and text inputs from the current live CSS vars. */
+    function populateInputsFromLive() {
+        container.querySelectorAll('.theme-colour-picker').forEach(picker => {
+            const varName = picker.dataset.var;
+            if (!varName) return;
+            const live = getLiveCssVar(varName) || THEME_VAR_MAP[varName].default;
+            picker.value = colourToHex(live);
+            // Update sibling text input
+            const row = picker.closest('.theme-panel-row');
+            if (row) {
+                const text = row.querySelector('.theme-colour-text');
+                if (text) text.value = live;
+            }
+        });
+    }
+
+    /** Revert all CSS vars back to the snapshot. */
+    function revertToSnapshot() {
+        for (const [varName, value] of Object.entries(savedSnapshot)) {
+            document.documentElement.style.setProperty(varName, value);
+        }
+    }
+
+    function openPanel() {
+        snapshotCurrentVars();
+        populateInputsFromLive();
+        container.classList.remove('d-none');
+        toggle.classList.add('active');
+        if (feedback) feedback.textContent = '';
+    }
+
+    function closePanel(revert) {
+        if (revert) revertToSnapshot();
+        container.classList.add('d-none');
+        toggle.classList.remove('active');
+    }
+
+    // ── Toggle open/close ─────────────────────────────────────────────────
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (container.classList.contains('d-none')) {
+            openPanel();
+        } else {
+            closePanel(false);
+        }
+    });
+
+    // ── Close on outside click ────────────────────────────────────────────
+    document.addEventListener('click', (e) => {
+        if (!container.classList.contains('d-none') &&
+            !container.contains(e.target) &&
+            e.target !== toggle) {
+            closePanel(false);
+        }
+    });
+    container.addEventListener('click', (e) => e.stopPropagation());
+
+    // ── Close / cancel buttons ────────────────────────────────────────────
+    if (closeBtn) closeBtn.addEventListener('click', () => closePanel(true));
+    if (cancelBtn) cancelBtn.addEventListener('click', () => closePanel(true));
+
+    // ── Live preview: picker input ─────────────────────────────────────────
+    container.querySelectorAll('.theme-colour-picker').forEach(picker => {
+        picker.addEventListener('input', () => {
+            const varName = picker.dataset.var;
+            if (!varName) return;
+            const hex = picker.value;
+            applyColour(varName, hex);
+            // Sync text input
+            const row = picker.closest('.theme-panel-row');
+            if (row) {
+                const text = row.querySelector('.theme-colour-text');
+                if (text) {
+                    text.value = hex;
+                    text.classList.remove('is-invalid');
+                }
+            }
+        });
+    });
+
+    // ── Live preview: text input ──────────────────────────────────────────
+    container.querySelectorAll('.theme-colour-text').forEach(text => {
+        text.addEventListener('input', () => {
+            const row = text.closest('.theme-panel-row');
+            if (!row) return;
+            const picker = row.querySelector('.theme-colour-picker');
+            const varName = picker ? picker.dataset.var : null;
+            if (!varName) return;
+            const val = text.value.trim();
+            if (!val) return;
+            // Validate using a temporary element
+            const tmp = document.createElement('div');
+            tmp.style.color = val;
+            document.body.appendChild(tmp);
+            const computed = getComputedStyle(tmp).color;
+            document.body.removeChild(tmp);
+            const validColour = computed !== '' && computed !== 'rgba(0, 0, 0, 0)' || val.toLowerCase() === 'transparent';
+            if (validColour) {
+                text.classList.remove('is-invalid');
+                applyColour(varName, val);
+                if (picker) {
+                    try { picker.value = colourToHex(val); } catch (_) {}
+                }
+            } else {
+                text.classList.add('is-invalid');
+            }
+        });
+    });
+
+    // ── Save via fetch ────────────────────────────────────────────────────
+    if (saveBtn) {
+        saveBtn.addEventListener('click', async () => {
+            const formData = new FormData();
+            panel.querySelectorAll('.theme-colour-text').forEach(input => {
+                if (input.name) formData.append(input.name, input.value.trim());
+            });
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = meta ? meta.getAttribute('content') : '';
+            saveBtn.disabled = true;
+            try {
+                const response = await fetch('/user/theme/save', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: formData,
+                });
+                if (response.ok) {
+                    snapshotCurrentVars();
+                    if (feedback) {
+                        feedback.textContent = 'Saved!';
+                        setTimeout(() => { if (feedback) feedback.textContent = ''; }, 2000);
+                    }
+                } else {
+                    if (feedback) feedback.textContent = 'Save failed.';
+                }
+            } catch (_) {
+                if (feedback) feedback.textContent = 'Save failed.';
+            } finally {
+                saveBtn.disabled = false;
+            }
+        });
+    }
 }

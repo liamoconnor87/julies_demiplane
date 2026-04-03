@@ -1,27 +1,29 @@
 /* ── Auth dropdown ─────────────────────────────────────────────────────────── */
 
 .auth-dropdown-toggle {
-    color: var(--secondary-color);
-    border: 1px solid var(--secondary-color-dark);
-    background: transparent;
+    color: var(--navbar-text-colour);
+    border: 1px solid var(--navbar-border-colour);
+    background: var(--navbar-bg-colour);
     font-size: 0.85rem;
     padding: 0.25rem 0.7rem;
     border-radius: 0;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .auth-admin-flag {
-    color: var(--secondary-color);
+    color: var(--label-colour);
 }
 .auth-dropdown-toggle:hover,
 .auth-dropdown-toggle:focus,
 .auth-dropdown-toggle.show {
-    background: var(--secondary-color);
-    color: var(--primary-color);
+    background: var(--navbar-text-colour);
+    color: var(--navbar-bg-colour);
+    border-color: var(--navbar-border-colour);
+    box-shadow: none;
 }
 
 .auth-dropdown-menu {
-    background: var(--primary-color);
+    background: var(--field-bg-colour);
     border: 1px solid var(--secondary-color-dark);
     min-width: 280px;
     padding: 0;
@@ -40,8 +42,8 @@
 }
 
 .auth-tabs .nav-link {
-    color: var(--text-colour-three);
-    background: transparent;
+    color: var(--secondary-color-dark);
+    background: var(--field-bg-colour);
     border: 1px solid var(--secondary-color-dark);
     border-radius: 0;
     font-size: 0.8rem;
@@ -49,16 +51,15 @@
 }
 
 .auth-tabs .nav-link.active {
-    background: var(--secondary-color);
-    color: var(--primary-color);
-    border-color: var(--secondary-color);
-    font-weight: bold;
+    color: var(--text-colour-one);
+    background: var(--field-bg-colour);
+    border-color: var(--text-colour-one);
 }
 
 /* ── Inputs ────────────────────────────────────────────────────────────────── */
 
 .auth-input {
-    background: rgba(255, 255, 255, 0.07);
+    background: var(--field-bg-colour);
     border: 1px solid var(--secondary-color-dark);
     color: var(--text-colour-three);
     font-size: 0.85rem;
@@ -70,10 +71,10 @@
 }
 
 .auth-input:focus {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: var(--secondary-color);
+    background: var(--field-bg-colour);
+    border-color: var(--label-colour);
     color: var(--text-colour-three);
-    box-shadow: 0 0 0 2px rgba(128, 255, 212, 0.15);
+    box-shadow: none;
 }
 
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
@@ -83,18 +84,19 @@
     font-weight: 600;
     padding: 0.35rem 0.75rem;
     border-radius: 0;
-    color: var(--text-colour-two);
+    color: var(--text-colour-three);
 }
 
 .auth-btn-primary {
-    background: var(--secondary-color);
+    background: var(--label-colour);
     color: var(--primary-color);
     border: none;
 }
 
 .auth-btn-primary:hover {
-    background: rgb(100, 220, 180);
-    color: var(--secondary-color);
+    background: var(--label-colour);
+    color: var(--primary-color);
+    opacity: 0.85;
 }
 
 .auth-btn-logout {
@@ -110,12 +112,12 @@
 
 .auth-btn-admin {
     background: transparent;
-    color: var(--secondary-color);
+    color: var(--label-colour);
     border: 1px solid var(--secondary-color-dark);
 }
 
 .auth-btn-admin:hover {
-    background: var(--secondary-color);
+    background: var(--label-colour);
     color: var(--primary-color);
 }
 
@@ -159,7 +161,7 @@
     left: 0;
     right: 0;
     height: var(--character-bar-height);
-    background: var(--primary-color-transparent);
+    background: var(--field-bg-colour);
     border-bottom: 1px solid var(--secondary-color-dark);
     z-index: 999;
     display: flex;
@@ -182,29 +184,90 @@
     overflow-x: auto;
 }
 
+.character-bar-mobile-controls {
+    display: none;
+    align-items: center;
+    gap: 0.35rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.character-bar-mobile-select {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: calc(var(--character-bar-height) - 0.45rem);
+    border: 1px solid var(--secondary-color-dark);
+    background: var(--field-bg-colour);
+    color: var(--text-colour-three);
+    font-size: 0.78rem;
+    padding: 0 0.45rem;
+    outline: none;
+    border-radius: 0;
+}
+
+.character-bar-mobile-select:focus {
+    border-color: var(--label-colour);
+}
+
+.character-bar-mobile-unsaved {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: calc(var(--character-bar-height) - 0.45rem);
+    border: 1px solid var(--secondary-color-dark);
+    background: var(--field-bg-colour);
+    color: var(--text-colour-three);
+    font-size: 0.78rem;
+    display: flex;
+    align-items: center;
+    padding: 0 0.45rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.character-bar-mobile-add-btn {
+    flex: 0 0 auto;
+    width: 2.1rem;
+    min-width: 2.1rem;
+    height: calc(var(--character-bar-height) - 0.45rem);
+    border: 1px solid var(--secondary-color-dark);
+    background: var(--field-bg-colour);
+    color: var(--button-icon-colour);
+    font-size: 0.95rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.character-bar-mobile-add-btn:hover {
+    border-color: var(--label-colour);
+    color: var(--label-colour);
+}
+
 .character-bar-tab {
     display: inline-block;
     padding: 0.2rem 0.7rem;
     font-size: 0.8rem;
-    color: var(--text-colour-three);
+    color: var(--secondary-color-dark);
     text-decoration: none;
-    border: 1px solid transparent;
+    background: var(--field-bg-colour);
+    border: 1px solid var(--secondary-color-dark);
     border-radius: 0;
     white-space: nowrap;
-    transition: background 0.15s, border-color 0.15s;
 }
 
 .character-bar-tab:hover {
-    background: rgba(128, 255, 212, 0.1);
+    color: var(--secondary-color-dark);
+    background: var(--field-bg-colour);
     border-color: var(--secondary-color-dark);
-    color: var(--text-colour-three);
 }
 
 .character-bar-tab.active {
-    background: var(--secondary-color);
-    color: var(--primary-color);
-    font-weight: 600;
-    border-color: var(--secondary-color);
+    color: var(--text-colour-one);
+    background: var(--field-bg-colour);
+    border-color: var(--text-colour-one);
 }
 
 /* ── Add Character button ─────────────────────────────────────────────────── */
@@ -213,14 +276,14 @@
     background: transparent;
     cursor: pointer;
     border: none;
-    color: var(--secondary-color);
+    color: var(--button-icon-colour);
     padding: 0.15rem 0.55rem;
     font-size: 0.8rem;
     line-height: 1;
 }
 
 .character-bar-add-btn:hover {
-    background: var(--secondary-color);
+    background: var(--label-colour);
     color: var(--primary-color);
 }
 
@@ -233,9 +296,9 @@
 }
 
 .character-bar-delete-btn {
-    background: transparent;
+    background: var(--field-bg-colour);
     cursor: pointer;
-    border: none;
+    border: 1px solid rgba(255, 80, 80, 0.4);
     color: rgba(255, 80, 80, 0.8);
     padding: 0.15rem 0.55rem;
     font-size: 0.8rem;
@@ -244,8 +307,9 @@
 }
 
 .character-bar-delete-btn:hover {
-    background: rgba(255, 80, 80, 0.9);
-    color: #fff;
+    background: var(--field-bg-colour);
+    border-color: rgba(255, 80, 80, 0.9);
+    color: rgb(255, 80, 80);
 }
 
 .delete-character-dropdown {
@@ -253,7 +317,7 @@
     top: calc(100% + 0.35rem);
     right: 0;
     width: 260px;
-    background: var(--primary-color);
+    background: var(--field-bg-colour);
     border: 1px solid rgba(255, 80, 80, 0.5);
     border-radius: 6px;
     padding: 0.75rem;
@@ -279,7 +343,7 @@
     font-size: 0.8rem;
     border: 1px solid rgba(255, 80, 80, 0.4);
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--field-bg-colour);
     color: var(--text-colour-three);
     margin-bottom: 0.5rem;
     outline: none;
@@ -296,7 +360,7 @@
     font-weight: 600;
     border: 1px solid rgba(255, 80, 80, 0.5);
     border-radius: 4px;
-    background: transparent;
+    background: var(--field-bg-colour);
     color: rgba(255, 80, 80, 0.5);
     cursor: not-allowed;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
@@ -304,18 +368,47 @@
 
 .delete-character-confirm-btn:not([disabled]) {
     cursor: pointer;
-    background: rgba(255, 80, 80, 0.9);
-    color: #fff;
+    background: var(--field-bg-colour);
+    color: rgb(255, 80, 80);
     border-color: rgba(255, 80, 80, 0.9);
 }
 
 .delete-character-confirm-btn:not([disabled]):hover {
-    background: rgb(220, 50, 50);
+    background: var(--field-bg-colour);
+    color: rgb(255, 80, 80);
     border-color: rgb(220, 50, 50);
+}
+
+/* Keep the attached delete form on the same field background in all states. */
+.delete-character-dropdown,
+.delete-character-dropdown .delete-character-input,
+.delete-character-dropdown .delete-character-confirm-btn,
+.delete-character-dropdown .delete-character-confirm-btn:not([disabled]),
+.delete-character-dropdown .delete-character-confirm-btn:not([disabled]):hover {
+    background: var(--field-bg-colour);
 }
 
 /* ── New character: hide sections until first save ────────────────────────── */
 
 .new-char-hidden {
     display: none !important;
+}
+
+@media (max-width: 700px) {
+    .auth-dropdown-toggle {
+        font-size: 0.78rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .character-bar .page-container {
+        gap: 0.35rem;
+    }
+
+    .character-bar-list {
+        display: none;
+    }
+
+    .character-bar-mobile-controls {
+        display: flex;
+    }
 }

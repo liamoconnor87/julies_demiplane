@@ -1,0 +1,84 @@
+{# Theme customisation panel — opened by the palette button in the sub-bar #}
+<div class="theme-panel" id="theme-panel">
+    <div class="theme-panel-header">
+        <span>Colour Theme</span>
+        <button type="button" class="theme-panel-close-btn" id="theme-panel-close-btn" aria-label="Close theme panel">&times;</button>
+    </div>
+
+    <div class="theme-panel-body">
+
+        {# ── Colour controls ─────────────────────────────────────────────── #}
+        <div class="theme-panel-controls">
+
+            <div class="theme-panel-row">
+                <label class="theme-panel-label" for="tp-background-colour">Background</label>
+                <input type="color" class="theme-colour-picker" id="tp-background-colour-picker" data-field="background_colour" data-var="--primary-color" tabindex="0">
+                <input type="text" class="theme-colour-text" id="tp-background-colour" name="background_colour" placeholder="#rrggbb or rgb(...)" maxlength="80">
+            </div>
+
+            <div class="theme-panel-row">
+                <label class="theme-panel-label" for="tp-border-colour">Border / Accent</label>
+                <input type="color" class="theme-colour-picker" id="tp-border-colour-picker" data-field="border_colour" data-var="--secondary-color-dark" tabindex="0">
+                <input type="text" class="theme-colour-text" id="tp-border-colour" name="border_colour" placeholder="#rrggbb or rgb(...)" maxlength="80">
+            </div>
+
+            <div class="theme-panel-row">
+                <label class="theme-panel-label" for="tp-label-colour">Label</label>
+                <input type="color" class="theme-colour-picker" id="tp-label-colour-picker" data-field="label_colour" data-var="--label-colour" tabindex="0">
+                <input type="text" class="theme-colour-text" id="tp-label-colour" name="label_colour" placeholder="#rrggbb or rgb(...)" maxlength="80">
+            </div>
+
+            <div class="theme-panel-row">
+                <label class="theme-panel-label" for="tp-field-text-colour">Field Text</label>
+                <input type="color" class="theme-colour-picker" id="tp-field-text-colour-picker" data-field="field_text_colour" data-var="--text-colour-three" tabindex="0">
+                <input type="text" class="theme-colour-text" id="tp-field-text-colour" name="field_text_colour" placeholder="#rrggbb or rgb(...)" maxlength="80">
+            </div>
+
+            <div class="theme-panel-row">
+                <label class="theme-panel-label" for="tp-title-colour">Titles</label>
+                <input type="color" class="theme-colour-picker" id="tp-title-colour-picker" data-field="title_colour" data-var="--title-colour" tabindex="0">
+                <input type="text" class="theme-colour-text" id="tp-title-colour" name="title_colour" placeholder="#rrggbb or rgb(...)" maxlength="80">
+            </div>
+
+            <div class="theme-panel-row">
+                <label class="theme-panel-label" for="tp-button-icon-colour">Button Icons (+/−/✓)</label>
+                <input type="color" class="theme-colour-picker" id="tp-button-icon-colour-picker" data-field="button_icon_colour" data-var="--button-icon-colour" tabindex="0">
+                <input type="text" class="theme-colour-text" id="tp-button-icon-colour" name="button_icon_colour" placeholder="#rrggbb or rgb(...)" maxlength="80">
+            </div>
+
+            <div class="theme-panel-row">
+                <label class="theme-panel-label" for="tp-tracker-fill-colour">Tracker Box Fill</label>
+                <input type="color" class="theme-colour-picker" id="tp-tracker-fill-colour-picker" data-field="tracker_fill_colour" data-var="--tracker-fill-colour" tabindex="0">
+                <input type="text" class="theme-colour-text" id="tp-tracker-fill-colour" name="tracker_fill_colour" placeholder="#rrggbb or rgb(...)" maxlength="80">
+            </div>
+
+            <div class="theme-panel-row">
+                <label class="theme-panel-label" for="tp-asterisk-colour">Asterisk (buff/debuff)</label>
+                <input type="color" class="theme-colour-picker" id="tp-asterisk-colour-picker" data-field="asterisk_colour" data-var="--text-colour-one" tabindex="0">
+                <input type="text" class="theme-colour-text" id="tp-asterisk-colour" name="asterisk_colour" placeholder="#rrggbb or rgb(...)" maxlength="80">
+            </div>
+
+            <div class="theme-panel-row">
+                <label class="theme-panel-label" for="tp-level-colour">Char Level Display</label>
+                <input type="color" class="theme-colour-picker" id="tp-level-colour-picker" data-field="level_colour" data-var="--level-colour" tabindex="0">
+                <input type="text" class="theme-colour-text" id="tp-level-colour" name="level_colour" placeholder="#rrggbb or rgb(...)" maxlength="80">
+            </div>
+
+            <div class="theme-panel-row">
+                <label class="theme-panel-label" for="tp-field-bg-colour">Field Background</label>
+                <input type="color" class="theme-colour-picker" id="tp-field-bg-colour-picker" data-field="field_bg_colour" data-var="--field-bg-colour" tabindex="0">
+                <input type="text" class="theme-colour-text" id="tp-field-bg-colour" name="field_bg_colour" placeholder="#rrggbb or rgb(...)" maxlength="80">
+            </div>
+
+        </div>
+
+
+    </div>
+
+    {# ── Actions ──────────────────────────────────────────────────────────── #}
+    <div class="theme-panel-footer">
+        <span class="theme-save-feedback" id="theme-save-feedback" aria-live="polite"></span>
+        <button type="button" class="theme-panel-cancel-btn" id="theme-panel-cancel-btn">Cancel</button>
+        <button type="button" class="theme-panel-save-btn" id="theme-panel-save-btn">Save</button>
+    </div>
+</div>

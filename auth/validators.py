@@ -8,6 +8,27 @@ from go_get_it.go_get_it import GoGetDB
 
 _USERNAME_RE = re.compile(r'^[a-zA-Z0-9_]+$')
 
+# Matches: #rgb, #rrggbb, #rrggbbaa, rgb(...), rgba(...), hsl(...), hsla(...),
+# and plain CSS named colours (letters only).  Rejects semicolons, braces, and
+# any other characters that could break out of a CSS value context.
+_CSS_HEX_RE = re.compile(r'^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$')
+_CSS_FUNC_RE = re.compile(
+    r'^(rgba?|hsla?)\(\s*[\d.]+%?\s*,\s*[\d.]+%?\s*,\s*[\d.]+%?(\s*,\s*[\d.]+%?)?\s*\)$'
+)
+_CSS_NAMED_RE = re.compile(r'^[a-zA-Z]+$')
+
+
+def is_valid_css_colour(value: str) -> bool:
+    """Return True if value is a safe, well-formed CSS colour string."""
+    if not value or len(value) > 80:
+        return False
+    v = value.strip()
+    return bool(
+        _CSS_HEX_RE.match(v) or
+        _CSS_FUNC_RE.match(v) or
+        _CSS_NAMED_RE.match(v)
+    )
+
 
 def validate_username(value: str):
     value = (value or '').strip()
@@ -19,7 +40,7 @@ def validate_username(value: str):
         return False, 'Username may only contain letters, numbers, and underscores.'
 
     ggi = GoGetDB()
-    all_users = ggi.go_get_all('users')
+    all_users = ggi.go_get_all('user')
     if all_users and any(user['username'].lower() == value.lower() for user in all_users):
         return False, 'Username is already taken.'
     return True, None

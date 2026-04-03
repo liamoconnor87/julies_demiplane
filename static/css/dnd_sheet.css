@@ -1,11 +1,22 @@
 :root {
-    --primary-color: rgb(34, 36, 63);
-    --primary-color-transparent: rgba(20, 20, 30, 0.7);
-    --secondary-color: rgb(128, 255, 212);
-    --secondary-color-dark: rgba(128, 255, 212, 0.5);
-    --text-colour-one: rgb(255, 0, 200);
-    --text-colour-two: rgb(0, 191, 255);
+    --primary-color: rgb(173, 173, 173);
+    --primary-color-transparent: rgba(173, 173, 173, 0.85);
+    --secondary-color: rgb(0, 189, 91);
+    --secondary-color-dark: rgb(0, 189, 91);
+    --text-colour-one: rgb(255, 0, 234);
+    --text-colour-two: rgb(0, 189, 91);
     --text-colour-three: rgb(255, 255, 255);
+    /* ── User-themeable colour vars ─────────────────────── */
+    --label-colour: rgb(255, 255, 255);
+    --tracker-fill-colour: rgb(0, 153, 74);
+    --level-colour: rgb(255, 255, 255);
+    --title-colour: rgb(0, 0, 0);
+    --button-icon-colour: rgb(255, 255, 255);
+    --field-bg-colour: rgba(0, 0, 0, 0.85);
+    --navbar-bg-colour: rgb(0, 0, 0);
+    --navbar-border-colour: rgb(255, 255, 255);
+    --navbar-text-colour: rgb(255, 255, 255);
+    /* ── Layout measurements ────────────────────────────── */
     --navbar-height: 3rem;
     --character-bar-height: 2rem;
     --sub-bar-height: 1.7rem;
@@ -54,8 +65,8 @@ body {
     left: 0;
     right: 0;
     min-height: var(--navbar-height);
-    background: var(--primary-color-transparent);
-    border-bottom: 1px solid var(--secondary-color-dark);
+    background: var(--navbar-bg-colour);
+    border-bottom: 1px solid var(--navbar-border-colour);
     z-index: 1000;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top);
@@ -78,10 +89,25 @@ body {
 }
 
 .site-navbar-title {
-    color: var(--secondary-color);
+    color: var(--navbar-text-colour);
     font-weight: bold;
     font-size: 1.1rem;
     padding: 0;
+}
+
+@media (max-width: 700px) {
+    :root {
+        --character-bar-height: 2.4rem;
+        --sub-bar-height: 4rem;
+    }
+
+    .site-navbar-title {
+        font-size: 0.95rem;
+        max-width: 48vw;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 .sheet-page-content {
@@ -137,6 +163,10 @@ body {
     min-width: 0;
 }
 
+h4 {
+    color: var(--title-colour);
+}
+
 /* ══════════════════════════════════════════════════════════════════════════════
    Generic field primitives — shared across all sections
    ══════════════════════════════════════════════════════════════════════════════ */
@@ -152,7 +182,7 @@ body {
 .field-input {
     width: 100%;
     box-sizing: border-box;
-    background: var(--primary-color-transparent);
+    background: var(--field-bg-colour);
     color: var(--text-colour-three);
     padding: 0.5rem 0.75rem;
     border: none;
@@ -164,8 +194,8 @@ body {
 }
 
 .field-label {
-    background: var(--primary-color-transparent);
-    color: var(--secondary-color);
+    background: var(--field-bg-colour);
+    color: var(--label-colour);
     padding: 0;
     border: none;
     border-radius: 0;
@@ -186,8 +216,8 @@ body {
 .field-btn {
     cursor: pointer;
     text-align: center;
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-three);
+    background: var(--field-bg-colour);
+    color: var(--button-icon-colour);
     border: none;
     font-size: 1.5rem;
     box-sizing: border-box;

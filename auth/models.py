@@ -121,3 +121,43 @@ class User(UserMixin):
 
         # Finally, delete the character row
         db.go_delete_it('character', {'id': character_id})
+
+
+# ── Default colour values ─────────────────────────────────────────────────────
+
+THEME_DEFAULTS = {
+    'background_colour':  'rgb(173, 173, 173)',
+    'border_colour':      'rgb(0, 189, 91)',
+    'label_colour':       'rgb(255, 255, 255)',
+    'tracker_fill_colour': 'rgb(0, 153, 74)',
+    'asterisk_colour':    'rgb(255, 0, 234)',
+    'field_text_colour':  'rgb(255, 255, 255)',
+    'level_colour':       'rgb(255, 255, 255)',
+    'button_icon_colour': 'rgb(255, 255, 255)',
+    'title_colour':       'rgb(0, 0, 0)',
+    'field_bg_colour':    'rgba(0, 0, 0, 0.85)',
+}
+
+
+class UserTheme:
+    """Per-user colour theme backed by the 'user_theme' table."""
+
+    COLOUR_FIELDS = list(THEME_DEFAULTS.keys())
+
+    @staticmethod
+    def get_by_user_id(db, user_id: str):
+        """Return the theme row dict for this user, or None if not set."""
+        return db.go_get_one('user_theme', {'user_id': user_id})
+
+    @staticmethod
+    def save(db, user_id: str, colours: dict):
+        """Upsert the theme for this user."""
+        existing = db.go_get_one('user_theme', {'user_id': user_id})
+        if existing:
+            row = {'id': existing['id'], 'user_id': user_id}
+            row.update(colours)
+            db.go_update('user_theme', row)
+        else:
+            row = {'id': uuid(), 'user_id': user_id}
+            row.update(colours)
+            db.go_add_new('user_theme', row)

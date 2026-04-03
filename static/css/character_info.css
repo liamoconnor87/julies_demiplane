@@ -70,7 +70,7 @@
 }
 
 .character-info-input[disabled] {
-    color: var(--text-colour-one);
+    color: var(--level-colour);
 }
 
 .character-info-label {
