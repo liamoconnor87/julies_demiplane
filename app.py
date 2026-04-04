@@ -61,10 +61,12 @@ csp = {
         "'self'",
         "'unsafe-inline'",
         'https://cdn.jsdelivr.net',
+        'https://fonts.googleapis.com',
     ],
     'font-src': [
         "'self'",
         'https://cdn.jsdelivr.net',
+        'https://fonts.gstatic.com',
     ],
     'img-src': "'self' data:",
 }
@@ -104,6 +106,21 @@ def _build_character_sheet_data(character_id: str):
     BuffProcessor(character_id).transform_out(data)
     return sheet, data
 
+
+_DEATH_SAVES_TRACKER_ID = 'death-saves'
+
+
+def _build_death_saves_tracker():
+    return {
+        'id': _DEATH_SAVES_TRACKER_ID,
+        'name': 'Death Saves',
+        'fixed': True,
+        'entries': [
+            {'id': 'death-saves-pass', 'tracker_id': _DEATH_SAVES_TRACKER_ID, 'name': 'Pass', 'value': 3},
+            {'id': 'death-saves-fail', 'tracker_id': _DEATH_SAVES_TRACKER_ID, 'name': 'Fail', 'value': 3},
+        ],
+    }
+
 @app.route('/', methods=['GET'])
 def character_sheet():
 
@@ -113,6 +130,14 @@ def character_sheet():
         character_id = guest.get_guest_character_id()
         data = guest.create_form()
         is_new_character = not data['character'].get('name')
+        guest_name = str(data['character'].get('name') or '').strip()
+        landing_requested = (request.args.get('landing') or '').strip() == '1'
+
+        # Landing panel is visible for first-time guests, or when a named guest
+        # explicitly returns to landing mode via the navbar title.
+        show_guest_landing_panel = is_new_character or (landing_requested and bool(guest_name))
+        show_guest_name_entry = is_new_character
+        guest_show_sheet = not (landing_requested and bool(guest_name))
 
         return render_template(
             'index.html',
@@ -136,6 +161,11 @@ def character_sheet():
             custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
             buff_target_options=data['buff_target_options'],
             trackers=[],
+            guest_death_saves_tracker=_build_death_saves_tracker(),
+            show_guest_landing_panel=show_guest_landing_panel,
+            show_guest_name_entry=show_guest_name_entry,
+            guest_show_sheet=guest_show_sheet,
+            guest_character_name=guest_name,
         )
 
     characters = User.get_characters(db, current_user.id)
@@ -326,12 +356,17 @@ def character_info_fragment(character_id: str):
     if guest.is_guest() and not current_user.is_authenticated:
         guest.save_character_values(request.form)
         data = guest.create_form()
+        is_new_character = not data['character'].get('name')
+        guest_name = str(data['character'].get('name') or '').strip()
         return render_template(
             'components/character_info_change_response.html',
             character_id=character_id,
             character=data['character'],
             abilities=data['abilities'],
             is_guest=True,
+            show_guest_landing_panel=is_new_character,
+            show_guest_name_entry=is_new_character,
+            guest_character_name=guest_name,
         )
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
@@ -350,20 +385,26 @@ def character_info_fragment(character_id: str):
 
 
 @app.route('/characters/<character_id>/combat/fragment', methods=['POST'])
-@login_required
+@guest_or_login_required
 @limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
 def combat_fragment(character_id: str):
+    if guest.is_guest() and not current_user.is_authenticated:
+        guest.save_character_values(request.form)
+        data = guest.create_form()
+        return render_template(
+            'components/guest_combat_stats.html',
+            character_id=character_id,
+            character=data['character'],
+            is_guest=True,
+        )
+
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
     sheet = CharacterSheet(character_id=character_id)
     sheet.save_combat_values(character_id, request.form)
 
     _, data = _build_character_sheet_data(character_id)
-    return render_template(
-        'components/combat_stats.html',
-        character_id=character_id,
-        character=data['character'],
-    )
+    return render_template('components/combat_stats.html', character_id=character_id, character=data['character'])
 
 
 @app.route('/characters/<character_id>/classes/fragment', methods=['POST'])
@@ -767,19 +808,9 @@ def remove_class(character_id: str, class_id: str):
     )
 
 
-_DEATH_SAVES_TRACKER_ID = 'death-saves'
-
 def _get_trackers(character_id: str):
     """Return all trackers (with entries) for a character, ordered by id."""
-    death_saves = {
-        'id': _DEATH_SAVES_TRACKER_ID,
-        'name': 'Death Saves',
-        'fixed': True,
-        'entries': [
-            {'id': 'death-saves-pass', 'tracker_id': _DEATH_SAVES_TRACKER_ID, 'name': 'Pass', 'value': 3},
-            {'id': 'death-saves-fail', 'tracker_id': _DEATH_SAVES_TRACKER_ID, 'name': 'Fail', 'value': 3},
-        ],
-    }
+    death_saves = _build_death_saves_tracker()
     trackers = db.go_get_all('tracker', {'character_id': character_id}) or []
     result = [death_saves]
     for t in trackers:

@@ -4,6 +4,15 @@
     {% include 'components/abilities_section.html' %}
 </div>
 
+{% if is_guest is defined and is_guest %}
+<div id="guest-landing-panel" hx-swap-oob="innerHTML">
+    {% if show_guest_landing_panel is defined %}
+        {% include 'components/guest_landing_panel_inner.html' %}
+    {% endif %}
+</div>
+{% endif %}
+
+{% if not (is_guest is defined and is_guest) %}
 <a id="char-tab-{{ character_id }}" hx-swap-oob="true"
    href="/?character_id={{ character_id }}"
    class="character-bar-tab active">
@@ -13,3 +22,4 @@
 <div id="delete-character-dropdown" class="delete-character-dropdown d-none" hx-swap-oob="true">
     {% include 'components/delete_character_dropdown.html' %}
 </div>
+{% endif %}

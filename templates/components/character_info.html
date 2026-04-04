@@ -15,8 +15,8 @@
         {% set field_label_class = 'character-info-label' %}
         {% include 'base/field_text.html' %}
 
-        {% if is_new_character %}
-        {# Inline save button shown only for new characters (name-only view) #}
+        {% if is_new_character and not (is_guest is defined and is_guest) %}
+        {# Inline save button shown only for signed-in new characters (name-only view) #}
         {% set btn_wrapper_class = 'character-info-stat-field character-info-action-field character-info-new-save' %}
         {% set btn_id = 'character-info-save-btn' %}
         {% set btn_btn_class = 'character-info-save-btn' %}

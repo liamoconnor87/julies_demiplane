@@ -1,0 +1,39 @@
+<div class="tracker-section guest-death-saves-section">
+    <h4>Death Saves</h4>
+
+    <div class="tracker-item" id="tracker-item-{{ death_saves_tracker.id }}" data-tracker-id="{{ death_saves_tracker.id }}">
+        {% for entry in death_saves_tracker.entries %}
+        <div class="tracker-row tracker-entry-row" data-entry-id="{{ entry.id }}">
+            <div class="tracker-field tracker-entry-name-field tracker-entry-name-no-gap">
+                <input type="text" class="field-input tracker-input tracker-input-no-label tracker-entry-name-input"
+                       data-tracker-id="{{ death_saves_tracker.id }}"
+                       data-entry-id="{{ entry.id }}"
+                       value="{{ entry.name }}"
+                       readonly>
+            </div>
+            <div class="tracker-field tracker-entry-value-field">
+                <input type="number" class="field-input tracker-input tracker-input-no-label tracker-entry-value-input"
+                       data-tracker-id="{{ death_saves_tracker.id }}"
+                       data-entry-id="{{ entry.id }}"
+                       value="{{ entry.value }}"
+                       min="1" max="20"
+                       readonly>
+            </div>
+            <div class="tracker-field tracker-toggles-field tracker-toggles-no-label">
+                <div class="tracker-toggles-row tracker-toggles-row-no-label">
+                    {% for i in range(entry.value) %}
+                    <span class="tracker-toggle"
+                          data-tracker-id="{{ death_saves_tracker.id }}"
+                          data-entry-id="{{ entry.id }}"
+                          data-index="{{ loop.index0 }}"
+                          role="checkbox"
+                          tabindex="0"
+                          aria-checked="false"
+                          aria-label="{{ entry.name }} {{ loop.index }}"></span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

@@ -126,13 +126,13 @@ class User(UserMixin):
 # ── Default colour values ─────────────────────────────────────────────────────
 
 THEME_DEFAULTS = {
-    'background_colour':  'rgb(173, 173, 173)',
+    'background_colour':  '#b8a8cd',
     'border_colour':      'rgb(0, 189, 91)',
     'label_colour':       'rgb(255, 255, 255)',
     'tracker_fill_colour': 'rgb(0, 153, 74)',
     'asterisk_colour':    'rgb(255, 0, 234)',
     'field_text_colour':  'rgb(255, 255, 255)',
-    'level_colour':       'rgb(255, 255, 255)',
+    'level_colour':       'rgb(255, 0, 234)',
     'button_icon_colour': 'rgb(255, 255, 255)',
     'title_colour':       'rgb(0, 0, 0)',
     'field_bg_colour':    'rgba(0, 0, 0, 0.85)',

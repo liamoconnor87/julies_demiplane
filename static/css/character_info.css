@@ -70,7 +70,7 @@
 }
 
 .character-info-input[disabled] {
-    color: var(--level-colour);
+    color: var(--text-colour-one);
 }
 
 .character-info-label {
@@ -124,6 +124,10 @@
     font-size: 0.5rem;
     padding: 0.25rem 0;
     text-align: center;
+}
+
+.character-info-level-field .character-info-input[disabled] {
+    color: var(--level-colour);
 }
 
 .character-info-xp-field {

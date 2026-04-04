@@ -57,6 +57,7 @@ window.addEventListener("load", () => {
         if (target.id === 'character-info-section-container') {
             bindCurrentHpCalculation();
             bindProficiencyToggles();
+            bindTrackerToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
             bindCharacterInfoAutoSave();
@@ -327,6 +328,7 @@ function initializeUiBindings() {
     bindInventoryContainerSettle();
     bindGlobalLockToggle();
     bindTrackerAutoSave();
+    bindTrackerToggles();
     bindMobileCharacterSelect();
 }
 
@@ -1974,13 +1976,13 @@ function bindSubBarTabs() {
  * Must stay in sync with THEME_DEFAULTS in auth/models.py.
  */
 const THEME_VAR_MAP = {
-    '--primary-color':        { field: 'background_colour',   default: 'rgb(173, 173, 173)' },
+    '--primary-color':        { field: 'background_colour',   default: '#b8a8cd' },
     '--secondary-color-dark': { field: 'border_colour',       default: 'rgb(0, 189, 91)' },
     '--label-colour':         { field: 'label_colour',        default: 'rgb(255, 255, 255)' },
     '--tracker-fill-colour':  { field: 'tracker_fill_colour', default: 'rgb(0, 153, 74)' },
     '--text-colour-one':      { field: 'asterisk_colour',     default: 'rgb(255, 0, 234)' },
     '--text-colour-three':    { field: 'field_text_colour',   default: 'rgb(255, 255, 255)' },
-    '--level-colour':         { field: 'level_colour',        default: 'rgb(255, 255, 255)' },
+    '--level-colour':         { field: 'level_colour',        default: 'rgb(255, 0, 234)' },
     '--button-icon-colour':   { field: 'button_icon_colour',  default: 'rgb(255, 255, 255)' },
     '--title-colour':         { field: 'title_colour',        default: 'rgb(0, 0, 0)' },
     '--field-bg-colour':      { field: 'field_bg_colour',     default: 'rgba(0, 0, 0, 0.85)' },
@@ -2031,6 +2033,66 @@ function getLiveCssVar(varName) {
     return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
 }
 
+/** Resolve any CSS colour string to computed rgb()/rgba() form. */
+function resolveToComputedColour(colour) {
+    if (!colour) return '';
+    try {
+        const tmp = document.createElement('div');
+        tmp.style.color = colour;
+        document.body.appendChild(tmp);
+        const computed = getComputedStyle(tmp).color;
+        document.body.removeChild(tmp);
+        return computed;
+    } catch (_) {
+        return '';
+    }
+}
+
+/** Pick a readable foreground (dark/light) for a supplied background colour. */
+function getReadableForegroundFor(colour) {
+    const resolved = resolveToComputedColour(colour);
+    const m = resolved.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
+    if (!m) return '#f8f8f8';
+
+    const r = Math.max(0, Math.min(255, parseFloat(m[1])));
+    const g = Math.max(0, Math.min(255, parseFloat(m[2])));
+    const b = Math.max(0, Math.min(255, parseFloat(m[3])));
+    const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    return luminance > 0.6 ? '#121212' : '#f8f8f8';
+}
+
+/** Style one theme-panel row so the text field matches its attached colour. */
+function syncThemeRowPreview(row, colourValue) {
+    if (!row) return;
+
+    const picker = row.querySelector('.theme-colour-picker');
+    const text = row.querySelector('.theme-colour-text');
+    if (!text) return;
+
+    const colour = String(colourValue || '').trim();
+    if (!colour) {
+        if (picker) picker.style.removeProperty('border-color');
+        text.style.removeProperty('background');
+        text.style.removeProperty('color');
+        if (!text.classList.contains('is-invalid')) {
+            text.style.removeProperty('border-color');
+        }
+        return;
+    }
+
+    if (picker) {
+        picker.style.borderColor = colour;
+    }
+
+    text.style.background = colour;
+    text.style.color = getReadableForegroundFor(colour);
+    if (text.classList.contains('is-invalid')) {
+        text.style.borderColor = 'rgba(255, 80, 80, 0.8)';
+    } else {
+        text.style.borderColor = colour;
+    }
+}
+
 /** Apply a colour to a CSS var and immediately update the panel picker + text. */
 function applyColour(varName, value) {
     document.documentElement.style.setProperty(varName, value);
@@ -2069,6 +2131,7 @@ function bindThemePanel() {
             if (row) {
                 const text = row.querySelector('.theme-colour-text');
                 if (text) text.value = live;
+                syncThemeRowPreview(row, live);
             }
         });
     }
@@ -2133,6 +2196,7 @@ function bindThemePanel() {
                     text.value = hex;
                     text.classList.remove('is-invalid');
                 }
+                syncThemeRowPreview(row, hex);
             }
         });
     });
@@ -2160,8 +2224,12 @@ function bindThemePanel() {
                 if (picker) {
                     try { picker.value = colourToHex(val); } catch (_) {}
                 }
+                syncThemeRowPreview(row, val);
             } else {
                 text.classList.add('is-invalid');
+                if (picker) {
+                    syncThemeRowPreview(row, picker.value);
+                }
             }
         });
     });

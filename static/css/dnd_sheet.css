@@ -1,6 +1,6 @@
 :root {
-    --primary-color: rgb(173, 173, 173);
-    --primary-color-transparent: rgba(173, 173, 173, 0.85);
+    --primary-color: #b8a8cd;
+    --primary-color-transparent: rgba(184, 168, 205, 0.85);
     --secondary-color: rgb(0, 189, 91);
     --secondary-color-dark: rgb(0, 189, 91);
     --text-colour-one: rgb(255, 0, 234);
@@ -9,7 +9,7 @@
     /* ── User-themeable colour vars ─────────────────────── */
     --label-colour: rgb(255, 255, 255);
     --tracker-fill-colour: rgb(0, 153, 74);
-    --level-colour: rgb(255, 255, 255);
+    --level-colour: rgb(255, 0, 234);
     --title-colour: rgb(0, 0, 0);
     --button-icon-colour: rgb(255, 255, 255);
     --field-bg-colour: rgba(0, 0, 0, 0.85);
@@ -46,9 +46,26 @@ html::-webkit-scrollbar {
 
 body {
     background-color: var(--primary-color);
+    background-image: linear-gradient(
+        to top left,
+        rgba(0, 0, 0, 0.28) 0%,
+        rgba(0, 0, 0, 0.14) 35%,
+        rgba(0, 0, 0, 0) 70%
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-attachment: fixed;
     color: var(--text-colour-three);
     margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     padding-top: calc(var(--total-header-height) + env(safe-area-inset-top));
+    padding-bottom: 0;
+}
+
+body.guest-page {
+    padding-top: calc(var(--navbar-height) + env(safe-area-inset-top));
 }
 
 .page-container {
@@ -66,7 +83,7 @@ body {
     right: 0;
     min-height: var(--navbar-height);
     background: var(--navbar-bg-colour);
-    border-bottom: 1px solid var(--navbar-border-colour);
+    border-bottom: 1px solid var(--text-colour-one);
     z-index: 1000;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top);
@@ -90,9 +107,28 @@ body {
 
 .site-navbar-title {
     color: var(--navbar-text-colour);
-    font-weight: bold;
-    font-size: 1.1rem;
+    font-family: "Tourney", sans-serif !important;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+    font-size: 2rem;
     padding: 0;
+    text-decoration: none;
+}
+
+.site-navbar-title-outline-word {
+    text-shadow: 8px 2px 0 var(--secondary-color-dark);
+}
+
+.site-navbar-title-asterisk-word {
+    text-shadow: 1px 6px 0 var(--text-colour-one);
+}
+
+.site-navbar-title:hover,
+.site-navbar-title:focus-visible {
+    color: var(--navbar-text-colour);
+    text-decoration: none;
 }
 
 @media (max-width: 700px) {
@@ -102,7 +138,7 @@ body {
     }
 
     .site-navbar-title {
-        font-size: 0.95rem;
+        font-size: 1.2rem;
         max-width: 48vw;
         white-space: nowrap;
         overflow: hidden;
@@ -113,8 +149,50 @@ body {
 .sheet-page-content {
     width: 100%;
     max-width: 100%;
+    flex: 1 0 auto;
     padding-top: 1rem;
-    padding-bottom: 2rem;
+    padding-bottom: 1rem;
+}
+
+#guest-landing-panel {
+    margin-bottom: 0.85rem;
+}
+
+#guest-landing-panel:empty {
+    margin-bottom: 0;
+}
+
+.guest-landing-panel-card {
+    width: 100%;
+    max-width: 44rem;
+    border: 1px solid var(--secondary-color-dark);
+    background: var(--field-bg-colour);
+    color: var(--text-colour-three);
+    padding: 0.8rem 1rem;
+    box-sizing: border-box;
+}
+
+.guest-landing-title {
+    margin: 0 0 0.35rem;
+    color: var(--label-colour);
+    font-size: 1rem;
+}
+
+.guest-landing-text {
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+.guest-landing-link {
+    color: var(--text-colour-one);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.guest-landing-link:hover,
+.guest-landing-link:focus-visible {
+    color: var(--text-colour-one);
+    text-decoration: underline;
 }
 
 .sheet-page-content form {
@@ -142,6 +220,11 @@ body {
     width: 100%;
 }
 
+/* Guest sheet columns should wrap naturally as width decreases. */
+body.guest-page .sheet-layout {
+    flex-wrap: wrap;
+}
+
 #char-group-container,
 #abilities-section-container {
     flex: 0 1 auto;
@@ -151,6 +234,23 @@ body {
 #feats-section-container {
     flex: 1 1 0;
     min-width: 0;
+}
+
+body.guest-page #feats-section-container {
+    flex: 1 1 20rem;
+}
+
+#guest-combat-death-container {
+    flex: 0 0 30rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+body.guest-page #guest-combat-death-container {
+    flex: 1 1 30rem;
+    max-width: 30rem;
 }
 
 .sheet-column {
@@ -263,6 +363,25 @@ h4 {
     #feats-section-container {
         flex: 0 0 100%;
     }
+
+    #guest-combat-death-container {
+        flex: 0 0 100%;
+    }
+
+    /* Keep guest layout fluid instead of forcing an abrupt full-width flip. */
+    body.guest-page #char-group-container,
+    body.guest-page #abilities-section-container {
+        flex: 0 1 auto;
+    }
+
+    body.guest-page #feats-section-container {
+        flex: 1 1 20rem;
+    }
+
+    body.guest-page #guest-combat-death-container {
+        flex: 1 1 30rem;
+        max-width: 30rem;
+    }
 }
 
 @media (max-width: 1000px) {
@@ -271,10 +390,96 @@ h4 {
     #feats-section-container {
         flex: 0 0 100%;
     }
+
+    #guest-combat-death-container {
+        flex: 0 0 100%;
+    }
+
+    /* Preserve the same guest behavior through mid-range widths. */
+    body.guest-page #char-group-container,
+    body.guest-page #abilities-section-container {
+        flex: 0 1 auto;
+    }
+
+    body.guest-page #feats-section-container {
+        flex: 1 1 20rem;
+    }
+
+    body.guest-page #guest-combat-death-container {
+        flex: 1 1 30rem;
+        max-width: 30rem;
+    }
 }
 
 @media (max-width: 768px) {
     .sheet-layout {
         gap: 0;
+    }
+}
+
+@media (max-width: 700px) {
+    body.guest-page #char-group-container,
+    body.guest-page #abilities-section-container,
+    body.guest-page #feats-section-container,
+    body.guest-page #guest-combat-death-container {
+        flex: 0 0 100%;
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+
+.site-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0 0.5rem;
+    font-size: 0.78rem;
+    margin-top: auto;
+}
+
+.site-footer p {
+    margin: 0;
+}
+
+.site-footer-right {
+    color: var(--title-colour);
+}
+
+.site-footer-right a,
+.site-footer-right i,
+.site-footer-right .liam-link {
+    color: var(--title-colour);
+    text-decoration: none;
+}
+
+.site-footer-right .liam-link {
+    color: var(--text-colour-one);
+}
+
+.site-footer-right a:hover,
+.site-footer-right a:focus-visible,
+.site-footer-left a:hover,
+.site-footer-left a:focus-visible {
+    text-decoration: underline;
+    opacity: 0.85;
+}
+
+.site-footer-right .liam-link:hover,
+.site-footer-right .liam-link:focus-visible {
+    color: var(--text-colour-one);
+}
+
+.site-footer-left a {
+    color: #3e2d1d;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+@media (max-width: 700px) {
+    .site-footer {
+        padding: 0 0.35rem;
+        font-size: 0.72rem;
     }
 }

@@ -1,13 +1,14 @@
 /* ── Auth dropdown ─────────────────────────────────────────────────────────── */
 
 .auth-dropdown-toggle {
-    color: var(--navbar-text-colour);
-    border: 1px solid var(--navbar-border-colour);
+    color: var(--label-colour);
+    border: 1px solid var(--label-colour);
     background: var(--navbar-bg-colour);
+    font-weight: 600;
     font-size: 0.85rem;
     padding: 0.25rem 0.7rem;
     border-radius: 0;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .auth-admin-flag {
@@ -16,23 +17,41 @@
 .auth-dropdown-toggle:hover,
 .auth-dropdown-toggle:focus,
 .auth-dropdown-toggle.show {
-    background: var(--navbar-text-colour);
-    color: var(--navbar-bg-colour);
-    border-color: var(--navbar-border-colour);
-    box-shadow: none;
+    background: var(--navbar-bg-colour);
+    color: var(--text-colour-one);
+    border-color: var(--text-colour-one);
+    box-shadow: 0 0 0 1px var(--text-colour-one);
+}
+
+.auth-dropdown-toggle:focus-visible {
+    outline: 2px solid var(--text-colour-one);
+    outline-offset: 1px;
 }
 
 .auth-dropdown-menu {
     background: var(--field-bg-colour);
     border: 1px solid var(--secondary-color-dark);
-    min-width: 280px;
+    color: var(--label-colour);
+    min-width: 18rem;
     padding: 0;
     margin-top: 0.35rem !important;
     border-radius: 0;
+    box-shadow: 0 0.65rem 1.35rem rgba(0, 0, 0, 0.45);
 }
 
 .auth-dropdown-body {
-    padding: 1rem;
+    padding: 0.9rem;
+}
+
+.auth-dropdown-body .alert.alert-success {
+    background: var(--primary-color-transparent);
+    border: 1px solid var(--secondary-color-dark);
+    color: var(--label-colour);
+    border-radius: 0;
+}
+
+.auth-dropdown-body .alert.alert-success i {
+    color: var(--secondary-color-dark);
 }
 
 /* ── Tabs (Login / Sign Up) ───────────────────────────────────────────────── */
@@ -42,7 +61,7 @@
 }
 
 .auth-tabs .nav-link {
-    color: var(--secondary-color-dark);
+    color: var(--label-colour);
     background: var(--field-bg-colour);
     border: 1px solid var(--secondary-color-dark);
     border-radius: 0;
@@ -50,10 +69,22 @@
     padding: 0.25rem 0.75rem;
 }
 
+.auth-tabs .nav-link:hover,
+.auth-tabs .nav-link:focus-visible {
+    color: var(--label-colour);
+    border-color: var(--label-colour);
+}
+
+.auth-tabs .nav-link:focus-visible {
+    outline: 2px solid var(--text-colour-one);
+    outline-offset: 1px;
+}
+
 .auth-tabs .nav-link.active {
     color: var(--text-colour-one);
     background: var(--field-bg-colour);
     border-color: var(--text-colour-one);
+    font-weight: 700;
 }
 
 /* ── Inputs ────────────────────────────────────────────────────────────────── */
@@ -67,14 +98,20 @@
 }
 
 .auth-input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--label-colour);
+    opacity: 0.65;
 }
 
 .auth-input:focus {
     background: var(--field-bg-colour);
     border-color: var(--label-colour);
     color: var(--text-colour-three);
-    box-shadow: none;
+    box-shadow: 0 0 0 1px var(--label-colour);
+}
+
+.auth-input:focus-visible {
+    outline: 2px solid var(--text-colour-one);
+    outline-offset: 1px;
 }
 
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
@@ -84,41 +121,52 @@
     font-weight: 600;
     padding: 0.35rem 0.75rem;
     border-radius: 0;
-    color: var(--text-colour-three);
+    color: var(--label-colour);
+    border: 1px solid transparent;
+    transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 
 .auth-btn-primary {
-    background: var(--label-colour);
-    color: var(--primary-color);
-    border: none;
+    background: var(--field-bg-colour);
+    color: var(--label-colour);
+    border-color: var(--secondary-color-dark);
 }
 
 .auth-btn-primary:hover {
-    background: var(--label-colour);
-    color: var(--primary-color);
-    opacity: 0.85;
+    background: var(--primary-color-transparent);
+    color: var(--label-colour);
+    border-color: var(--label-colour);
+    opacity: 1;
 }
 
 .auth-btn-logout {
-    background: transparent;
+    background: var(--field-bg-colour);
     color: var(--text-colour-one);
     border: 1px solid var(--text-colour-one);
 }
 
 .auth-btn-logout:hover {
-    background: var(--text-colour-one);
-    color: var(--primary-color);
+    background: var(--primary-color-transparent);
+    color: var(--text-colour-one);
+    border-color: var(--text-colour-one);
 }
 
 .auth-btn-admin {
-    background: transparent;
+    background: var(--field-bg-colour);
     color: var(--label-colour);
     border: 1px solid var(--secondary-color-dark);
 }
 
 .auth-btn-admin:hover {
-    background: var(--label-colour);
-    color: var(--primary-color);
+    background: var(--primary-color-transparent);
+    color: var(--label-colour);
+    border-color: var(--label-colour);
+}
+
+.auth-btn:focus-visible {
+    outline: 2px solid var(--text-colour-one);
+    outline-offset: 1px;
+    box-shadow: 0 0 0 1px var(--text-colour-one);
 }
 
 /* ── CAPTCHA ───────────────────────────────────────────────────────────────── */
@@ -138,9 +186,10 @@
 .auth-error {
     color: var(--text-colour-one);
     font-size: 0.8rem;
-    background: rgba(255, 0, 200, 0.1);
-    border: 1px solid rgba(255, 0, 200, 0.3);
+    background: var(--field-bg-colour);
+    border: 1px solid var(--text-colour-one);
     border-radius: 0;
+    box-shadow: 0 0 0 1px var(--text-colour-one);
     padding: 0.35rem 0.6rem;
     margin-bottom: 0.75rem;
 }
@@ -148,9 +197,13 @@
 /* ── Greeting (logged-in state) ───────────────────────────────────────────── */
 
 .auth-greeting {
-    color: var(--text-colour-three);
+    color: var(--label-colour);
     font-size: 0.85rem;
     margin-bottom: 0.75rem;
+}
+
+.auth-greeting strong {
+    color: var(--text-colour-one);
 }
 
 /* ── Character bar ────────────────────────────────────────────────────────── */
@@ -250,18 +303,18 @@
     display: inline-block;
     padding: 0.2rem 0.7rem;
     font-size: 0.8rem;
-    color: var(--secondary-color-dark);
+    color: var(--label-colour);
     text-decoration: none;
     background: var(--field-bg-colour);
-    border: 1px solid var(--secondary-color-dark);
+    border: 1px solid transparent;
     border-radius: 0;
     white-space: nowrap;
 }
 
 .character-bar-tab:hover {
-    color: var(--secondary-color-dark);
+    color: var(--label-colour);
     background: var(--field-bg-colour);
-    border-color: var(--secondary-color-dark);
+    border-color: transparent;
 }
 
 .character-bar-tab.active {
@@ -319,7 +372,7 @@
     width: 260px;
     background: var(--field-bg-colour);
     border: 1px solid rgba(255, 80, 80, 0.5);
-    border-radius: 6px;
+    border-radius: 0;
     padding: 0.75rem;
     z-index: 1050;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -342,7 +395,7 @@
     padding: 0.3rem 0.5rem;
     font-size: 0.8rem;
     border: 1px solid rgba(255, 80, 80, 0.4);
-    border-radius: 4px;
+    border-radius: 0;
     background: var(--field-bg-colour);
     color: var(--text-colour-three);
     margin-bottom: 0.5rem;
@@ -359,7 +412,7 @@
     font-size: 0.8rem;
     font-weight: 600;
     border: 1px solid rgba(255, 80, 80, 0.5);
-    border-radius: 4px;
+    border-radius: 0;
     background: var(--field-bg-colour);
     color: rgba(255, 80, 80, 0.5);
     cursor: not-allowed;
@@ -410,5 +463,14 @@
 
     .character-bar-mobile-controls {
         display: flex;
+    }
+}
+
+@media (max-width: 700px) {
+    .character-bar-delete-wrapper .delete-character-dropdown {
+        left: auto;
+        right: 0;
+        width: min(260px, calc(100vw - 1rem));
+        max-width: calc(100vw - 1rem);
     }
 }
