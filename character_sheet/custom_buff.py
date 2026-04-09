@@ -28,12 +28,8 @@ class BuffProcessor:
                 skills_db[ability_name] = skills
 
         raw_custom_stats = self.db.go_get_all('custom_stat', {'character_id': self.character_id}) or []
-        custom_stats_by_name: dict = {}
         custom_stats_by_id: dict = {}
         for cs in raw_custom_stats:
-            name = str(cs.get('name') or '').strip()
-            if name:
-                custom_stats_by_name.setdefault(name, []).append(cs)
             if cs.get('id'):
                 custom_stats_by_id[cs['id']] = cs
 

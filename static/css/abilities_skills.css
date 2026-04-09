@@ -178,19 +178,15 @@
     cursor: pointer;
 }
 
-.abilities-section[data-locked='true'] .proficiency-toggle-item,
-.abilities-section[data-locked='true'] .abilities-section-secondary-field,
-.abilities-section[data-locked='true'] .abilities-section-skills-item {
+.abilities-section[data-locked='true'] .proficiency-toggle-item {
     cursor: default;
 }
 
-.abilities-section[data-locked='false'] .abilities-section-secondary-field:hover,
-.abilities-section[data-locked='false'] .abilities-section-skills-item:hover {
+.abilities-section[data-locked='false'] .proficiency-toggle-item:hover {
     transform: scale(1.02);
 }
 
-.abilities-section[data-locked='false'] .abilities-section-secondary-field:active,
-.abilities-section[data-locked='false'] .abilities-section-skills-item:active {
+.abilities-section[data-locked='false'] .proficiency-toggle-item:active {
     transform: scale(0.98);
 }
 

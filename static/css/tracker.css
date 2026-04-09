@@ -38,14 +38,15 @@
 
 .sub-bar-mobile-tab-select {
     width: 100%;
-    height: 1.85rem;
-    border: 1px solid var(--label-colour);
+    height: calc(var(--character-bar-height) - 0.45rem);
+    border: 1px solid var(--secondary-color-dark);
     background: var(--field-bg-colour);
-    color: var(--label-colour);
-    font-size: 0.8rem;
+    color: var(--text-colour-three);
+    font-size: 0.78rem;
     padding: 0 0.45rem;
     border-radius: 0;
     outline: none;
+    min-width: 0;
 }
 
 .sub-bar-mobile-tab-select:focus {
@@ -102,6 +103,12 @@
     transition: color 0.15s, background 0.15s, border-color 0.15s;
 }
 
+.sub-bar-tab-delete i,
+.sub-bar-tab-rest i {
+    font-size: 0.9rem;
+    line-height: 1;
+}
+
 .sub-bar-tab-delete:hover {
     color: rgb(255, 80, 80);
     border-color: rgb(255, 80, 80);
@@ -143,9 +150,9 @@
 .sub-bar-tab-rest {
     pointer-events: all;
     background: var(--field-bg-colour);
-    border: 1px solid var(--secondary-color-dark);
+    border: 1px solid var(--label-colour);
     border-top: none;
-    color: var(--secondary-color-dark);
+    color: var(--label-colour);
     font-size: 0.78rem;
     padding: 0.2rem 0.9rem;
     cursor: pointer;
@@ -155,8 +162,8 @@
 
 .sub-bar-tab-rest:hover {
     background: var(--field-bg-colour);
-    color: var(--secondary-color-dark);
-    border-color: var(--secondary-color-dark);
+    color: var(--success-colour);
+    border-color: var(--success-colour);
 }
 
 /* ── Sub-pages (shown/hidden by JS tab switching) ──────────────────────────── */
@@ -199,6 +206,12 @@
 }
 
 .tracker-section > h4 {
+    width: 100%;
+    flex-basis: 100%;
+    flex-shrink: 0;
+}
+
+.tracker-section > .section-help-text {
     width: 100%;
     flex-basis: 100%;
     flex-shrink: 0;
@@ -387,6 +400,17 @@
     border-color: var(--tracker-fill-colour);
 }
 
+/* Death Saves: only checked pass/fail squares use success/critical colours. */
+.tracker-toggle.checked[data-tracker-id="death-saves"][data-entry-id="death-saves-pass"] {
+    background: var(--success-colour);
+    border-color: var(--success-colour);
+}
+
+.tracker-toggle.checked[data-tracker-id="death-saves"][data-entry-id="death-saves-fail"] {
+    background: var(--critical-colour);
+    border-color: var(--critical-colour);
+}
+
 /* ── Add entry / add tracker — inline row using add-actions shared styles ──── */
 
 .tracker-add-actions-row {
@@ -453,11 +477,13 @@
 @media (max-width: 700px) {
     .sub-bar .page-container {
         pointer-events: all;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.2rem;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.35rem;
         padding-left: 0.5rem;
         padding-right: 0.5rem;
+        width: 100%;
+        min-width: 0;
     }
 
     .sub-bar-tab-buttons {
@@ -466,17 +492,18 @@
 
     .sub-bar-mobile-tabs {
         display: block;
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .sub-bar-actions-row {
         margin-left: 0;
         overflow: visible;
-        width: 100%;
-        flex-wrap: wrap;
-    }
-
-    .sub-bar-actions-row .character-bar-delete-wrapper {
-        margin-left: auto;
+        width: auto;
+        flex-wrap: nowrap;
+        gap: 0.25rem;
+        flex: 0 0 auto;
+        align-items: center;
     }
 
     .sub-bar-tab,
@@ -485,6 +512,19 @@
     .sub-bar-tab-rest,
     .sub-bar-tab-delete {
         margin-right: 0;
+        width: 2.1rem;
+        min-width: 2.1rem;
+        height: calc(var(--character-bar-height) - 0.45rem);
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+    }
+
+    .sub-bar-mobile-tab-select {
+        width: 100%;
+        flex: 1 1 auto;
     }
 
     .tracker-top-row {

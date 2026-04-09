@@ -8,6 +8,8 @@
     --text-colour-three: rgb(255, 255, 255);
     /* ── User-themeable colour vars ─────────────────────── */
     --label-colour: rgb(255, 255, 255);
+    --critical-colour: rgb(220, 50, 50);
+    --success-colour: rgb(0, 189, 91);
     --tracker-fill-colour: rgb(0, 153, 74);
     --level-colour: rgb(255, 0, 234);
     --title-colour: rgb(0, 0, 0);
@@ -46,15 +48,15 @@ html::-webkit-scrollbar {
 
 body {
     background-color: var(--primary-color);
-    background-image: linear-gradient(
-        to top left,
+    /* background-image: linear-gradient(
+        to bottom right,
         rgba(0, 0, 0, 0.28) 0%,
         rgba(0, 0, 0, 0.14) 35%,
         rgba(0, 0, 0, 0) 70%
     );
     background-repeat: no-repeat;
     background-size: 100% 100%;
-    background-attachment: fixed;
+    background-attachment: fixed; */
     color: var(--text-colour-three);
     margin: 0;
     min-height: 100vh;
@@ -267,6 +269,18 @@ h4 {
     color: var(--title-colour);
 }
 
+.section-help-text {
+    margin: -0.25rem 0 0.6rem;
+    color: var(--title-colour);
+    font-size: 0.62rem;
+    line-height: 1.35;
+    opacity: 0.9;
+}
+
+[data-locked='true'] .section-help-text {
+    display: none;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════════
    Generic field primitives — shared across all sections
    ══════════════════════════════════════════════════════════════════════════════ */
@@ -413,7 +427,8 @@ h4 {
 
 @media (max-width: 768px) {
     .sheet-layout {
-        gap: 0;
+        column-gap: 0;
+        row-gap: 0.75rem;
     }
 }
 
@@ -472,7 +487,7 @@ h4 {
 }
 
 .site-footer-left a {
-    color: #3e2d1d;
+    color: var(--title-colour);
     text-decoration: none;
     font-weight: 600;
 }

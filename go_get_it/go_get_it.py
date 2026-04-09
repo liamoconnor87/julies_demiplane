@@ -33,6 +33,18 @@ class GoGetDB():
 
         return added_columns
 
+    def _go_ensure_indexes(self, cursor: sqlite3.Cursor):
+        index_statements = {
+            'idx_user_username_nocase_unique': "CREATE UNIQUE INDEX IF NOT EXISTS idx_user_username_nocase_unique ON user(username COLLATE NOCASE)",
+            'idx_user_to_character_unique': "CREATE UNIQUE INDEX IF NOT EXISTS idx_user_to_character_unique ON user_to_character(user_id, character_id)",
+        }
+
+        for index_name, statement in index_statements.items():
+            try:
+                cursor.execute(statement)
+            except sqlite3.IntegrityError:
+                print(f"[db] warning: could not create unique index '{index_name}' due to existing duplicate rows")
+
     def go_sync_schema(self):
         db = self.go_connect_db()
         cursor = db.cursor()
@@ -42,6 +54,8 @@ class GoGetDB():
             added_columns = self._go_sync_table_columns(cursor, table, schema)
             if added_columns:
                 applied_updates[table] = added_columns
+
+        self._go_ensure_indexes(cursor)
 
         db.commit()
         db.close()
@@ -105,10 +119,14 @@ class GoGetDB():
         cursor = db.cursor()
         insert = "INSERT INTO {table} ({keys}) VALUES ({values})".format(table=table, keys=", ".join(data.keys()), values=", ".join(["?"] * len(data.keys())))
         parameters = tuple(data.values())
-        cursor.execute(insert, parameters)
-
-        db.commit()
-        db.close()
+        try:
+            cursor.execute(insert, parameters)
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+        finally:
+            db.close()
 
     def go_update(self, table: str,  data: dict):
         db = self.go_connect_db()

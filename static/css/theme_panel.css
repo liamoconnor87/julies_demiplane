@@ -109,6 +109,7 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    width: 100%;
     min-width: 0;
 }
 
@@ -134,12 +135,14 @@
 
 .theme-colour-text {
     flex: 1 1 auto;
+    width: 100%;
     font-size: 0.7rem;
     padding: 0.25rem 0.4rem;
     background: var(--field-bg-colour);
     color: var(--label-colour);
     border: 1px solid var(--secondary-color-dark);
     outline: none;
+    min-inline-size: 0;
     min-width: 0;
     box-sizing: border-box;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
@@ -199,21 +202,78 @@
 @media (max-width: 600px) {
     .theme-panel {
         min-width: 0;
-        width: calc(100vw - 1rem);
+        width: 100%;
+        max-width: 100%;
     }
 
     .theme-panel-label {
-        width: 6rem;
+        width: auto;
         white-space: normal;
         line-height: 1.15;
     }
 
     .theme-panel-body {
         flex-direction: column;
+        padding: 0.65rem 0.6rem 0.5rem;
     }
 
     .theme-panel-container {
         right: 0;
         left: 0;
+        padding: 0 0.5rem;
+        box-sizing: border-box;
+    }
+
+    .theme-panel-row {
+        display: grid;
+        grid-template-columns: 1.7rem minmax(0, 1fr);
+        grid-template-areas:
+            "label label"
+            "picker text";
+        column-gap: 0.35rem;
+        row-gap: 0.2rem;
+        align-items: center;
+    }
+
+    .theme-panel-label {
+        grid-area: label;
+    }
+
+    .theme-colour-picker {
+        grid-area: picker;
+        width: 1.7rem;
+        height: 1.5rem;
+        padding: 0.08rem;
+    }
+
+    .theme-colour-text {
+        grid-area: text;
+        font-size: 0.68rem;
+        padding: 0.2rem 0.35rem;
+    }
+
+    .theme-panel-footer {
+        padding: 0.45rem 0.6rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .theme-panel-row {
+        grid-template-columns: 1.55rem minmax(0, 1fr);
+    }
+
+    .theme-colour-picker {
+        width: 1.55rem;
+        height: 1.42rem;
+    }
+
+    .theme-colour-text {
+        font-size: 0.64rem;
+    }
+
+    .theme-panel-cancel-btn,
+    .theme-panel-save-btn {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.7rem;
     }
 }

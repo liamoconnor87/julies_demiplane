@@ -38,6 +38,16 @@
     font-size: 1.05rem;
 }
 
+.combat-section-input.combat-success-state {
+    color: var(--success-colour);
+    border-color: var(--success-colour);
+}
+
+.combat-section-input.combat-critical-state {
+    color: var(--critical-colour);
+    border-color: var(--critical-colour);
+}
+
 .combat-section-label {
     /* inherits from .field-label */
 }

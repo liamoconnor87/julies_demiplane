@@ -5,6 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Julie's Demiplane</title>
+        {% set canonical_url = request.url_root.rstrip('/') ~ '/' %}
+        <meta name="description" content="Julie's Demiplane is a browser-based D&D 5e character sheet with live trackers, buffs, inventory management, and quick autosave editing.">
+        <link rel="canonical" href="{{ canonical_url }}">
+        <meta name="robots" content="index, follow">
+
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Julie's Demiplane">
+        <meta property="og:title" content="Julie's Demiplane">
+        <meta property="og:description" content="A browser-based D&D 5e character sheet with trackers, buffs, and autosave editing.">
+        <meta property="og:url" content="{{ canonical_url }}">
+
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="Julie's Demiplane">
+        <meta name="twitter:description" content="A browser-based D&D 5e character sheet with trackers, buffs, and autosave editing.">
+
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Julie's Demiplane",
+            "url": {{ canonical_url | tojson }}
+        }
+        </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tourney:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -36,6 +60,8 @@
         {% if user_theme.background_colour %}--primary-color: {{ user_theme.background_colour | e }};{% endif %}
         {% if user_theme.border_colour %}--secondary-color-dark: {{ user_theme.border_colour | e }};{% endif %}
         {% if user_theme.label_colour %}--label-colour: {{ user_theme.label_colour | e }};{% endif %}
+        {% if user_theme.critical_colour %}--critical-colour: {{ user_theme.critical_colour | e }};{% endif %}
+        {% if user_theme.success_colour %}--success-colour: {{ user_theme.success_colour | e }};{% endif %}
         {% if user_theme.tracker_fill_colour %}--tracker-fill-colour: {{ user_theme.tracker_fill_colour | e }};{% endif %}
         {% if user_theme.asterisk_colour %}--text-colour-one: {{ user_theme.asterisk_colour | e }};{% endif %}
         {% if user_theme.field_text_colour %}--text-colour-three: {{ user_theme.field_text_colour | e }};{% endif %}
@@ -80,6 +106,7 @@
     {% endif %}
 
     <main class="page-container sheet-page-content">
+    <h1 class="visually-hidden">Julie's Demiplane D&D 5e Character Sheet</h1>
     {% if is_guest and character %}
 
         <div id="guest-landing-panel">
@@ -208,12 +235,12 @@
     <footer class="site-footer" aria-label="Site footer links">
         <div class="site-footer-right">
             <p>Created by <a class="liam-link" href="https://www.webdevliam.uk" target="_blank" rel="noopener noreferrer"
-                    aria-label="webDevLiam Website"><strong>webDevLiam</strong></a> | <a href="https://github.com/liamoconnor87" target="_blank"
+                    aria-label="webDevLiam Website"><strong>webDevLiam</strong></a> <a href="https://github.com/liamoconnor87" target="_blank"
                     rel="noopener noreferrer" aria-label="My GitHub Page"><i class="fa-brands fa-github"
                         aria-hidden="true"></i></a></p>
         </div>
         <div class="site-footer-left">
-            <p><a href="https://buymeacoffee.com/webdevliam" target="_blank" rel="noopener noreferrer" aria-label="Buy Me a Coffee">Buy me a Coffee :)</a></p>
+            <p><a href="https://buymeacoffee.com/webdevliam" target="_blank" rel="noopener noreferrer" aria-label="Buy Me a Coffee">Coffee :)</a></p>
         </div>
     </footer>
 

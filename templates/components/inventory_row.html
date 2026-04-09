@@ -7,8 +7,9 @@
                 data-inventory-id="{{ item.id }}">
             <button type="button" id="inventory-delete-{{ item.id }}" class="section-remove-x" data-inventory-delete="true"
                 hx-post="/characters/{{ character_id }}/inventory/{{ item.id }}/remove"
-                hx-target="#inventory-row-{{ item.id }}"
-                hx-swap="delete"
+                hx-target="#inventory-section-container"
+                hx-swap="innerHTML"
+                hx-include="closest form"
                 aria-label="Remove item">&times;</button>
         </div>
 
@@ -16,19 +17,17 @@
             <label for="inventory-quantity-{{ item.id }}" class="field-label card-item-label">Qty</label>
                 <div class="card-item-quantity-control" aria-label="Adjust quantity for {{ item.name }}">
                     <button type="button" id="inventory-decrease-{{ item.id }}" class="field-btn card-item-btn card-item-quantity-btn" data-inventory-remove="true" data-item-quantity="{{ item.quantity }}"
-                        hx-post="/characters/{{ character_id }}/inventory/fragment"
-                        hx-target="#inventory-section-container"
-                        hx-swap="innerHTML"
-                        hx-include="closest form"
-                        hx-vals='{"inventory-action":"step","inventory-update-id":"{{ item.id }}","inventory-step":"-1"}'>−</button>
+                        hx-post="/characters/{{ character_id }}/inventory/{{ item.id }}/step"
+                        hx-target="#inventory-row-{{ item.id }}"
+                        hx-swap="outerHTML"
+                        hx-vals='{"inventory-step":"-1"}'>−</button>
                     <input type="number" id="inventory-quantity-{{ item.id }}"
                         name="inventory-quantity-{{ item.id }}" value="{{ item.quantity }}" class="field-input card-item-input card-item-quantity-display" min="0" readonly>
                     <button type="button" id="inventory-increase-{{ item.id }}" class="field-btn card-item-btn card-item-quantity-btn"
-                        hx-post="/characters/{{ character_id }}/inventory/fragment"
-                        hx-target="#inventory-section-container"
-                        hx-swap="innerHTML"
-                        hx-include="closest form"
-                        hx-vals='{"inventory-action":"step","inventory-update-id":"{{ item.id }}","inventory-step":"1"}'>+</button>
+                        hx-post="/characters/{{ character_id }}/inventory/{{ item.id }}/step"
+                        hx-target="#inventory-row-{{ item.id }}"
+                        hx-swap="outerHTML"
+                        hx-vals='{"inventory-step":"1"}'>+</button>
                 </div>
         </div>
 

@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import sqlite3
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from functions.functions import uuid
@@ -36,12 +37,15 @@ class User(UserMixin):
     def create(db, username: str, password: str):
         """Hash the password, insert a new user row, return the User."""
         user_id = uuid()
-        db.go_add_new('user', {
-            'id': user_id,
-            'username': username,
-            'password_hash': generate_password_hash(password),
-            'created_at': datetime.now(timezone.utc).isoformat(),
-        })
+        try:
+            db.go_add_new('user', {
+                'id': user_id,
+                'username': username,
+                'password_hash': generate_password_hash(password),
+                'created_at': datetime.now(timezone.utc).isoformat(),
+            })
+        except sqlite3.IntegrityError:
+            return None
         return User(id=user_id, username=username)
 
     @staticmethod
@@ -129,6 +133,8 @@ THEME_DEFAULTS = {
     'background_colour':  '#b8a8cd',
     'border_colour':      'rgb(0, 189, 91)',
     'label_colour':       'rgb(255, 255, 255)',
+    'critical_colour':    'rgb(220, 50, 50)',
+    'success_colour':     'rgb(0, 189, 91)',
     'tracker_fill_colour': 'rgb(0, 153, 74)',
     'asterisk_colour':    'rgb(255, 0, 234)',
     'field_text_colour':  'rgb(255, 255, 255)',

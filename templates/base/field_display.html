@@ -14,10 +14,10 @@
     <div class="{{ display_label_classes }}">{{ display_label_text }}</div>
     {% if display_checkbox_name %}
     <input type="checkbox" id="{{ display_checkbox_id }}" name="{{ display_checkbox_name }}" value="1" {% if display_checkbox_checked %}checked{% endif %} class="hidden-proficiency-checkbox"
-        hx-post="/characters/{{ character_id }}/abilities-skills/fragment"
-        hx-target="#abilities-section-container"
-        hx-swap="innerHTML"
-        hx-include="closest form"
+        hx-post="/characters/{{ character_id }}/abilities-skills/{{ ability_name }}/update"
+        hx-target="#ability-row-{{ ability_name }}"
+        hx-swap="outerHTML"
+        hx-include="closest .abilities-section-row"
         hx-trigger="change">
     {% endif %}
 </div>

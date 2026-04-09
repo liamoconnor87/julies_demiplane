@@ -33,14 +33,21 @@ def setup_auth(app: Flask, db, limiter=None):
 
     @app.context_processor
     def inject_captcha():
-        """Provide a fresh CAPTCHA image for unauthenticated signup forms."""
+        """Provide a stable CAPTCHA image for unauthenticated signup forms."""
         if current_user.is_authenticated:
             return {}
-        challenge = ''.join(
-            secrets.choice(string.ascii_uppercase + string.digits)
-            for _ in range(5)
-        )
-        session['captcha_answer'] = challenge
+
+        # Keep the same challenge for the current session until it is consumed
+        # by signup. This prevents unrelated fragment renders from invalidating
+        # the value the user sees in the dropdown.
+        challenge = session.get('captcha_answer')
+        if not challenge:
+            challenge = ''.join(
+                secrets.choice(string.ascii_uppercase + string.digits)
+                for _ in range(5)
+            )
+            session['captcha_answer'] = challenge
+
         return {'captcha_image': generate_captcha_image(challenge)}
 
     # Apply rate limits to auth endpoints if limiter is available

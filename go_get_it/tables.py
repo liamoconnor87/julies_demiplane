@@ -25,7 +25,7 @@ TABLES = {
 TABLES = {
     "user": {
         "id": _id,
-        "username": _text(30),
+        "username": f"{_text(30)} UNIQUE",
         "password_hash": _text(256),
         "created_at": _text(),
         "admin": _boolean,
@@ -225,6 +225,8 @@ TABLES = {
         "background_colour": _text(),
         "border_colour": _text(),
         "label_colour": _text(),
+        "critical_colour": _text(),
+        "success_colour": _text(),
         "tracker_fill_colour": _text(),
         "asterisk_colour": _text(),
         "field_text_colour": _text(),

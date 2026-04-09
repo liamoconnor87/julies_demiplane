@@ -3,6 +3,7 @@
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <div class="tracker-section">
     <h4>Trackers</h4>
+    <p class="section-help-text">Build custom counters for your spells, rages, or anything else you track.</p>
 
     {% if trackers %}
     {% for tracker in trackers %}

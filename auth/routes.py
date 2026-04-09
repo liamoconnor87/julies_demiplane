@@ -65,6 +65,8 @@ def signup():
 
     # Create and log in
     user = User.create(db, username, password)
+    if not user:
+        return _auth_error_response('Username is already taken.', active_tab='signup')
     login_user(user)
 
     # Migrate guest character to the new user account

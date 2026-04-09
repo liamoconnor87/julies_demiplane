@@ -24,11 +24,17 @@
             {# Theme palette button #}
             <button class="sub-bar-tab sub-bar-tab-theme" id="theme-panel-toggle" type="button" title="Colour Theme"><i class="bi bi-brush-fill" aria-hidden="true"></i></button>
             {# Full Rest — only visible on trackers tab #}
-            <button class="sub-bar-tab-rest d-none" data-full-rest-btn="true" type="button" title="Full Rest">Full Rest</button>
+            <button class="sub-bar-tab-rest d-none" data-full-rest-btn="true" type="button" title="Full Rest" aria-label="Full Rest">
+                <i class="bi bi-moon-stars-fill" aria-hidden="true"></i>
+                <span class="visually-hidden">Full Rest</span>
+            </button>
             {# Delete tab — right-aligned #}
             {% if not (is_unsaved is defined and is_unsaved) %}
             <div class="character-bar-delete-wrapper">
-                <button class="sub-bar-tab-delete" id="delete-character-toggle" title="Delete Character" type="button">Delete</button>
+                <button class="sub-bar-tab-delete" id="delete-character-toggle" title="Delete Character" type="button" aria-label="Delete Character">
+                    <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                    <span class="visually-hidden">Delete Character</span>
+                </button>
                 <div id="delete-character-dropdown" class="delete-character-dropdown d-none">
                     {% include 'components/delete_character_dropdown.html' %}
                 </div>
