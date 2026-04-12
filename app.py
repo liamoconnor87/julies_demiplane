@@ -408,7 +408,6 @@ def character_sheet():
 
     _, character_sheet_data = _build_character_sheet_data(character_id)
     trackers = _get_trackers(character_id)
-    custom_trackers = [tracker for tracker in trackers if tracker.get('id') != _DEATH_SAVES_TRACKER_ID]
 
     # Detect if this is a brand-new character (no name set yet)
     is_new_character = not character_sheet_data['character'].get('name')
@@ -435,7 +434,7 @@ def character_sheet():
         custom_buffs_at_capacity=character_sheet_data['custom_buffs_at_capacity'],
         buff_target_options=character_sheet_data['buff_target_options'],
         trackers=trackers,
-        trackers_at_capacity=len(custom_trackers) >= TRACKER_MAX,
+        trackers_at_capacity=len(trackers) >= TRACKER_MAX,
         tracker_max=TRACKER_MAX,
         tracker_entry_max=TRACKER_ENTRY_MAX,
         user_theme=user_theme,
@@ -1153,10 +1152,9 @@ def remove_class(character_id: str, class_id: str):
 
 
 def _get_trackers(character_id: str):
-    """Return all trackers (with entries) for a character, ordered by id."""
-    death_saves = _build_death_saves_tracker()
+    """Return custom DB trackers (with entries) for a character."""
     trackers = db.go_get_all('tracker', {'character_id': character_id}) or []
-    result = [death_saves]
+    result = []
     for t in trackers:
         entries = db.go_get_all('tracker_entry', {'tracker_id': t['id']}) or []
         result.append({
@@ -1170,12 +1168,11 @@ def _get_trackers(character_id: str):
 
 def _render_tracker_page(character_id: str):
     trackers = _get_trackers(character_id)
-    custom_trackers = [tracker for tracker in trackers if tracker.get('id') != _DEATH_SAVES_TRACKER_ID]
     return render_template(
         'components/tracker_page.html',
         character_id=character_id,
         trackers=trackers,
-        trackers_at_capacity=len(custom_trackers) >= TRACKER_MAX,
+        trackers_at_capacity=len(trackers) >= TRACKER_MAX,
         tracker_max=TRACKER_MAX,
         tracker_entry_max=TRACKER_ENTRY_MAX,
     )
