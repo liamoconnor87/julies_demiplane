@@ -1,0 +1,279 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   theme_panel.css — colour customisation panel
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Palette button in sub-bar ──────────────────────────────────────────────── */
+
+.sub-bar-tab-theme {
+    pointer-events: all;
+    background: var(--field-bg-colour);
+    border: 1px solid var(--label-colour);
+    border-top: none;
+    color: var(--label-colour);
+    font-size: 0.78rem;
+    padding: 0.2rem 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 0;
+}
+
+.sub-bar-tab-theme:hover {
+    background: var(--field-bg-colour);
+    color: var(--label-colour);
+    border-color: var(--label-colour);
+}
+
+.sub-bar-tab-theme.active {
+    background: var(--field-bg-colour);
+    color: var(--secondary-color-dark);
+    border-color: var(--secondary-color-dark);
+}
+
+/* ── Panel container — anchored below the sub-bar ────────────────────────── */
+
+.theme-panel-container {
+    position: fixed;
+    top: calc(var(--navbar-height) + var(--character-bar-height) + var(--sub-bar-height));
+    right: 0.5rem;
+    z-index: 996;
+    max-height: calc(100vh - var(--navbar-height) - var(--character-bar-height) - var(--sub-bar-height) - 1rem);
+    overflow-y: auto;
+}
+
+/* ── Panel card ──────────────────────────────────────────────────────────── */
+
+.theme-panel {
+    background: var(--field-bg-colour);
+    border: 1px solid var(--secondary-color-dark);
+    padding: 0;
+    min-width: min(26rem, calc(100vw - 1rem));
+    width: min(26rem, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+.theme-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem 0.4rem;
+    background: var(--field-bg-colour);
+    border-bottom: 1px solid var(--secondary-color-dark);
+    color: var(--text-colour-one);
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.theme-panel-header > span {
+    color: var(--text-colour-one);
+}
+
+.theme-panel-close-btn {
+    background: none;
+    border: none;
+    color: var(--button-icon-colour);
+    font-size: 1.25rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 0.2rem;
+    transition: color 0.15s;
+    opacity: 0.7;
+}
+
+.theme-panel-close-btn:hover {
+    opacity: 1;
+    color: var(--button-icon-colour);
+}
+
+/* ── Panel body — two column layout ──────────────────────────────────────── */
+
+.theme-panel-body {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    padding: 0.75rem 0.75rem 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* ── Colour control rows ─────────────────────────────────────────────────── */
+
+.theme-panel-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.theme-panel-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.theme-panel-label {
+    font-size: 0.65rem;
+    color: var(--label-colour);
+    width: clamp(5.75rem, 33%, 9rem);
+    flex-shrink: 1;
+    white-space: nowrap;
+}
+
+.theme-colour-picker {
+    width: 2rem;
+    height: 1.6rem;
+    padding: 0.1rem 0.15rem;
+    border: 1px solid var(--secondary-color-dark);
+    background: var(--field-bg-colour);
+    cursor: pointer;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+
+.theme-colour-text {
+    flex: 1 1 auto;
+    width: 100%;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.4rem;
+    background: var(--field-bg-colour);
+    color: var(--label-colour);
+    border: 1px solid var(--secondary-color-dark);
+    outline: none;
+    min-inline-size: 0;
+    min-width: 0;
+    box-sizing: border-box;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.theme-colour-text:focus {
+    border-color: var(--label-colour);
+}
+
+.theme-colour-text.is-invalid {
+    border-color: rgba(255, 80, 80, 0.8);
+}
+
+/* ── Panel footer ────────────────────────────────────────────────────────── */
+
+.theme-panel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid var(--secondary-color-dark);
+}
+
+.theme-save-feedback {
+    margin-right: auto;
+    font-size: 0.7rem;
+    color: var(--label-colour);
+    min-width: 3rem;
+}
+
+.theme-panel-cancel-btn,
+.theme-panel-save-btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.9rem;
+    border: 1px solid var(--secondary-color-dark);
+    background: var(--field-bg-colour);
+    color: var(--label-colour);
+    opacity: 0.7;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.theme-panel-cancel-btn:hover,
+.theme-panel-save-btn:hover {
+    opacity: 1;
+    border-color: var(--label-colour);
+}
+
+.theme-panel-save-btn {
+    opacity: 1;
+    border-color: var(--label-colour);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+    .theme-panel {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .theme-panel-label {
+        width: auto;
+        white-space: normal;
+        line-height: 1.15;
+    }
+
+    .theme-panel-body {
+        flex-direction: column;
+        padding: 0.65rem 0.6rem 0.5rem;
+    }
+
+    .theme-panel-container {
+        right: 0;
+        left: 0;
+        padding: 0 0.5rem;
+        box-sizing: border-box;
+    }
+
+    .theme-panel-row {
+        display: grid;
+        grid-template-columns: 1.7rem minmax(0, 1fr);
+        grid-template-areas:
+            "label label"
+            "picker text";
+        column-gap: 0.35rem;
+        row-gap: 0.2rem;
+        align-items: center;
+    }
+
+    .theme-panel-label {
+        grid-area: label;
+    }
+
+    .theme-colour-picker {
+        grid-area: picker;
+        width: 1.7rem;
+        height: 1.5rem;
+        padding: 0.08rem;
+    }
+
+    .theme-colour-text {
+        grid-area: text;
+        font-size: 0.68rem;
+        padding: 0.2rem 0.35rem;
+    }
+
+    .theme-panel-footer {
+        padding: 0.45rem 0.6rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .theme-panel-row {
+        grid-template-columns: 1.55rem minmax(0, 1fr);
+    }
+
+    .theme-colour-picker {
+        width: 1.55rem;
+        height: 1.42rem;
+    }
+
+    .theme-colour-text {
+        font-size: 0.64rem;
+    }
+
+    .theme-panel-cancel-btn,
+    .theme-panel-save-btn {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.7rem;
+    }
+}

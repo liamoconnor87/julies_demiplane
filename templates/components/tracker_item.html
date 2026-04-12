@@ -4,7 +4,7 @@
     {# ── Tracker name row ── #}
     <div class="tracker-row">
         <div class="tracker-field tracker-name-field">
-            <label class="field-label tracker-label">Tracker</label>
+            <label class="field-label tracker-label">Tracker</label> {# I want to remove this label, but the difference in height altered needs to be figured out to keep its size #}
             <input type="text" class="field-input tracker-input tracker-name-input"
                    data-tracker-id="{{ tracker.id }}"
                    value="{{ tracker.name }}"
@@ -62,7 +62,7 @@
                 {% endfor %}
             </div>
         </div>
-        {% if loop.last and not tracker.fixed %}
+        {% if loop.last and not tracker.fixed and not tracker.entries_at_capacity %}
         {% set btn_wrapper_class = 'add-actions-field tracker-add-entry-inline-btn' %}
         {% set btn_btn_class = 'add-actions-btn tracker-add-entry-btn' %}
         {% set btn_wrapper_id = 'add-entry-btn-wrapper-' ~ tracker.id %}
@@ -108,7 +108,7 @@
     {% endfor %}
 
     {# ── Add entry — standalone when no entries exist ── #}
-    {% if not tracker.entries and not tracker.fixed %}
+    {% if not tracker.entries and not tracker.fixed and not tracker.entries_at_capacity %}
     <div class="tracker-add-actions-row" id="tracker-add-entry-row-{{ tracker.id }}">
         {% set btn_wrapper_class = 'add-actions-field' %}
         {% set btn_btn_class = 'add-actions-btn tracker-add-entry-btn' %}

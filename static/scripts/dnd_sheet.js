@@ -2,6 +2,7 @@ window.addEventListener("load", () => {
     initializeUiBindings();
     bindDeleteCharacterDropdown();
     bindSubBarTabs();
+    bindThemePanel();
 
     // Inject the CSRF token into every htmx AJAX request as a header.
     // Flask-WTF's CSRFProtect accepts tokens from the X-CSRFToken header,
@@ -12,16 +13,20 @@ window.addEventListener("load", () => {
         }
     });
 
-    // After a feat delete (hx-swap="delete"), update capacity visibility
-    document.body.addEventListener('htmx:afterRequest', (event) => {
+    // Keep capacity controls in sync after HTMX swaps settle.
+    document.body.addEventListener('htmx:afterSettle', (event) => {
+        if (event.detail.successful === false) {
+            return;
+        }
+
         const trigger = event.detail.elt;
-        if (trigger && trigger.dataset.featRemove === 'true' && event.detail.successful) {
+        if (trigger && trigger.dataset.featRemove === 'true') {
             syncFeatCapacityVisibility();
         }
-        if (trigger && trigger.dataset.inventoryRemove === 'true' && event.detail.successful) {
+        if (trigger && trigger.dataset.inventoryRemove === 'true') {
             syncInventoryCapacityVisibility();
         }
-        if (trigger && trigger.dataset.inventoryDelete === 'true' && event.detail.successful) {
+        if (trigger && trigger.dataset.inventoryDelete === 'true') {
             syncInventoryCapacityVisibility();
         }
     });
@@ -56,6 +61,7 @@ window.addEventListener("load", () => {
         if (target.id === 'character-info-section-container') {
             bindCurrentHpCalculation();
             bindProficiencyToggles();
+            bindTrackerToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
             bindCharacterInfoAutoSave();
@@ -88,7 +94,7 @@ window.addEventListener("load", () => {
             return;
         }
 
-        if (target.id === 'feats-list') {
+        if (target.id === 'feats-list' || target.id === 'add-feat-row') {
             // Clear and close the add-feat form after a successful add
             const nameInput = document.getElementById('feat_and_trait-name');
             const descInput = document.getElementById('feat_and_trait-description');
@@ -123,6 +129,13 @@ window.addEventListener("load", () => {
         }
 
         if (target.id === 'abilities-section-container') {
+            bindProficiencyToggles();
+            syncGlobalLockState();
+            decorateBuffedLabels();
+            return;
+        }
+
+        if (target.id && target.id.startsWith('ability-row-')) {
             bindProficiencyToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
@@ -169,6 +182,7 @@ window.addEventListener("load", () => {
 
         // Individual inventory row update (outerHTML swap)
         if (target.id && target.id.startsWith('inventory-row-')) {
+            syncInventoryCapacityVisibility();
             setTimeout(() => bindInventoryDescriptionDisplayAutoHeight(), 0);
             bindInventoryAutoSave();
             syncGlobalLockState();
@@ -193,6 +207,14 @@ window.addEventListener("load", () => {
             return;
         }
 
+        // Individual custom stat row update (outerHTML swap)
+        if (target.id && target.id.startsWith('custom-stat-row-')) {
+            bindCustomStatAutoSave();
+            syncGlobalLockState();
+            decorateBuffedLabels();
+            return;
+        }
+
         if (target.id === 'custom-stats-section-container') {
             bindAddActionButtons();
             syncGlobalLockState();
@@ -211,13 +233,21 @@ window.addEventListener("load", () => {
             bindCombatFieldAutoSave();
             bindBuffCardEdit();
             decorateBuffedLabels();
+            return;
         }
 
         if (target.id === 'combat-stats-section-container') {
             bindCurrentHpCalculation();
             bindCombatFieldAutoSave();
             syncGlobalLockState();
+            return;
         }
+    });
+
+    // Combat values can be changed by HTMX swaps (including OOB fragments)
+    // without emitting user input events, so re-apply state classes here.
+    document.body.addEventListener('htmx:afterSettle', () => {
+        applyCombatStateColours();
     });
 })
 
@@ -254,6 +284,30 @@ function setCookieValue(name, value, maxAgeSeconds) {
     document.cookie = `${encodedName}=${encodedValue}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
 }
 
+function applyCombatStateColours(fields = {}) {
+    const healthPointsField = fields.healthPointsField || document.getElementById('character-health_points');
+    const tempHpField = fields.tempHpField || document.getElementById('character-temporary_hit_points');
+    const currentHpField = fields.currentHpField || document.getElementById('character-current_health_points');
+
+    if (!healthPointsField || !tempHpField || !currentHpField) {
+        return;
+    }
+
+    const parseNumberOrZero = (value) => {
+        if (value === '--' || value === '') return 0;
+        const parsed = Number.parseInt(value, 10);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    };
+
+    const tempHp = Math.max(0, parseNumberOrZero(tempHpField.value));
+    const healthPoints = Math.max(0, parseNumberOrZero(healthPointsField.value));
+    const currentHp = Math.max(0, parseNumberOrZero(currentHpField.value));
+    const criticalThreshold = healthPoints / 4;
+
+    tempHpField.classList.toggle('combat-success-state', tempHp > 0);
+    currentHpField.classList.toggle('combat-critical-state', healthPoints > 0 && currentHp <= criticalThreshold);
+}
+
 // ── Delete-character dropdown ────────────────────────────────────────────────
 
 /**
@@ -262,12 +316,16 @@ function setCookieValue(name, value, maxAgeSeconds) {
  */
 function bindDeleteCharacterDropdown() {
     const toggle = document.getElementById('delete-character-toggle');
-    const dropdown = document.getElementById('delete-character-dropdown');
-    if (!toggle || !dropdown) return;
+    if (!toggle || toggle.dataset.bound === 'true') return;
+    toggle.dataset.bound = 'true';
 
     toggle.addEventListener('click', (e) => {
         e.stopPropagation();
+        const dropdown = document.getElementById('delete-character-dropdown');
+        if (!dropdown) return;
+
         dropdown.classList.toggle('d-none');
+
         // Focus the input when opening
         if (!dropdown.classList.contains('d-none')) {
             const input = dropdown.querySelector('#delete-confirm-input');
@@ -275,15 +333,19 @@ function bindDeleteCharacterDropdown() {
         }
     });
 
-    // Close on outside click
-    document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && e.target !== toggle) {
-            dropdown.classList.add('d-none');
-        }
-    });
-
-    // Prevent clicks inside the dropdown from closing it
-    dropdown.addEventListener('click', (e) => e.stopPropagation());
+    if (document.body.dataset.deleteDropdownDocBound !== 'true') {
+        document.body.dataset.deleteDropdownDocBound = 'true';
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('delete-character-dropdown');
+            const liveToggle = document.getElementById('delete-character-toggle');
+            if (!dropdown || !liveToggle) {
+                return;
+            }
+            if (!dropdown.contains(e.target) && !liveToggle.contains(e.target)) {
+                dropdown.classList.add('d-none');
+            }
+        });
+    }
 
     bindDeleteConfirmInput();
 }
@@ -294,7 +356,8 @@ function bindDeleteCharacterDropdown() {
 function bindDeleteConfirmInput() {
     const input = document.getElementById('delete-confirm-input');
     const btn = document.getElementById('delete-confirm-btn');
-    if (!input || !btn) return;
+    if (!input || !btn || input.dataset.bound === 'true') return;
+    input.dataset.bound = 'true';
 
     input.addEventListener('input', () => {
         if (input.value.trim() === 'DELETE') {
@@ -326,6 +389,24 @@ function initializeUiBindings() {
     bindInventoryContainerSettle();
     bindGlobalLockToggle();
     bindTrackerAutoSave();
+    bindTrackerToggles();
+    bindMobileCharacterSelect();
+}
+
+function bindMobileCharacterSelect() {
+    const selector = document.getElementById('character-mobile-select');
+    if (!selector || selector.dataset.bound === 'true') {
+        return;
+    }
+
+    selector.dataset.bound = 'true';
+    selector.addEventListener('change', () => {
+        const selectedCharacterId = String(selector.value || '').trim();
+        if (!selectedCharacterId || selectedCharacterId === '__unsaved__') {
+            return;
+        }
+        window.location.assign(`/?character_id=${encodeURIComponent(selectedCharacterId)}`);
+    });
 }
 
 const FEAT_TRAIT_MAX = 15;
@@ -409,6 +490,9 @@ function bindFeatAutoSave() {
             }
             featAutoSaveTimers[featId] = setTimeout(() => {
                 featAutoSaveTimers[featId] = null;
+                if (!document.contains(nameInput) || (descInput && !document.contains(descInput))) {
+                    return;
+                }
                 htmx.ajax('POST', `/characters/${characterId}/feat-and-trait/${featId}/update`, {
                     target: `#feat-row-${featId}`,
                     swap: 'outerHTML',
@@ -512,7 +596,7 @@ function bindClassLevelAutoSave() {
     });
 }
 
-let customStatAutoSaveTimer = null;
+let customStatAutoSaveTimers = {};
 
 function bindCustomStatAutoSave() {
     const characterIdField = document.getElementById('character-id');
@@ -526,40 +610,41 @@ function bindCustomStatAutoSave() {
         return;
     }
 
-    const form = statsSection.closest('form');
-    if (!form) {
-        return;
-    }
-
     const inputs = statsSection.querySelectorAll('.custom-stats-section-input[type="number"]');
 
-    const triggerAutoSave = () => {
-        if (customStatAutoSaveTimer) {
-            clearTimeout(customStatAutoSaveTimer);
-        }
-        customStatAutoSaveTimer = setTimeout(() => {
-            customStatAutoSaveTimer = null;
-            htmx.ajax('POST', `/characters/${characterId}/custom-stats/fragment`, {
-                source: form,
-                target: '#custom-stats-section-container',
-                swap: 'innerHTML'
-            });
-        }, 1000);
-    };
-
     inputs.forEach((input) => {
+        const statId = input.dataset.customStatId || input.id.replace('custom_stat-value-', '');
+        if (!statId || !input.id.startsWith('custom_stat-value-')) {
+            return;
+        }
+
+        const triggerAutoSave = () => {
+            if (customStatAutoSaveTimers[statId]) {
+                clearTimeout(customStatAutoSaveTimers[statId]);
+            }
+
+            customStatAutoSaveTimers[statId] = setTimeout(() => {
+                customStatAutoSaveTimers[statId] = null;
+
+                const valueFieldName = `custom_stat-value-${statId}`;
+                const nameFieldName = `custom_stat-name-${statId}`;
+                const nameInput = document.getElementById(nameFieldName);
+
+                htmx.ajax('POST', `/characters/${characterId}/custom-stat/${statId}/update`, {
+                    target: `#custom-stat-row-${statId}`,
+                    swap: 'outerHTML',
+                    values: {
+                        [valueFieldName]: input.value,
+                        [nameFieldName]: nameInput ? nameInput.value : '',
+                    }
+                });
+            }, 1000);
+        };
+
         if (input.dataset.autoSaveBound === 'true') return;
         input.dataset.autoSaveBound = 'true';
         input.addEventListener('input', triggerAutoSave);
     });
-}
-
-function bindClassesAndStatsLockToggle() {
-    syncGlobalLockState();
-}
-
-function bindBuffsLockToggle() {
-    syncGlobalLockState();
 }
 
 function bindBuffCardEdit() {
@@ -600,6 +685,7 @@ function bindBuffCardEdit() {
         htmx.process(submitBtn);
         if (submitLabel) submitLabel.textContent = 'Add';
         section.dataset.editMode = 'false';
+        section.dataset.editBuffId = '';
     };
 
     const cards = section.querySelectorAll('.custom-buffs-card[data-buff-edit="true"]');
@@ -608,12 +694,24 @@ function bindBuffCardEdit() {
         card.dataset.editBound = 'true';
 
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.custom-buffs-remove-btn')) return;
+            if (e.target.closest('[data-buff-remove="true"]')) return;
             if (section.dataset.locked === 'true') return;
 
             const buffId = card.dataset.buffId;
             const buffName = card.dataset.buffName;
             const buffValue = card.dataset.buffValue;
+
+            // Clicking the currently selected buff toggles edit mode off.
+            if (section.dataset.editMode === 'true' && section.dataset.editBuffId === String(buffId || '')) {
+                const closeBtn = document.getElementById('close-custom-buff-field-x-btn');
+                if (closeBtn) {
+                    closeBtn.click();
+                } else {
+                    resetToAddMode();
+                }
+                return;
+            }
+
             let buffTargets = [];
             try {
                 buffTargets = JSON.parse(card.dataset.buffTargets || '[]');
@@ -659,6 +757,7 @@ function bindBuffCardEdit() {
             }
             if (submitLabel) submitLabel.textContent = 'Save';
             section.dataset.editMode = 'true';
+            section.dataset.editBuffId = String(buffId || '');
 
             // Show the form (same as clicking the + Add button)
             if (addBtnWrapper) addBtnWrapper.style.display = 'none';
@@ -718,6 +817,16 @@ function syncGlobalLockState() {
     const abilitiesSection = document.querySelector('.abilities-section');
     if (abilitiesSection) {
         abilitiesSection.dataset.locked = String(isLocked);
+    }
+
+    // ── Character + Combat sections ──
+    const characterInfoSection = document.querySelector('.character-info-section');
+    if (characterInfoSection) {
+        characterInfoSection.dataset.locked = String(isLocked);
+    }
+    const combatSection = document.querySelector('.combat-section');
+    if (combatSection) {
+        combatSection.dataset.locked = String(isLocked);
     }
 
     // ── Classes & custom stats section ──
@@ -1108,7 +1217,7 @@ function bindAddActionButtons() {
         hideElement(closeBtnWrapper);
     };
 
-    if (addClassBtn) {
+    if (addClassBtn && addClassBtn.dataset.bound !== 'true') {
         addClassBtn.addEventListener('click', () => {
             hideElement(addClassBtnWrapper);
             hideElement(addCustomStatBtnWrapper);
@@ -1117,9 +1226,10 @@ function bindAddActionButtons() {
             showElement(addClassSubmitBtn);
             showElement(closeBtnWrapper);
         });
+        addClassBtn.dataset.bound = 'true';
     }
 
-    if (addCustomStatBtn) {
+    if (addCustomStatBtn && addCustomStatBtn.dataset.bound !== 'true') {
         addCustomStatBtn.addEventListener('click', () => {
             hideElement(addClassBtnWrapper);
             hideElement(addCustomStatBtnWrapper);
@@ -1128,10 +1238,12 @@ function bindAddActionButtons() {
             showElement(addCustomStatSubmitBtnWrapper);
             showElement(closeBtnWrapper);
         });
+        addCustomStatBtn.dataset.bound = 'true';
     }
 
-    if (closeBtn) {
+    if (closeBtn && closeBtn.dataset.bound !== 'true') {
         closeBtn.addEventListener('click', hideAllForms);
+        closeBtn.dataset.bound = 'true';
     }
 }
 
@@ -1148,27 +1260,39 @@ function selectFeatField() {
         return;
     }
 
-    addFeatBtn.addEventListener('click', () => {
-        addFeatBtnWrapper.style.display = 'none';
-        addFeatFieldName.style.display = 'flex';
-        addFeatFieldDescription.style.display = 'flex';
-        addFeatSubmitBtnWrapper.style.display = 'flex';
-        closeFeatBtnWrapper.style.display = 'flex';
+    if (addFeatBtn.dataset.bound !== 'true') {
+        addFeatBtn.addEventListener('click', () => {
+            addFeatBtnWrapper.style.display = 'none';
+            addFeatFieldName.style.display = 'flex';
+            addFeatFieldDescription.style.display = 'flex';
+            addFeatSubmitBtnWrapper.style.display = 'flex';
+            closeFeatBtnWrapper.style.display = 'flex';
 
-        const addDescriptionField = addFeatFieldDescription.querySelector('.card-item-description-input');
-        if (addDescriptionField) {
-            addDescriptionField.style.height = '';
-            resizeFeatDescriptionField(addDescriptionField);
-        }
-    });
+            const addDescriptionField = addFeatFieldDescription.querySelector('.card-item-description-input');
+            if (addDescriptionField) {
+                if (addDescriptionField.dataset.autoresizeBound !== 'true') {
+                    addDescriptionField.addEventListener('input', () => {
+                        resizeFeatDescriptionField(addDescriptionField);
+                    });
+                    addDescriptionField.dataset.autoresizeBound = 'true';
+                }
+                addDescriptionField.style.height = '';
+                resizeFeatDescriptionField(addDescriptionField);
+            }
+        });
+        addFeatBtn.dataset.bound = 'true';
+    }
 
-    closeFeatFieldXBtn.addEventListener('click', () => {
-        addFeatBtnWrapper.style.display = 'flex';
-        addFeatFieldName.style.display = 'none';
-        addFeatFieldDescription.style.display = 'none';
-        addFeatSubmitBtnWrapper.style.display = 'none';
-        closeFeatBtnWrapper.style.display = 'none';
-    });
+    if (closeFeatFieldXBtn.dataset.bound !== 'true') {
+        closeFeatFieldXBtn.addEventListener('click', () => {
+            addFeatBtnWrapper.style.display = 'flex';
+            addFeatFieldName.style.display = 'none';
+            addFeatFieldDescription.style.display = 'none';
+            addFeatSubmitBtnWrapper.style.display = 'none';
+            closeFeatBtnWrapper.style.display = 'none';
+        });
+        closeFeatFieldXBtn.dataset.bound = 'true';
+    }
 }
 
 function selectInventoryField() {
@@ -1185,29 +1309,35 @@ function selectInventoryField() {
         return;
     }
 
-    addInventoryBtn.addEventListener('click', () => {
-        addInventoryBtnWrapper.style.display = 'none';
-        addInventoryFieldName.style.display = 'flex';
-        addInventoryFieldQuantity.style.display = 'flex';
-        addInventoryFieldDescription.style.display = 'flex';
-        addInventorySubmitBtnWrapper.style.display = 'flex';
-        closeInventoryBtnWrapper.style.display = 'flex';
+    if (addInventoryBtn.dataset.bound !== 'true') {
+        addInventoryBtn.addEventListener('click', () => {
+            addInventoryBtnWrapper.style.display = 'none';
+            addInventoryFieldName.style.display = 'flex';
+            addInventoryFieldQuantity.style.display = 'flex';
+            addInventoryFieldDescription.style.display = 'flex';
+            addInventorySubmitBtnWrapper.style.display = 'flex';
+            closeInventoryBtnWrapper.style.display = 'flex';
 
-        const addDescriptionField = addInventoryFieldDescription.querySelector('.card-item-description-input');
-        if (addDescriptionField) {
-            addDescriptionField.style.height = '';
-            resizeInventoryDescriptionField(addDescriptionField);
-        }
-    });
+            const addDescriptionField = addInventoryFieldDescription.querySelector('.card-item-description-input');
+            if (addDescriptionField) {
+                addDescriptionField.style.height = '';
+                resizeInventoryDescriptionField(addDescriptionField);
+            }
+        });
+        addInventoryBtn.dataset.bound = 'true';
+    }
 
-    closeInventoryFieldXBtn.addEventListener('click', () => {
-        addInventoryBtnWrapper.style.display = 'flex';
-        addInventoryFieldName.style.display = 'none';
-        addInventoryFieldQuantity.style.display = 'none';
-        addInventoryFieldDescription.style.display = 'none';
-        addInventorySubmitBtnWrapper.style.display = 'none';
-        closeInventoryBtnWrapper.style.display = 'none';
-    });
+    if (closeInventoryFieldXBtn.dataset.bound !== 'true') {
+        closeInventoryFieldXBtn.addEventListener('click', () => {
+            addInventoryBtnWrapper.style.display = 'flex';
+            addInventoryFieldName.style.display = 'none';
+            addInventoryFieldQuantity.style.display = 'none';
+            addInventoryFieldDescription.style.display = 'none';
+            addInventorySubmitBtnWrapper.style.display = 'none';
+            closeInventoryBtnWrapper.style.display = 'none';
+        });
+        closeInventoryFieldXBtn.dataset.bound = 'true';
+    }
 }
 
 function resizeFeatDescriptionField(field) {
@@ -1260,6 +1390,9 @@ function bindInventoryAutoSave() {
             }
             inventoryAutoSaveTimers[inventoryId] = setTimeout(() => {
                 inventoryAutoSaveTimers[inventoryId] = null;
+                if (!document.contains(nameInput) || (descInput && !document.contains(descInput))) {
+                    return;
+                }
                 htmx.ajax('POST', `/characters/${characterId}/inventory/${inventoryId}/update`, {
                     target: `#inventory-row-${inventoryId}`,
                     swap: 'outerHTML',
@@ -1315,20 +1448,49 @@ function bindCurrentHpCalculation() {
         }
     };
 
+    const clearCurrentHpCookie = () => {
+        const cookieKey = getCurrentHpCookieKey();
+        if (!cookieKey) {
+            return;
+        }
+        const encodedName = encodeURIComponent(cookieKey);
+        document.cookie = `${encodedName}=; path=/; max-age=0; SameSite=Lax`;
+    };
+
     const parseNumberOrZero = (value) => {
         if (value === '--' || value === '') return 0;
         const parsed = Number.parseInt(value, 10);
         return Number.isNaN(parsed) ? 0 : parsed;
     };
 
+    const parseTempHp = (value) => {
+        return Math.max(0, parseNumberOrZero(value));
+    };
+
+    const isEmptyLikeValue = (value) => {
+        const normalized = String(value ?? '').trim();
+        return normalized === '' || normalized === '--';
+    };
+
     const displayTempHp = (numericValue) => {
-        tempHpField.value = numericValue > 0 ? numericValue : '--';
+        const normalizedTempHp = Math.max(0, parseNumberOrZero(numericValue));
+        tempHpField.value = normalizedTempHp > 0 ? normalizedTempHp : '--';
+    };
+
+    const getHealthPoints = () => {
+        return Math.max(0, parseNumberOrZero(healthPointsField.value));
+    };
+
+    const getTempHp = () => {
+        return parseTempHp(tempHpField.value);
     };
 
     const getMaxCurrentHp = () => {
-        const healthPoints = parseNumberOrZero(healthPointsField.value);
-        const tempHp = parseNumberOrZero(tempHpField.value);
-        return Math.max(0, healthPoints + tempHp);
+        return Math.max(0, getHealthPoints() + getTempHp());
+    };
+
+    const syncCombatStateColours = () => {
+        applyCombatStateColours({ healthPointsField, tempHpField, currentHpField });
     };
 
     // Restore from cookie on initial bind
@@ -1349,6 +1511,7 @@ function bindCurrentHpCalculation() {
         if (delta > 0) {
             currentHpField.value = Math.min(maxCurrentHp, currentHp + delta);
             saveCurrentHpToCookie();
+            syncCombatStateColours();
             return;
         }
 
@@ -1356,10 +1519,11 @@ function bindCurrentHpCalculation() {
             if (currentHp <= 0) {
                 currentHpField.value = 0;
                 saveCurrentHpToCookie();
+                syncCombatStateColours();
                 return;
             }
 
-            const tempHp = parseNumberOrZero(tempHpField.value);
+            const tempHp = getTempHp();
             if (tempHp > 0) {
                 displayTempHp(tempHp - 1);
                 tempHpField.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1367,14 +1531,16 @@ function bindCurrentHpCalculation() {
 
             currentHpField.value = Math.max(0, currentHp + delta);
             saveCurrentHpToCookie();
+            syncCombatStateColours();
         }
     };
 
     const calculateCurrentHp = () => {
-        if (healthPointsField.value === '' && tempHpField.value === '') {
+        if (isEmptyLikeValue(healthPointsField.value) && isEmptyLikeValue(tempHpField.value)) {
             currentHpField.value = '';
             previousMaxCurrentHp = 0;
-            saveCurrentHpToCookie();
+            clearCurrentHpCookie();
+            syncCombatStateColours();
             return;
         }
 
@@ -1384,6 +1550,7 @@ function bindCurrentHpCalculation() {
             currentHpField.value = maxCurrentHp;
             previousMaxCurrentHp = maxCurrentHp;
             saveCurrentHpToCookie();
+            syncCombatStateColours();
             return;
         }
 
@@ -1394,6 +1561,7 @@ function bindCurrentHpCalculation() {
         currentHpField.value = Math.min(maxCurrentHp, Math.max(0, adjustedCurrentHp));
         previousMaxCurrentHp = maxCurrentHp;
         saveCurrentHpToCookie();
+        syncCombatStateColours();
     };
 
     healthPointsField.addEventListener('input', calculateCurrentHp);
@@ -1406,7 +1574,8 @@ function bindCurrentHpCalculation() {
     });
 
     tempHpField.addEventListener('blur', () => {
-        displayTempHp(parseNumberOrZero(tempHpField.value));
+        displayTempHp(parseTempHp(tempHpField.value));
+        calculateCurrentHp();
     });
 
     if (decreaseCurrentHpBtn) {
@@ -1426,6 +1595,7 @@ function bindCurrentHpCalculation() {
         const maxCurrentHp = getMaxCurrentHp();
         currentHpField.value = Math.min(maxCurrentHp, Math.max(0, currentHp));
         saveCurrentHpToCookie();
+        syncCombatStateColours();
     });
 
     calculateCurrentHp();
@@ -1531,16 +1701,8 @@ function bindProficiencyToggles() {
     });
 }
 
-function bindAbilitiesSectionLockToggle() {
-    syncGlobalLockState();
-}
-
 function bindFeatDescriptionDisplayAutoHeight() {
     const descriptionFields = document.querySelectorAll('.feats-section .card-item-saved-row .card-item-description-input');
-
-    if (!descriptionFields.length) {
-        return;
-    }
 
     descriptionFields.forEach((field) => {
         // Defer initial resize so the browser has laid out the swapped content
@@ -1553,6 +1715,15 @@ function bindFeatDescriptionDisplayAutoHeight() {
             field.dataset.autoresizeBound = 'true';
         }
     });
+
+    // Also handle the add-form textarea
+    const addDescriptionField = document.getElementById('feat_and_trait-description') || document.querySelector('.feats-section .card-item-add-row .card-item-description-input');
+    if (addDescriptionField && addDescriptionField.dataset.autoresizeBound !== 'true') {
+        addDescriptionField.addEventListener('input', () => {
+            resizeFeatDescriptionField(addDescriptionField);
+        });
+        addDescriptionField.dataset.autoresizeBound = 'true';
+    }
 
     if (!featDescriptionResizeWindowBound) {
         window.addEventListener('resize', () => {
@@ -1571,10 +1742,6 @@ function bindFeatDescriptionDisplayAutoHeight() {
 
 function bindInventoryDescriptionDisplayAutoHeight() {
     const descriptionFields = document.querySelectorAll('.inventory-section .card-item-saved-row .card-item-description-input');
-
-    if (!descriptionFields.length) {
-        return;
-    }
 
     descriptionFields.forEach((field) => {
         // Defer initial resize so the browser has laid out the swapped content
@@ -1716,6 +1883,7 @@ function performFullRest() {
     if (healthPointsField && currentHpField) {
         const hp = parseInt(healthPointsField.value, 10);
         currentHpField.value = isNaN(hp) ? '' : hp;
+        currentHpField.dispatchEvent(new Event('input', { bubbles: true }));
 
         // Save to cookie
         if (characterId) {
@@ -1730,11 +1898,11 @@ function bindTrackerAddEntryToggles() {
     const hideEl = (el) => { if (el) el.style.display = 'none'; };
 
     // ── Full Rest button ──
-    const fullRestBtn = document.getElementById('full-rest-btn');
-    if (fullRestBtn && fullRestBtn.dataset.bound !== 'true') {
+    document.querySelectorAll('[data-full-rest-btn="true"]').forEach((fullRestBtn) => {
+        if (fullRestBtn.dataset.bound === 'true') return;
         fullRestBtn.dataset.bound = 'true';
         fullRestBtn.addEventListener('click', performFullRest);
-    }
+    });
 
     // ── Per-tracker "Add Entry" toggles ──
     document.querySelectorAll('.tracker-add-entry-btn').forEach((btn) => {
@@ -1816,15 +1984,24 @@ function bindTrackerAutoSave() {
             trackerAutoSaveTimers[trackerId] = setTimeout(() => {
                 trackerAutoSaveTimers[trackerId] = null;
 
-                const values = {};
-                if (nameInput) {
-                    values['tracker-name'] = nameInput.value;
+                const liveItem = document.getElementById(`tracker-item-${trackerId}`);
+                if (!liveItem) {
+                    return;
                 }
-                entryNameInputs.forEach((input) => {
+
+                const liveNameInput = liveItem.querySelector('.tracker-name-input');
+                const liveEntryNameInputs = liveItem.querySelectorAll('.tracker-entry-name-input');
+                const liveEntryValueInputs = liveItem.querySelectorAll('.tracker-entry-value-input');
+
+                const values = {};
+                if (liveNameInput) {
+                    values['tracker-name'] = liveNameInput.value;
+                }
+                liveEntryNameInputs.forEach((input) => {
                     const eid = input.dataset.entryId;
                     if (eid) values[`entry-name-${eid}`] = input.value;
                 });
-                entryValueInputs.forEach((input) => {
+                liveEntryValueInputs.forEach((input) => {
                     const eid = input.dataset.entryId;
                     if (eid) values[`entry-value-${eid}`] = input.value;
                 });
@@ -1849,8 +2026,9 @@ function bindTrackerAutoSave() {
 // ── Sub-bar tab navigation ───────────────────────────────────────────────────
 
 function bindSubBarTabs() {
-    const tabs = document.querySelectorAll('.sub-bar-tab');
+    const tabs = document.querySelectorAll('.sub-bar-tab[data-tab]');
     if (!tabs.length) return;
+    const mobileTabSelect = document.getElementById('sub-bar-mobile-tab-select');
 
     const characterIdField = document.getElementById('character-id');
     const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
@@ -1872,6 +2050,10 @@ function bindSubBarTabs() {
             btn.classList.toggle('active', btn.dataset.tab === tabName);
         });
 
+        if (mobileTabSelect && mobileTabSelect.value !== tabName) {
+            mobileTabSelect.value = tabName;
+        }
+
         // Show/hide sub-pages
         Object.entries(pages).forEach(([name, el]) => {
             if (!el) return;
@@ -1879,10 +2061,9 @@ function bindSubBarTabs() {
         });
 
         // Show/hide Full Rest button (only on trackers tab)
-        const fullRestBtn = document.getElementById('full-rest-btn');
-        if (fullRestBtn) {
+        document.querySelectorAll('[data-full-rest-btn="true"]').forEach((fullRestBtn) => {
             fullRestBtn.classList.toggle('d-none', tabName !== 'trackers');
-        }
+        });
 
         // Persist choice
         if (cookieKey) {
@@ -1917,6 +2098,317 @@ function bindSubBarTabs() {
         btn.addEventListener('click', () => switchTo(btn.dataset.tab));
     });
 
+    if (mobileTabSelect && mobileTabSelect.dataset.bound !== 'true') {
+        mobileTabSelect.dataset.bound = 'true';
+        mobileTabSelect.addEventListener('change', () => {
+            const selected = String(mobileTabSelect.value || '').trim();
+            if (validTabs.includes(selected)) {
+                switchTo(selected);
+            }
+        });
+    }
+
     // Apply saved/default tab on load
     switchTo(initialTab);
+}
+
+// ── Theme panel ─────────────────────────────────────────────────────────────
+
+/**
+ * Map of CSS-var-name → { field: 'form_field_name', defaultValue: '...' }
+ * Must stay in sync with THEME_DEFAULTS in auth/models.py.
+ */
+const THEME_VAR_MAP = {
+    '--primary-color':        { field: 'background_colour',   default: '#b8a8cd' },
+    '--secondary-color-dark': { field: 'border_colour',       default: 'rgb(0, 189, 91)' },
+    '--label-colour':         { field: 'label_colour',        default: 'rgb(255, 255, 255)' },
+    '--critical-colour':      { field: 'critical_colour',     default: 'rgb(220, 50, 50)' },
+    '--success-colour':       { field: 'success_colour',      default: 'rgb(0, 189, 91)' },
+    '--tracker-fill-colour':  { field: 'tracker_fill_colour', default: 'rgb(0, 153, 74)' },
+    '--text-colour-one':      { field: 'asterisk_colour',     default: 'rgb(255, 0, 234)' },
+    '--text-colour-three':    { field: 'field_text_colour',   default: 'rgb(255, 255, 255)' },
+    '--level-colour':         { field: 'level_colour',        default: 'rgb(255, 0, 234)' },
+    '--button-icon-colour':   { field: 'button_icon_colour',  default: 'rgb(255, 255, 255)' },
+    '--title-colour':         { field: 'title_colour',        default: 'rgb(0, 0, 0)' },
+    '--field-bg-colour':      { field: 'field_bg_colour',     default: 'rgba(0, 0, 0, 0.85)' },
+};
+
+/** Convert any rgb/rgba/hex/named colour to a hex string for <input type=color>. */
+function colourToHex(colour) {
+    if (!colour) return '#000000';
+    const c = colour.trim();
+    // Already a 6-digit hex
+    if (/^#[0-9a-fA-F]{6}$/.test(c)) return c.toLowerCase();
+    // 3-digit hex → expand
+    if (/^#[0-9a-fA-F]{3}$/.test(c)) {
+        return '#' + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+    }
+    // rgb / rgba — extract r,g,b and convert
+    const m = c.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);
+    if (m) {
+        return '#' + [m[1], m[2], m[3]]
+            .map(n => {
+                const h = Math.round(Math.min(255, Math.max(0, parseFloat(n)))).toString(16);
+                return h.length === 1 ? '0' + h : h;
+            })
+            .join('');
+    }
+    // Named colour — render into a temporary element
+    try {
+        const tmp = document.createElement('div');
+        tmp.style.color = c;
+        document.body.appendChild(tmp);
+        const computed = getComputedStyle(tmp).color;
+        document.body.removeChild(tmp);
+        const m2 = computed.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);
+        if (m2) {
+            return '#' + [m2[1], m2[2], m2[3]]
+                .map(n => {
+                    const h = Math.round(parseFloat(n)).toString(16);
+                    return h.length === 1 ? '0' + h : h;
+                })
+                .join('');
+        }
+    } catch (_) {}
+    return '#000000';
+}
+
+/** Read the current live value of a CSS custom property from :root. */
+function getLiveCssVar(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
+
+/** Resolve any CSS colour string to computed rgb()/rgba() form. */
+function resolveToComputedColour(colour) {
+    if (!colour) return '';
+    try {
+        const tmp = document.createElement('div');
+        tmp.style.color = colour;
+        document.body.appendChild(tmp);
+        const computed = getComputedStyle(tmp).color;
+        document.body.removeChild(tmp);
+        return computed;
+    } catch (_) {
+        return '';
+    }
+}
+
+/** Pick a readable foreground (dark/light) for a supplied background colour. */
+function getReadableForegroundFor(colour) {
+    const resolved = resolveToComputedColour(colour);
+    const m = resolved.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
+    if (!m) return '#f8f8f8';
+
+    const r = Math.max(0, Math.min(255, parseFloat(m[1])));
+    const g = Math.max(0, Math.min(255, parseFloat(m[2])));
+    const b = Math.max(0, Math.min(255, parseFloat(m[3])));
+    const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    return luminance > 0.6 ? '#121212' : '#f8f8f8';
+}
+
+/** Style one theme-panel row so the text field matches its attached colour. */
+function syncThemeRowPreview(row, colourValue) {
+    if (!row) return;
+
+    const picker = row.querySelector('.theme-colour-picker');
+    const text = row.querySelector('.theme-colour-text');
+    if (!text) return;
+
+    const colour = String(colourValue || '').trim();
+    if (!colour) {
+        if (picker) picker.style.removeProperty('border-color');
+        text.style.removeProperty('background');
+        text.style.removeProperty('color');
+        if (!text.classList.contains('is-invalid')) {
+            text.style.removeProperty('border-color');
+        }
+        return;
+    }
+
+    if (picker) {
+        picker.style.borderColor = colour;
+    }
+
+    text.style.background = colour;
+    text.style.color = getReadableForegroundFor(colour);
+    if (text.classList.contains('is-invalid')) {
+        text.style.borderColor = 'rgba(255, 80, 80, 0.8)';
+    } else {
+        text.style.borderColor = colour;
+    }
+}
+
+/** Apply a colour to a CSS var and immediately update the panel picker + text. */
+function applyColour(varName, value) {
+    document.documentElement.style.setProperty(varName, value);
+}
+
+function bindThemePanel() {
+    const toggle = document.getElementById('theme-panel-toggle');
+    const container = document.getElementById('theme-panel-container');
+    if (!toggle || !container) return;
+
+    const panel = container.querySelector('#theme-panel');
+    const closeBtn = document.getElementById('theme-panel-close-btn');
+    const cancelBtn = document.getElementById('theme-panel-cancel-btn');
+    const saveBtn = document.getElementById('theme-panel-save-btn');
+    const feedback = document.getElementById('theme-save-feedback');
+
+    let savedSnapshot = {};
+
+    /** Capture the current live CSS vars as a snapshot for revert. */
+    function snapshotCurrentVars() {
+        savedSnapshot = {};
+        for (const varName of Object.keys(THEME_VAR_MAP)) {
+            savedSnapshot[varName] = getLiveCssVar(varName) || THEME_VAR_MAP[varName].default;
+        }
+    }
+
+    /** Populate all pickers and text inputs from the current live CSS vars. */
+    function populateInputsFromLive() {
+        container.querySelectorAll('.theme-colour-picker').forEach(picker => {
+            const varName = picker.dataset.var;
+            if (!varName) return;
+            const live = getLiveCssVar(varName) || THEME_VAR_MAP[varName].default;
+            picker.value = colourToHex(live);
+            // Update sibling text input
+            const row = picker.closest('.theme-panel-row');
+            if (row) {
+                const text = row.querySelector('.theme-colour-text');
+                if (text) text.value = live;
+                syncThemeRowPreview(row, live);
+            }
+        });
+    }
+
+    /** Revert all CSS vars back to the snapshot. */
+    function revertToSnapshot() {
+        for (const [varName, value] of Object.entries(savedSnapshot)) {
+            document.documentElement.style.setProperty(varName, value);
+        }
+    }
+
+    function openPanel() {
+        snapshotCurrentVars();
+        populateInputsFromLive();
+        container.classList.remove('d-none');
+        toggle.classList.add('active');
+        if (feedback) feedback.textContent = '';
+    }
+
+    function closePanel(revert) {
+        if (revert) revertToSnapshot();
+        container.classList.add('d-none');
+        toggle.classList.remove('active');
+    }
+
+    // ── Toggle open/close ─────────────────────────────────────────────────
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (container.classList.contains('d-none')) {
+            openPanel();
+        } else {
+            closePanel(false);
+        }
+    });
+
+    // ── Close on outside click ────────────────────────────────────────────
+    document.addEventListener('click', (e) => {
+        if (!container.classList.contains('d-none') &&
+            !container.contains(e.target) &&
+            e.target !== toggle) {
+            closePanel(false);
+        }
+    });
+    container.addEventListener('click', (e) => e.stopPropagation());
+
+    // ── Close / cancel buttons ────────────────────────────────────────────
+    if (closeBtn) closeBtn.addEventListener('click', () => closePanel(true));
+    if (cancelBtn) cancelBtn.addEventListener('click', () => closePanel(true));
+
+    // ── Live preview: picker input ─────────────────────────────────────────
+    container.querySelectorAll('.theme-colour-picker').forEach(picker => {
+        picker.addEventListener('input', () => {
+            const varName = picker.dataset.var;
+            if (!varName) return;
+            const hex = picker.value;
+            applyColour(varName, hex);
+            // Sync text input
+            const row = picker.closest('.theme-panel-row');
+            if (row) {
+                const text = row.querySelector('.theme-colour-text');
+                if (text) {
+                    text.value = hex;
+                    text.classList.remove('is-invalid');
+                }
+                syncThemeRowPreview(row, hex);
+            }
+        });
+    });
+
+    // ── Live preview: text input ──────────────────────────────────────────
+    container.querySelectorAll('.theme-colour-text').forEach(text => {
+        text.addEventListener('input', () => {
+            const row = text.closest('.theme-panel-row');
+            if (!row) return;
+            const picker = row.querySelector('.theme-colour-picker');
+            const varName = picker ? picker.dataset.var : null;
+            if (!varName) return;
+            const val = text.value.trim();
+            if (!val) return;
+            // Validate using a temporary element
+            const tmp = document.createElement('div');
+            tmp.style.color = val;
+            document.body.appendChild(tmp);
+            const computed = getComputedStyle(tmp).color;
+            document.body.removeChild(tmp);
+            const validColour = computed !== '' && computed !== 'rgba(0, 0, 0, 0)' || val.toLowerCase() === 'transparent';
+            if (validColour) {
+                text.classList.remove('is-invalid');
+                applyColour(varName, val);
+                if (picker) {
+                    try { picker.value = colourToHex(val); } catch (_) {}
+                }
+                syncThemeRowPreview(row, val);
+            } else {
+                text.classList.add('is-invalid');
+                if (picker) {
+                    syncThemeRowPreview(row, picker.value);
+                }
+            }
+        });
+    });
+
+    // ── Save via fetch ────────────────────────────────────────────────────
+    if (saveBtn) {
+        saveBtn.addEventListener('click', async () => {
+            const formData = new FormData();
+            panel.querySelectorAll('.theme-colour-text').forEach(input => {
+                if (input.name) formData.append(input.name, input.value.trim());
+            });
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = meta ? meta.getAttribute('content') : '';
+            saveBtn.disabled = true;
+            try {
+                const response = await fetch('/user/theme/save', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: formData,
+                });
+                if (response.ok) {
+                    snapshotCurrentVars();
+                    if (feedback) {
+                        feedback.textContent = 'Saved!';
+                        setTimeout(() => { if (feedback) feedback.textContent = ''; }, 2000);
+                    }
+                } else {
+                    if (feedback) feedback.textContent = 'Save failed.';
+                }
+            } catch (_) {
+                if (feedback) feedback.textContent = 'Save failed.';
+            } finally {
+                saveBtn.disabled = false;
+            }
+        });
+    }
 }

@@ -6,8 +6,9 @@
                data-feat-id="{{ feat.id }}">
         <button type="button" id="feat-and-trait-delete-{{ feat.id }}" class="section-remove-x" data-feat-remove="true"
                 hx-post="/characters/{{ character_id }}/feat-and-trait/{{ feat.id }}/remove"
-                hx-target="#feat-row-{{ feat.id }}"
-                hx-swap="delete"
+                hx-target="#feats-section-container"
+                hx-swap="innerHTML"
+                hx-include="closest form"
                 aria-label="Remove feat">&times;</button>
     </div>
 

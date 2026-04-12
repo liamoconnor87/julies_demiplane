@@ -1,5 +1,9 @@
-from datetime import timedelta
+from collections import deque
+from datetime import datetime, timedelta
 from functools import wraps
+from threading import Lock
+from urllib.parse import urlparse
+from xml.sax.saxutils import escape
 
 from flask import Flask, abort, make_response, redirect, render_template, request, url_for
 from flask_wtf.csrf import CSRFProtect
@@ -9,7 +13,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_talisman import Talisman
 
-from character_sheet.character_sheet import CharacterSheet
+from character_sheet.character_sheet import CharacterSheet, TRACKER_MAX, TRACKER_ENTRY_MAX
 from character_sheet.custom_buff import BuffProcessor
 from character_sheet import guest_character as guest
 from go_get_it.go_get_it import GoGetDB
@@ -17,7 +21,22 @@ from functions.functions import uuid as generate_uuid
 from functions.validators import is_valid_uuid
 from auth import setup_auth
 from auth.models import User
-from misc.config import DEBUG, secret_key, SESSION_FILE_DIR  # type: ignore
+from auth.models import UserTheme
+from auth.validators import is_valid_css_colour
+from misc.config import (
+    DEBUG,
+    HEADER_MONITOR_ENABLED,
+    HEADER_MONITOR_LOG_EVERY,
+    HEADER_MONITOR_WINDOW,
+    HEADER_SIZE_WARN_BYTES,
+    HEADER_WARN_RATE_THRESHOLD_PCT,
+    secret_key,
+    SESSION_COOKIE_NAME,
+    SESSION_FILE_DIR,
+    SESSION_LIFETIME_DAYS,
+    SESSION_FILE_THRESHOLD,
+    RATE_LIMIT_STORAGE_URI,
+)  # type: ignore
 from go_get_it.tables import TABLES
 
 # ── App creation ──────────────────────────────────────────────────────────────
@@ -29,12 +48,150 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024
 
 # ── Server-side sessions (filesystem) ─────────────────────────────────────────
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_COOKIE_NAME'] = SESSION_COOKIE_NAME
 app.config['SESSION_FILE_DIR'] = SESSION_FILE_DIR
 app.config['SESSION_PERMANENT'] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
-app.config['SESSION_FILE_THRESHOLD'] = 500
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=SESSION_LIFETIME_DAYS)
+app.config['SESSION_FILE_THRESHOLD'] = SESSION_FILE_THRESHOLD
 app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_REFRESH_EACH_REQUEST'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = not DEBUG
 Session(app)
+
+
+# ── Request-header monitoring (early warning) ────────────────────────────────
+_header_monitor_lock = Lock()
+_header_monitor = {
+    'total_requests': 0,
+    'window_large': 0,
+    'window': deque(maxlen=HEADER_MONITOR_WINDOW),
+}
+
+
+def _estimate_request_header_bytes() -> int:
+    total = 2  # final CRLF
+    for header_name, header_value in request.headers.items():
+        total += len(header_name.encode('utf-8', errors='ignore')) + 2
+        total += len(header_value.encode('utf-8', errors='ignore')) + 2
+    return total
+
+
+@app.before_request
+def _monitor_request_headers_before():
+    if not HEADER_MONITOR_ENABLED:
+        return None
+    request.environ['header_bytes_estimate'] = _estimate_request_header_bytes()
+    return None
+
+
+@app.after_request
+def _monitor_request_headers_after(response):
+    if not HEADER_MONITOR_ENABLED:
+        return response
+
+    header_bytes = int(request.environ.get('header_bytes_estimate', 0))
+    if header_bytes <= 0:
+        header_bytes = _estimate_request_header_bytes()
+
+    is_large = 1 if header_bytes >= HEADER_SIZE_WARN_BYTES else 0
+
+    with _header_monitor_lock:
+        window = _header_monitor['window']
+        if len(window) == window.maxlen:
+            evicted = window.popleft()
+            _header_monitor['window_large'] -= evicted
+
+        window.append(is_large)
+        _header_monitor['window_large'] += is_large
+        _header_monitor['total_requests'] += 1
+
+        total_requests = _header_monitor['total_requests']
+        window_total = len(window)
+        window_large = _header_monitor['window_large']
+        window_rate_pct = (window_large / window_total * 100.0) if window_total else 0.0
+        should_emit_summary = total_requests % HEADER_MONITOR_LOG_EVERY == 0
+
+    if is_large:
+        app.logger.warning(
+            'Header monitor large-request: bytes=%s warn_bytes=%s method=%s path=%s ip=%s',
+            header_bytes,
+            HEADER_SIZE_WARN_BYTES,
+            request.method,
+            request.path,
+            request.remote_addr,
+        )
+
+    if should_emit_summary:
+        log_fn = app.logger.warning if window_rate_pct >= HEADER_WARN_RATE_THRESHOLD_PCT else app.logger.info
+        log_fn(
+            'Header monitor summary: total=%s window=%s large=%s rate=%.2f%% threshold=%s%% warn_bytes=%s',
+            total_requests,
+            window_total,
+            window_large,
+            window_rate_pct,
+            HEADER_WARN_RATE_THRESHOLD_PCT,
+            HEADER_SIZE_WARN_BYTES,
+        )
+
+    return response
+
+
+def _is_htmx_request() -> bool:
+    return (request.headers.get('HX-Request') or '').lower() == 'true'
+
+
+def _get_error_page_theme():
+    try:
+        if not current_user.is_authenticated:
+            return None
+        return UserTheme.get_by_user_id(db, current_user.id)
+    except Exception:
+        app.logger.exception('Could not load user theme for error page')
+        return None
+
+
+def _error_response(status_code: int, title: str, message: str):
+    if _is_htmx_request():
+        return app.response_class(f'{title}: {message}\n', status=status_code, mimetype='text/plain')
+
+    return render_template(
+        'error.html',
+        status_code=status_code,
+        title=title,
+        message=message,
+        user_theme=_get_error_page_theme(),
+    ), status_code
+
+
+@app.errorhandler(400)
+def handle_400(_error):
+    return _error_response(400, 'Bad Request', 'The request could not be processed.')
+
+
+@app.errorhandler(403)
+def handle_403(_error):
+    return _error_response(403, 'Forbidden', 'You do not have permission to access this page.')
+
+
+@app.errorhandler(404)
+def handle_404(_error):
+    return _error_response(404, 'Page Not Found', 'The page you requested does not exist.')
+
+
+@app.errorhandler(431)
+def handle_431(_error):
+    return _error_response(
+        431,
+        'Request Headers Too Large',
+        'Your browser sent too much header data. Clear site cookies and try again.',
+    )
+
+
+@app.errorhandler(500)
+def handle_500(_error):
+    return _error_response(500, 'Server Error', 'Something went wrong on our side. Please try again.')
 
 # ── CSRF ──────────────────────────────────────────────────────────────────────
 CSRFProtect(app)
@@ -44,12 +201,16 @@ limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=['60/minute'],
-    storage_uri='memory://',
+    storage_uri=RATE_LIMIT_STORAGE_URI,
 )
 
 # ── Security headers (Talisman) ──────────────────────────────────────────────
 csp = {
     'default-src': "'self'",
+    'base-uri': "'self'",
+    'form-action': "'self'",
+    'frame-ancestors': "'none'",
+    'object-src': "'none'",
     'script-src': [
         "'self'",
         'https://cdn.jsdelivr.net',
@@ -59,10 +220,12 @@ csp = {
         "'self'",
         "'unsafe-inline'",
         'https://cdn.jsdelivr.net',
+        'https://fonts.googleapis.com',
     ],
     'font-src': [
         "'self'",
         'https://cdn.jsdelivr.net',
+        'https://fonts.gstatic.com',
     ],
     'img-src': "'self' data:",
 }
@@ -102,6 +265,37 @@ def _build_character_sheet_data(character_id: str):
     BuffProcessor(character_id).transform_out(data)
     return sheet, data
 
+
+_DEATH_SAVES_TRACKER_ID = 'death-saves'
+
+
+def _build_death_saves_tracker():
+    return {
+        'id': _DEATH_SAVES_TRACKER_ID,
+        'name': 'Death Saves',
+        'fixed': True,
+        'entries_at_capacity': False,
+        'entries': [
+            {'id': 'death-saves-pass', 'tracker_id': _DEATH_SAVES_TRACKER_ID, 'name': 'Pass', 'value': 3},
+            {'id': 'death-saves-fail', 'tracker_id': _DEATH_SAVES_TRACKER_ID, 'name': 'Fail', 'value': 3},
+        ],
+    }
+
+
+def _normalise_internal_redirect(candidate: str, fallback: str):
+    """Allow only local relative redirects to avoid open redirect issues."""
+    value = (candidate or '').strip()
+    if not value:
+        return fallback
+
+    parsed = urlparse(value)
+    if parsed.scheme or parsed.netloc:
+        return fallback
+    if not value.startswith('/'):
+        return fallback
+
+    return value
+
 @app.route('/', methods=['GET'])
 def character_sheet():
 
@@ -111,6 +305,14 @@ def character_sheet():
         character_id = guest.get_guest_character_id()
         data = guest.create_form()
         is_new_character = not data['character'].get('name')
+        guest_name = str(data['character'].get('name') or '').strip()
+        landing_requested = (request.args.get('landing') or '').strip() == '1'
+
+        # Landing panel is visible for first-time guests, or when a named guest
+        # explicitly returns to landing mode via the navbar title.
+        show_guest_landing_panel = is_new_character or (landing_requested and bool(guest_name))
+        show_guest_name_entry = is_new_character
+        guest_show_sheet = not (landing_requested and bool(guest_name))
 
         return render_template(
             'index.html',
@@ -134,10 +336,16 @@ def character_sheet():
             custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
             buff_target_options=data['buff_target_options'],
             trackers=[],
+            guest_death_saves_tracker=_build_death_saves_tracker(),
+            show_guest_landing_panel=show_guest_landing_panel,
+            show_guest_name_entry=show_guest_name_entry,
+            guest_show_sheet=guest_show_sheet,
+            guest_character_name=guest_name,
         )
 
     characters = User.get_characters(db, current_user.id)
     at_character_limit = User.at_character_limit(db, current_user.id)
+    user_theme = UserTheme.get_by_user_id(db, current_user.id)
     character_id = request.args.get('character_id')
 
     # If no character_id specified, default to first owned character
@@ -183,6 +391,7 @@ def character_sheet():
             custom_buffs_at_capacity=False,
             buff_target_options={},
             trackers=[],
+            user_theme=user_theme,
         )
 
     if not character_id:
@@ -194,9 +403,11 @@ def character_sheet():
             is_guest=False,
             character=None,
             trackers=[],
+            user_theme=user_theme,
         )
 
     _, character_sheet_data = _build_character_sheet_data(character_id)
+    trackers = _get_trackers(character_id)
 
     # Detect if this is a brand-new character (no name set yet)
     is_new_character = not character_sheet_data['character'].get('name')
@@ -222,8 +433,28 @@ def character_sheet():
         custom_buffs=character_sheet_data['custom_buffs'],
         custom_buffs_at_capacity=character_sheet_data['custom_buffs_at_capacity'],
         buff_target_options=character_sheet_data['buff_target_options'],
-        trackers=_get_trackers(character_id),
+        trackers=trackers,
+        trackers_at_capacity=len(trackers) >= TRACKER_MAX,
+        tracker_max=TRACKER_MAX,
+        tracker_entry_max=TRACKER_ENTRY_MAX,
+        user_theme=user_theme,
     )
+
+
+@app.route('/user/theme/save', methods=['POST'])
+@login_required
+def save_user_theme():
+    """Persist the user's colour theme and return an OOB style block update."""
+    colour_fields = UserTheme.COLOUR_FIELDS
+    colours = {}
+    for field in colour_fields:
+        value = (request.form.get(field) or '').strip()
+        if not is_valid_css_colour(value):
+            abort(400)
+        colours[field] = value
+
+    UserTheme.save(db, current_user.id, colours)
+    return render_template('components/theme_vars_oob.html', colours=colours), 200
 
 
 @app.route('/guest/start', methods=['POST'])
@@ -236,6 +467,37 @@ def guest_start():
     resp = make_response('', 200)
     resp.headers['HX-Redirect'] = '/'
     return resp
+
+
+@app.route('/robots.txt', methods=['GET'])
+def robots_txt():
+    sitemap_url = url_for('sitemap_xml', _external=True)
+    content = [
+        'User-agent: *',
+        'Allow: /',
+        'Disallow: /admin',
+        'Disallow: /characters/',
+        f'Sitemap: {sitemap_url}',
+    ]
+    return app.response_class('\n'.join(content) + '\n', mimetype='text/plain')
+
+
+@app.route('/sitemap.xml', methods=['GET'])
+def sitemap_xml():
+    homepage = url_for('character_sheet', _external=True)
+    lastmod = datetime.utcnow().date().isoformat()
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        '  <url>\n'
+        f'    <loc>{escape(homepage)}</loc>\n'
+        f'    <lastmod>{lastmod}</lastmod>\n'
+        '    <changefreq>weekly</changefreq>\n'
+        '    <priority>1.0</priority>\n'
+        '  </url>\n'
+        '</urlset>\n'
+    )
+    return app.response_class(xml, mimetype='application/xml')
 
 
 @app.route('/characters/new', methods=['POST'])
@@ -257,8 +519,14 @@ def first_save_character():
     if User.at_character_limit(db, current_user.id):
         abort(403)
 
+    # First-save must always create a new character; reject tampered IDs.
+    if (request.form.get('character-id') or '').strip():
+        abort(400)
+
     sheet = CharacterSheet(character_id=None)
-    character_id = sheet.save_character_values(request.form)
+    create_payload = request.form.to_dict(flat=True)
+    create_payload['character-id'] = ''
+    character_id = sheet.save_character_values(create_payload)
 
     db.go_add_new('user_to_character', {
         'id': generate_uuid(),
@@ -299,12 +567,17 @@ def character_info_fragment(character_id: str):
     if guest.is_guest() and not current_user.is_authenticated:
         guest.save_character_values(request.form)
         data = guest.create_form()
+        is_new_character = not data['character'].get('name')
+        guest_name = str(data['character'].get('name') or '').strip()
         return render_template(
             'components/character_info_change_response.html',
             character_id=character_id,
             character=data['character'],
             abilities=data['abilities'],
             is_guest=True,
+            show_guest_landing_panel=is_new_character,
+            show_guest_name_entry=is_new_character,
+            guest_character_name=guest_name,
         )
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
@@ -323,20 +596,26 @@ def character_info_fragment(character_id: str):
 
 
 @app.route('/characters/<character_id>/combat/fragment', methods=['POST'])
-@login_required
+@guest_or_login_required
 @limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
 def combat_fragment(character_id: str):
+    if guest.is_guest() and not current_user.is_authenticated:
+        guest.save_character_values(request.form)
+        data = guest.create_form()
+        return render_template(
+            'components/guest_combat_stats.html',
+            character_id=character_id,
+            character=data['character'],
+            is_guest=True,
+        )
+
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
     sheet = CharacterSheet(character_id=character_id)
     sheet.save_combat_values(character_id, request.form)
 
     _, data = _build_character_sheet_data(character_id)
-    return render_template(
-        'components/combat_stats.html',
-        character_id=character_id,
-        character=data['character'],
-    )
+    return render_template('components/combat_stats.html', character_id=character_id, character=data['character'])
 
 
 @app.route('/characters/<character_id>/classes/fragment', methods=['POST'])
@@ -428,6 +707,53 @@ def abilities_skills_fragment(character_id: str):
         is_guest=False,
     )
 
+
+@app.route('/characters/<character_id>/abilities-skills/<ability_name>/update', methods=['POST'])
+@guest_or_login_required
+@limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
+def update_ability_row(character_id: str, ability_name: str):
+    normalized_ability_name = str(ability_name or '').strip().lower()
+    if normalized_ability_name not in CharacterSheet.ABILITY_TO_SKILL_MAPPING:
+        abort(404)
+
+    if guest.is_guest() and not current_user.is_authenticated:
+        guest.save_ability_values(request.form)
+        data = guest.create_form()
+        ability_data = next((row for row in data['abilities'] if row.get('ability_name') == normalized_ability_name), None)
+        if not ability_data:
+            abort(404)
+        return render_template(
+            'components/ability_row.html',
+            ability_name=ability_data['ability_name'],
+            ability=ability_data['ability'],
+            skills=ability_data['skills'],
+            skill_list=ability_data['skill_list'],
+            character_id=character_id,
+            is_guest=True,
+        )
+
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+
+    sheet = CharacterSheet(character_id=character_id)
+    transformed_form = BuffProcessor(character_id).transform_in(request.form)
+    sheet.save_ability_values(character_id, transformed_form)
+
+    _, data = _build_character_sheet_data(character_id)
+    ability_data = next((row for row in data['abilities'] if row.get('ability_name') == normalized_ability_name), None)
+    if not ability_data:
+        abort(404)
+
+    return render_template(
+        'components/ability_row.html',
+        ability_name=ability_data['ability_name'],
+        ability=ability_data['ability'],
+        skills=ability_data['skills'],
+        skill_list=ability_data['skill_list'],
+        character_id=character_id,
+        is_guest=False,
+    )
+
 @app.route('/characters/<character_id>/inventory/fragment', methods=['POST'])
 @login_required
 def inventory_fragment(character_id: str):
@@ -481,6 +807,45 @@ def custom_stats_fragment(character_id: str):
         character_id=character_id,
         is_guest=False,
     )
+
+
+@app.route('/characters/<character_id>/custom-stat/<custom_stat_id>/update', methods=['POST'])
+@guest_or_login_required
+@limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
+def update_custom_stat_item(character_id: str, custom_stat_id: str):
+    value_field = f'custom_stat-value-{custom_stat_id}'
+    name_field = f'custom_stat-name-{custom_stat_id}'
+
+    if guest.is_guest() and not current_user.is_authenticated:
+        updated_stat = guest.update_single_custom_stat(
+            custom_stat_id,
+            request.form.get(name_field, ''),
+            request.form.get(value_field),
+        )
+        if not updated_stat:
+            abort(400)
+        return render_template('components/custom_stat_row.html', stat=updated_stat, character_id=character_id)
+
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+
+    transformed_form = BuffProcessor(character_id).transform_in(request.form)
+    sheet = CharacterSheet(character_id=character_id)
+    updated_stat = sheet.update_single_custom_stat(
+        character_id,
+        custom_stat_id,
+        transformed_form.get(name_field, request.form.get(name_field, '')),
+        transformed_form.get(value_field, request.form.get(value_field)),
+    )
+    if not updated_stat:
+        abort(400)
+
+    _, data = _build_character_sheet_data(character_id)
+    rendered_stat = next((s for s in data['custom_stats'] if s.get('id') == custom_stat_id), None)
+    if not rendered_stat:
+        abort(404)
+
+    return render_template('components/custom_stat_row.html', stat=rendered_stat, character_id=character_id)
 
 
 @app.route('/characters/<character_id>/custom-buffs/fragment', methods=['POST'])
@@ -538,7 +903,14 @@ def remove_inventory_item(character_id: str, inventory_id: str):
         return redirect(url_for('character_sheet'))
 
     db.go_delete_it('inventory', {'id': inventory_id, 'character_id': character_id})
-    return '', 200
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/inventory_section.html',
+        inventory=data['inventory'],
+        inventory_at_capacity=data['inventory_at_capacity'],
+        character_id=character_id,
+    )
 
 
 @app.route('/characters/<character_id>/inventory/<inventory_id>/update', methods=['POST'])
@@ -552,6 +924,30 @@ def update_inventory_item(character_id: str, inventory_id: str):
     item = sheet.update_single_inventory_item(character_id, inventory_id, name, description)
     if not item:
         abort(400)
+    return render_template('components/inventory_row.html', item=item, character_id=character_id)
+
+
+@app.route('/characters/<character_id>/inventory/<inventory_id>/step', methods=['POST'])
+@login_required
+def step_inventory_item(character_id: str, inventory_id: str):
+    if not User.owns_character(db, current_user.id, character_id):
+        abort(403)
+
+    try:
+        step = int(request.form.get('inventory-step', '0'))
+    except (TypeError, ValueError):
+        step = 0
+
+    # Clamp step size defensively.
+    step = max(-100, min(100, step))
+    if step == 0:
+        abort(400)
+
+    sheet = CharacterSheet(character_id=character_id)
+    item = sheet.step_single_inventory_item(character_id, inventory_id, step)
+    if item is None:
+        return '', 200
+
     return render_template('components/inventory_row.html', item=item, character_id=character_id)
 
 
@@ -576,14 +972,29 @@ def add_inventory_item(character_id: str):
 def remove_feat_and_trait_item(character_id: str, feat_and_trait_id: str):
     if guest.is_guest() and not current_user.is_authenticated:
         guest.remove_feat_and_trait(feat_and_trait_id)
-        return '', 200
+        data = guest.create_form()
+        return render_template(
+            'components/feats_traits_section.html',
+            character_id=character_id,
+            feats_and_traits=data['feats_and_traits'],
+            feats_and_traits_at_capacity=data['feats_and_traits_at_capacity'],
+            is_guest=True,
+        )
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
     if not character_id or not feat_and_trait_id or not db.go_get_one('feat_and_trait', {'id': feat_and_trait_id, 'character_id': character_id}):
         return redirect(url_for('character_sheet'))
 
     db.go_delete_it('feat_and_trait', {'id': feat_and_trait_id, 'character_id': character_id})
-    return '', 200
+
+    _, data = _build_character_sheet_data(character_id)
+    return render_template(
+        'components/feats_traits_section.html',
+        character_id=character_id,
+        feats_and_traits=data['feats_and_traits'],
+        feats_and_traits_at_capacity=data['feats_and_traits_at_capacity'],
+        is_guest=False,
+    )
 
 
 @app.route('/characters/<character_id>/feat-and-trait/<feat_and_trait_id>/update', methods=['POST'])
@@ -740,32 +1151,30 @@ def remove_class(character_id: str, class_id: str):
     )
 
 
-_DEATH_SAVES_TRACKER_ID = 'death-saves'
-
 def _get_trackers(character_id: str):
-    """Return all trackers (with entries) for a character, ordered by id."""
-    death_saves = {
-        'id': _DEATH_SAVES_TRACKER_ID,
-        'name': 'Death Saves',
-        'fixed': True,
-        'entries': [
-            {'id': 'death-saves-pass', 'tracker_id': _DEATH_SAVES_TRACKER_ID, 'name': 'Pass', 'value': 3},
-            {'id': 'death-saves-fail', 'tracker_id': _DEATH_SAVES_TRACKER_ID, 'name': 'Fail', 'value': 3},
-        ],
-    }
+    """Return custom DB trackers (with entries) for a character."""
     trackers = db.go_get_all('tracker', {'character_id': character_id}) or []
-    result = [death_saves]
+    result = []
     for t in trackers:
         entries = db.go_get_all('tracker_entry', {'tracker_id': t['id']}) or []
-        result.append({'id': t['id'], 'name': t['name'], 'entries': list(entries)})
+        result.append({
+            'id': t['id'],
+            'name': t['name'],
+            'entries': list(entries),
+            'entries_at_capacity': len(entries) >= TRACKER_ENTRY_MAX,
+        })
     return result
 
 
 def _render_tracker_page(character_id: str):
+    trackers = _get_trackers(character_id)
     return render_template(
         'components/tracker_page.html',
         character_id=character_id,
-        trackers=_get_trackers(character_id),
+        trackers=trackers,
+        trackers_at_capacity=len(trackers) >= TRACKER_MAX,
+        tracker_max=TRACKER_MAX,
+        tracker_entry_max=TRACKER_ENTRY_MAX,
     )
 
 
@@ -775,7 +1184,12 @@ def _get_single_tracker(character_id: str, tracker_id: str):
     if not tracker:
         return None
     entries = db.go_get_all('tracker_entry', {'tracker_id': tracker_id}) or []
-    return {'id': tracker['id'], 'name': tracker['name'], 'entries': list(entries)}
+    return {
+        'id': tracker['id'],
+        'name': tracker['name'],
+        'entries': list(entries),
+        'entries_at_capacity': len(entries) >= TRACKER_ENTRY_MAX,
+    }
 
 
 def _render_tracker_item(character_id: str, tracker_id: str):
@@ -786,11 +1200,13 @@ def _render_tracker_item(character_id: str, tracker_id: str):
         'components/tracker_item.html',
         character_id=character_id,
         tracker=tracker,
+        tracker_entry_max=TRACKER_ENTRY_MAX,
     )
 
 
 @app.route('/characters/<character_id>/tracker/<tracker_id>/update', methods=['POST'])
 @login_required
+@limiter.limit('120/minute')
 def update_tracker(character_id: str, tracker_id: str):
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
@@ -823,9 +1239,15 @@ def update_tracker(character_id: str, tracker_id: str):
 
 @app.route('/characters/<character_id>/tracker/add', methods=['POST'])
 @login_required
+@limiter.limit('120/minute')
 def add_tracker(character_id: str):
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
+
+    tracker_count = db.go_get_all('tracker', {'character_id': character_id}, count=True) or 0
+    if tracker_count >= TRACKER_MAX:
+        return _render_tracker_page(character_id)
+
     name = request.form.get('add-tracker-name-input', '').strip()[:60]
     if name:
         db.go_add_new('tracker', {
@@ -838,6 +1260,7 @@ def add_tracker(character_id: str):
 
 @app.route('/characters/<character_id>/tracker/<tracker_id>/remove', methods=['POST'])
 @login_required
+@limiter.limit('120/minute')
 def remove_tracker(character_id: str, tracker_id: str):
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
@@ -851,11 +1274,17 @@ def remove_tracker(character_id: str, tracker_id: str):
 
 @app.route('/characters/<character_id>/tracker/<tracker_id>/entry/add', methods=['POST'])
 @login_required
+@limiter.limit('120/minute')
 def add_tracker_entry(character_id: str, tracker_id: str):
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
     if not db.go_get_one('tracker', {'id': tracker_id, 'character_id': character_id}):
         abort(403)
+
+    entry_count = db.go_get_all('tracker_entry', {'tracker_id': tracker_id}, count=True) or 0
+    if entry_count >= TRACKER_ENTRY_MAX:
+        return _render_tracker_page(character_id)
+
     name = request.form.get(f'entry-name-{tracker_id}', '').strip()[:40]
     try:
         value = max(1, min(20, int(request.form.get(f'entry-value-{tracker_id}', 3))))
@@ -873,6 +1302,7 @@ def add_tracker_entry(character_id: str, tracker_id: str):
 
 @app.route('/characters/<character_id>/tracker/<tracker_id>/entry/<entry_id>/remove', methods=['POST'])
 @login_required
+@limiter.limit('120/minute')
 def remove_tracker_entry(character_id: str, tracker_id: str, entry_id: str):
     if not User.owns_character(db, current_user.id, character_id):
         abort(403)
@@ -962,6 +1392,24 @@ def _find_orphans():
                                 'missing_parent': parent_table,
                                 'missing_id': fk_val,
                             })
+
+    # stat_table_to_stat links to custom_buff_to_stat_table via stat_table_id,
+    # which is not a regular id-based FK in TABLES.
+    stat_rows = db.go_get_all('stat_table_to_stat') or []
+    for row in stat_rows:
+        stat_table_id = row.get('stat_table_id')
+        if not stat_table_id:
+            continue
+        parent = db.go_get_one('custom_buff_to_stat_table', {'stat_table_id': stat_table_id})
+        if not parent:
+            orphans.append({
+                'table': 'stat_table_to_stat',
+                'row': row,
+                'fk_col': 'stat_table_id',
+                'missing_parent': 'custom_buff_to_stat_table',
+                'missing_id': stat_table_id,
+            })
+
     return orphans
 
 
@@ -1210,7 +1658,10 @@ def admin_table_create(table_name):
             val = generate_uuid()
         row[col] = val if val != '' else None
     db.go_add_new(table_name, row)
-    redirect_url = request.form.get('redirect', f'/admin/table/{table_name}')
+    redirect_url = _normalise_internal_redirect(
+        request.form.get('redirect', ''),
+        f'/admin/table/{table_name}',
+    )
     return redirect(redirect_url)
 
 
@@ -1229,7 +1680,10 @@ def admin_table_update(table_name, row_id):
         val = request.form.get(f'field-{col}', '').strip()
         row[col] = val if val != '' else None
     db.go_update(table_name, row)
-    redirect_url = request.form.get('redirect', f'/admin/table/{table_name}')
+    redirect_url = _normalise_internal_redirect(
+        request.form.get('redirect', ''),
+        f'/admin/table/{table_name}',
+    )
     return redirect(redirect_url)
 
 
@@ -1295,7 +1749,20 @@ def admin_table_delete(table_name, row_id):
     if table_name == 'custom_buff':
         links = db.go_get_all('custom_buff_to_stat_table', {'custom_buff_id': row_id}) or []
         for link in links:
+            stat_table_id = link.get('stat_table_id')
+            if stat_table_id:
+                stat_rows = db.go_get_all('stat_table_to_stat', {'stat_table_id': stat_table_id}) or []
+                for stat_row in stat_rows:
+                    db.go_delete_it('stat_table_to_stat', {'id': stat_row['id']})
             db.go_delete_it('custom_buff_to_stat_table', {'id': link['id']})
+
+    # Cascade delete for custom_buff_to_stat_table: remove linked stat rows
+    if table_name == 'custom_buff_to_stat_table':
+        link = db.go_get_one('custom_buff_to_stat_table', {'id': row_id})
+        if link and link.get('stat_table_id'):
+            stat_rows = db.go_get_all('stat_table_to_stat', {'stat_table_id': link['stat_table_id']}) or []
+            for stat_row in stat_rows:
+                db.go_delete_it('stat_table_to_stat', {'id': stat_row['id']})
 
     # Cascade delete for ability tables: remove skill rows
     if table_name in _ABILITY_TABLES:
@@ -1306,7 +1773,10 @@ def admin_table_delete(table_name, row_id):
             db.go_delete_it(skill_table, {'id': sr['id']})
 
     db.go_delete_it(table_name, {'id': row_id})
-    redirect_url = request.form.get('redirect', f'/admin/table/{table_name}')
+    redirect_url = _normalise_internal_redirect(
+        request.form.get('redirect', ''),
+        f'/admin/table/{table_name}',
+    )
     return redirect(redirect_url)
 
 

@@ -38,5 +38,33 @@
                 {% endif %}
             {% endif %}
         </ul>
+
+        {% if current_user.is_authenticated %}
+        <div class="character-bar-mobile-controls">
+            {% if characters %}
+                <label for="character-mobile-select" class="visually-hidden">Select character</label>
+                <select id="character-mobile-select" class="character-bar-mobile-select" aria-label="Select character">
+                    {% for char in characters %}
+                    <option value="{{ char.id }}"{% if char.id == active_character_id %} selected{% endif %}>{{ char.name or 'New Character' }}</option>
+                    {% endfor %}
+                    {% if is_unsaved is defined and is_unsaved %}
+                    <option value="__unsaved__" selected>Untitled (Unsaved)</option>
+                    {% endif %}
+                </select>
+            {% elif is_unsaved is defined and is_unsaved %}
+                <span class="character-bar-mobile-unsaved">Untitled (Unsaved)</span>
+            {% endif %}
+
+            {% if not at_character_limit and not (is_unsaved is defined and is_unsaved) %}
+            <button class="character-bar-mobile-add-btn"
+                    hx-post="/characters/new"
+                    hx-swap="none"
+                    title="Add Character"
+                    aria-label="Add Character">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 </nav>

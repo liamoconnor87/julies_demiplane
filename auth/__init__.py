@@ -33,15 +33,42 @@ def setup_auth(app: Flask, db, limiter=None):
 
     @app.context_processor
     def inject_captcha():
-        """Provide a fresh CAPTCHA image for unauthenticated signup forms."""
+        """Provide a stable CAPTCHA image for unauthenticated signup forms."""
         if current_user.is_authenticated:
             return {}
-        challenge = ''.join(
-            secrets.choice(string.ascii_uppercase + string.digits)
-            for _ in range(5)
-        )
-        session['captcha_answer'] = challenge
+
+        # Keep the same challenge for the current session until it is consumed
+        # by signup. This prevents unrelated fragment renders from invalidating
+        # the value the user sees in the dropdown.
+        challenge = session.get('captcha_answer')
+        if not challenge:
+            challenge = ''.join(
+                secrets.choice(string.ascii_uppercase + string.digits)
+                for _ in range(5)
+            )
+            session['captcha_answer'] = challenge
+
         return {'captcha_image': generate_captcha_image(challenge)}
+
+    @app.context_processor
+    def inject_masquerade():
+        admin_user_id = session.get('masquerade_admin_id')
+        admin_username = (session.get('masquerade_admin_username') or '').strip()
+
+        if not admin_user_id or not current_user.is_authenticated:
+            return {'masquerade': None}
+
+        if current_user.id == admin_user_id:
+            return {'masquerade': None}
+
+        return {
+            'masquerade': {
+                'active': True,
+                'admin_user_id': admin_user_id,
+                'admin_username': admin_username or 'Admin',
+                'target_username': current_user.username,
+            }
+        }
 
     # Apply rate limits to auth endpoints if limiter is available
     if limiter:

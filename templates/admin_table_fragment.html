@@ -22,29 +22,29 @@
                 {% for col in columns %}
                 <td>
                     {% if col == 'id' %}
-                        <span style="font-size:0.7rem;word-break:break-all">{{ row[col] or '' }}</span>
+                        <span class="admin-id-text">{{ row[col] or '' }}</span>
                         <input type="hidden" name="field-{{ col }}" value="{{ row[col] or '' }}">
                     {% elif col == 'password_hash' %}
-                        <span style="font-size:0.7rem">••••••</span>
+                        <span class="admin-secret-text">••••••</span>
                         <input type="hidden" name="field-{{ col }}" value="{{ row[col] or '' }}">
                     {% elif col in fk_links and row[col] %}
-                        <a href="{{ fk_links[col] }}{{ row[col] }}" style="font-size:0.7rem;word-break:break-all">{{ row[col] }}</a>
+                        <a href="{{ fk_links[col] }}{{ row[col] }}" class="admin-fk-link">{{ row[col] }}</a>
                         {% if row._display and row._display[col] %}
-                        <div style="color:#ff00c8;font-size:0.75rem;font-style:italic">{{ row._display[col] }}</div>
+                        <div class="admin-display-hint">{{ row._display[col] }}</div>
                         {% endif %}
                         <input type="hidden" name="field-{{ col }}" value="{{ row[col] or '' }}">
                     {% else %}
                         {% if row._display and row._display[col] %}
-                        <div style="color:#ff00c8;font-size:0.75rem;font-style:italic">{{ row._display[col] }}</div>
+                        <div class="admin-display-hint">{{ row._display[col] }}</div>
                         {% endif %}
                         <input type="text" name="field-{{ col }}" value="{{ row[col] if row[col] is not none else '' }}">
                     {% endif %}
                 </td>
                 {% endfor %}
-                <td style="white-space:nowrap">
+                <td class="admin-actions-cell">
                     <button type="submit">Save</button>
             </form>
-            <form style="display:inline" method="POST" action="/admin/table/{{ table_name }}/{{ row.id }}/delete">
+            <form class="admin-inline-form" method="POST" action="/admin/table/{{ table_name }}/{{ row.id }}/delete">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="redirect" value="{{ current_url }}">
                 <button type="submit" class="btn-danger" onclick="return confirm('Delete this row?')">Del</button>

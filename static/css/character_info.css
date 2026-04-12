@@ -126,6 +126,10 @@
     text-align: center;
 }
 
+.character-info-level-field .character-info-input[disabled] {
+    color: var(--level-colour);
+}
+
 .character-info-xp-field {
     max-width: 10.25rem;
     flex: 0 0 auto;

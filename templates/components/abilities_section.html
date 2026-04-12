@@ -2,15 +2,13 @@
     <h4>
         Abilities & Skills
     </h4>
+    <p class="section-help-text">Update ability scores, then add proficiency by clicking a skill and/or saving throw.</p>
     {% for ability_data in abilities %}
         {% set ability_name = ability_data.ability_name %}
         {% set ability = ability_data.ability %}
         {% set skills = ability_data.skills %}
         {% set skill_list = ability_data.skill_list %}
-        <div class="abilities-section-row">
-            {% include 'components/ability_score.html' %}
-            {% include 'components/skills_group.html' %}
-        </div>
+        {% include 'components/ability_row.html' %}
     {% endfor %}
 </div>
 <br>

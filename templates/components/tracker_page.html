@@ -3,6 +3,9 @@
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <div class="tracker-section">
     <h4>Trackers</h4>
+    <p class="section-help-text">Build custom counters for your spells, rages, or anything else you track.</p>
+
+    {% include 'components/death_saves_tracker_item.html' %}
 
     {% if trackers %}
     {% for tracker in trackers %}
@@ -11,6 +14,7 @@
     {% endif %}
 
     {# ── Add tracker — + button reveals inline form ── #}
+    {% if not trackers_at_capacity %}
     <div class="tracker-add-actions-row" id="tracker-add-tracker-row">
         {% set btn_wrapper_class = 'add-actions-field' %}
         {% set btn_btn_class = 'add-actions-btn' %}
@@ -46,6 +50,7 @@
         {% set btn_label = 'Close' %}
         {% include 'base/field_button.html' %}
     </div>
+    {% endif %}
 
 </div>
 </form>

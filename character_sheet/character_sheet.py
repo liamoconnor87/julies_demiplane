@@ -12,6 +12,8 @@ INVENTORY_MAX = 50
 CUSTOM_STAT_MAX = 20
 CUSTOM_BUFF_MAX = 20
 FEAT_TRAIT_MAX = 15
+TRACKER_MAX = 12
+TRACKER_ENTRY_MAX = 10
 
 class CharacterSheet:
     ABILITY_TO_SKILL_MAPPING = {
@@ -149,12 +151,6 @@ class CharacterSheet:
             'custom_buffs_at_capacity': len(custom_buffs) >= CUSTOM_BUFF_MAX,
             'buff_target_options': buff_target_options,
         }
-
-    def _parse_int(self, value, fallback=0):
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            return fallback
 
     def _get_buff_target_options(self, custom_stats, feats_and_traits=None, inventory=None):
         options = {
@@ -661,6 +657,73 @@ class CharacterSheet:
         ggi.go_add_new('inventory', item)
         return item
 
+    def update_single_custom_stat(self, character_id: str, custom_stat_id: str, name: str, value):
+        """Update a single custom stat and return the updated record, or None."""
+        if not is_valid_uuid(custom_stat_id):
+            return None
+
+        existing = ggi.go_get_one('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
+        if not existing:
+            return None
+
+        clean_name = sanitize_optional_str(name, max_len=255) or existing.get('name')
+        parsed_value = parse_optional_int(value, fallback=existing.get('value', 0))
+
+        ggi.go_update('custom_stat', {
+            'id': custom_stat_id,
+            'name': clean_name,
+            'value': parsed_value,
+            'character_id': character_id,
+        })
+
+        return {
+            'id': custom_stat_id,
+            'name': clean_name,
+            'value': parsed_value,
+            'character_id': character_id,
+        }
+
+    def step_single_inventory_item(self, character_id: str, inventory_id: str, step: int):
+        """Apply +/- quantity to a single inventory item.
+
+        Returns the updated row dict. Returns None when the item is deleted or invalid.
+        """
+        if not is_valid_uuid(inventory_id):
+            return None
+
+        existing = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
+        if not existing:
+            return None
+
+        try:
+            current_quantity = int(existing.get('quantity'))
+        except (TypeError, ValueError):
+            current_quantity = 1
+
+        next_quantity = current_quantity + int(step)
+        if next_quantity <= 0:
+            ggi.go_delete_it('inventory', {
+                'id': inventory_id,
+                'character_id': character_id,
+            })
+            return None
+
+        ggi.go_update('inventory', {
+            'id': inventory_id,
+            'name': existing.get('name'),
+            'description': existing.get('description'),
+            'quantity': next_quantity,
+            'character_id': character_id,
+        })
+
+        return {
+            'id': inventory_id,
+            'name': existing.get('name'),
+            'description': existing.get('description'),
+            'quantity': next_quantity,
+            'character_id': character_id,
+        }
+
     def save_feat_and_trait_values(self, character_id: str, request_form):
         table_name = 'feat_and_trait'
 
@@ -871,15 +934,5 @@ class CharacterSheet:
                 skill_id = uuid()
                 characters_skills['id'] = skill_id
                 ggi.go_add_new(f"{ability}_skills", characters_skills)
-
-    def process_form(self, request_form):
-        character_id = self.save_character_values(request_form)
-        self.save_class_to_character_values(character_id, request_form)
-        self.save_inventory_values(character_id, request_form)
-        self.save_feat_and_trait_values(character_id, request_form)
-        self.save_custom_stat_values(character_id, request_form)
-        self.save_custom_buff_values(character_id, request_form)
-        self.save_ability_values(character_id, request_form)
-        return character_id
 
 

@@ -2,16 +2,15 @@
     <h4>
         Feats & Traits
     </h4>
+    <p class="section-help-text">Keep quick references for your feats and traits. Note any effects by adding a passive stat or buffs/debuffs in the Trackers tab.</p>
     <div id="feats-list">
     {% if feats_and_traits %}
         {% for feat in feats_and_traits %}
             {% include 'components/feat_row.html' %}
         {% endfor %}
     {% endif %}
-    </div>
-
     {% if not feats_and_traits_at_capacity %}
-    <div class="card-item-row card-item-add-row">
+    <div class="card-item-row card-item-add-row" id="add-feat-row">
         <div class="card-item-top-row">
             {% set btn_wrapper_class = 'card-item-field card-item-action-field' %}
             {% set btn_btn_class = 'card-item-btn' %}
@@ -30,8 +29,8 @@
             {% set btn_wrapper_id = 'add-feat-submit-btn-wrapper' %}
             {% set btn_id = 'feat-and-trait-add' %}
             {% set btn_hx_post = '/characters/' ~ character_id ~ '/feat-and-trait/add' %}
-            {% set btn_hx_target = '#feats-list' %}
-            {% set btn_hx_swap = 'beforeend' %}
+            {% set btn_hx_target = '#add-feat-row' %}
+            {% set btn_hx_swap = 'beforebegin' %}
             {% set btn_hx_include = '#feat_and_trait-name, #feat_and_trait-description' %}
             {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
             {% set btn_label = 'Add' %}
@@ -55,4 +54,5 @@
         </div>
     </div>
     {% endif %}
+    </div>
 </div>

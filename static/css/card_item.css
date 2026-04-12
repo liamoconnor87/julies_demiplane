@@ -54,7 +54,7 @@
 
 .feats-section {
     width: 100%;
-    --card-item-total-width: 16rem;
+    --card-item-total-width: 19.75rem;
 }
 
 #inventory-list,
@@ -368,13 +368,5 @@
 @media (max-width: 499px) {
     .card-item-section {
         padding: 0 0.25rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .feats-section .card-item-top-row,
-    .feats-section .card-item-description-field,
-    .feats-section .card-item-saved-row .card-item-name-wrapper {
-        max-width: 100%;
     }
 }

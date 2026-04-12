@@ -5,6 +5,7 @@
 	padding: 0 1rem;
 	width: 100%;
 	min-width: 0;
+	flex: 1 1 0;
 	--custom-buffs-action-width: 3rem;
 	--custom-buffs-name-width: 9.75rem;
 	--custom-buffs-value-width: 8rem;
@@ -15,7 +16,10 @@
 
 .custom-buffs-grid {
 	display: flex;
+	flex-direction: row;
 	flex-wrap: wrap;
+	justify-content: flex-start;
+	gap: 0.25rem;
 	width: 100%;
 	min-width: 0;
 	margin-bottom: 0.4rem;
@@ -41,8 +45,8 @@
 }
 
 .custom-buffs-card-title {
-	background: var(--primary-color-transparent);
-	color: var(--secondary-color);
+	background: var(--field-bg-colour);
+	color: var(--label-colour);
 	font-weight: bold;
 	font-size: 0.6rem;
 	line-height: 1;
@@ -51,7 +55,7 @@
 }
 
 .custom-buffs-card-value {
-	background: var(--primary-color-transparent);
+	background: var(--field-bg-colour);
 	color: var(--text-colour-three);
 	font-size: 2.1rem;
 	font-weight: 400;
@@ -68,7 +72,7 @@
 }
 
 .custom-buffs-card-target-table {
-	color: var(--secondary-color);
+	color: var(--label-colour);
 	font-size: 0.68rem;
 	text-transform: uppercase;
 	font-weight: bold;
@@ -189,10 +193,6 @@
 	padding: 0.25rem 0 0.25rem 0.5rem;
 }
 
-.custom-buffs-section-input {
-	/* inherits from .field-input */
-}
-
 .custom-buffs-basic-fields-row .custom-buffs-section-input {
 	height: var(--custom-buffs-top-control-height);
 	min-height: var(--custom-buffs-top-control-height);
@@ -205,7 +205,7 @@
 	flex-wrap: wrap;
 	gap: 0.3rem;
 	width: 100%;
-	background: var(--primary-color-transparent);
+	background: var(--field-bg-colour);
 	padding: 0.45rem;
 	box-sizing: border-box;
 }
@@ -236,7 +236,7 @@
 .custom-buffs-table-stat-group {
 	display: none;
 	margin-bottom: 0.25rem;
-	background: var(--primary-color-transparent);
+	background: var(--field-bg-colour);
 	padding: 0.35rem 0.45rem;
 	box-sizing: border-box;
 }
@@ -247,7 +247,7 @@
 
 .custom-buffs-table-stat-title {
 	background: transparent;
-	color: var(--secondary-color);
+	color: var(--label-colour);
 	padding: 0 0 0.3rem 0;
 	font-weight: bold;
 	font-size: 0.65rem;
@@ -271,6 +271,21 @@
 #add-custom-buff-submit-btn-wrapper,
 #close-custom-buff-btn-wrapper {
 	display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Responsive — buff display cards
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+
+
+@media (max-width: 560px) {
+	/* Tighten form fields */
+	.custom-buffs-target-fields-column {
+		width: 100%;
+		min-width: 0;
+		max-width: 100%;
+	}
 }
 
 @media (max-width: 499px) {

@@ -2,7 +2,6 @@
     <h4>Combat</h4>
     <p class="section-help-text">Manage HP, Temp HP, and Hit Dice. Use +/− to adjust Current HP during encounters.</p>
     <div class="combat-section-layout-row">
-        {# Column 1: Health Points, Temp HP, Hit Dice #}
         <div class="combat-section-col-one">
             <div class="combat-section-col-one-field">
                 <label for="character-health_points" class="field-label combat-section-label">Health Points</label>
@@ -20,7 +19,6 @@
             </div>
         </div>
 
-        {# Column 2: Current Health Points square #}
         <div class="combat-section-col-two-field">
             <input type="number" id="character-current_health_points" name="character-current_health_points" value="{{ character.current_health_points or '' }}" class="field-input combat-section-input">
             <div class="combat-section-current-hp-controls" aria-label="Adjust current HP">

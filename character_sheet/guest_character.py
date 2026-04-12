@@ -467,6 +467,26 @@ def add_single_feat(name: str, description: str):
     return feat
 
 
+def update_single_custom_stat(stat_id: str, name: str, value):
+    """Update a single custom stat in the session and return it, or None."""
+    guest = session.get(_SESSION_KEY)
+    if not guest or not is_valid_uuid(stat_id):
+        return None
+
+    custom_stats = guest['custom_stats']
+    stat = next((s for s in custom_stats if s.get('id') == stat_id), None)
+    if not stat:
+        return None
+
+    clean_name = sanitize_optional_str(name, max_len=255) or stat.get('name')
+    parsed_value = parse_optional_int(value, fallback=stat.get('value', 0))
+
+    stat['name'] = clean_name
+    stat['value'] = parsed_value
+    _mark_modified()
+    return stat
+
+
 def remove_custom_stat(item_id: str):
     """Remove a custom stat by id."""
     guest = session.get(_SESSION_KEY)
