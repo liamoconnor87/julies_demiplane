@@ -12,6 +12,7 @@
     {% endif %}
 
     {# ── Add tracker — + button reveals inline form ── #}
+    {% if not trackers_at_capacity %}
     <div class="tracker-add-actions-row" id="tracker-add-tracker-row">
         {% set btn_wrapper_class = 'add-actions-field' %}
         {% set btn_btn_class = 'add-actions-btn' %}
@@ -47,6 +48,7 @@
         {% set btn_label = 'Close' %}
         {% include 'base/field_button.html' %}
     </div>
+    {% endif %}
 
 </div>
 </form>

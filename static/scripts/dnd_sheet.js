@@ -233,12 +233,14 @@ window.addEventListener("load", () => {
             bindCombatFieldAutoSave();
             bindBuffCardEdit();
             decorateBuffedLabels();
+            return;
         }
 
         if (target.id === 'combat-stats-section-container') {
             bindCurrentHpCalculation();
             bindCombatFieldAutoSave();
             syncGlobalLockState();
+            return;
         }
     });
 
@@ -314,12 +316,16 @@ function applyCombatStateColours(fields = {}) {
  */
 function bindDeleteCharacterDropdown() {
     const toggle = document.getElementById('delete-character-toggle');
-    const dropdown = document.getElementById('delete-character-dropdown');
-    if (!toggle || !dropdown) return;
+    if (!toggle || toggle.dataset.bound === 'true') return;
+    toggle.dataset.bound = 'true';
 
     toggle.addEventListener('click', (e) => {
         e.stopPropagation();
+        const dropdown = document.getElementById('delete-character-dropdown');
+        if (!dropdown) return;
+
         dropdown.classList.toggle('d-none');
+
         // Focus the input when opening
         if (!dropdown.classList.contains('d-none')) {
             const input = dropdown.querySelector('#delete-confirm-input');
@@ -327,15 +333,19 @@ function bindDeleteCharacterDropdown() {
         }
     });
 
-    // Close on outside click
-    document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && e.target !== toggle) {
-            dropdown.classList.add('d-none');
-        }
-    });
-
-    // Prevent clicks inside the dropdown from closing it
-    dropdown.addEventListener('click', (e) => e.stopPropagation());
+    if (document.body.dataset.deleteDropdownDocBound !== 'true') {
+        document.body.dataset.deleteDropdownDocBound = 'true';
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('delete-character-dropdown');
+            const liveToggle = document.getElementById('delete-character-toggle');
+            if (!dropdown || !liveToggle) {
+                return;
+            }
+            if (!dropdown.contains(e.target) && !liveToggle.contains(e.target)) {
+                dropdown.classList.add('d-none');
+            }
+        });
+    }
 
     bindDeleteConfirmInput();
 }
@@ -346,7 +356,8 @@ function bindDeleteCharacterDropdown() {
 function bindDeleteConfirmInput() {
     const input = document.getElementById('delete-confirm-input');
     const btn = document.getElementById('delete-confirm-btn');
-    if (!input || !btn) return;
+    if (!input || !btn || input.dataset.bound === 'true') return;
+    input.dataset.bound = 'true';
 
     input.addEventListener('input', () => {
         if (input.value.trim() === 'DELETE') {
@@ -479,6 +490,9 @@ function bindFeatAutoSave() {
             }
             featAutoSaveTimers[featId] = setTimeout(() => {
                 featAutoSaveTimers[featId] = null;
+                if (!document.contains(nameInput) || (descInput && !document.contains(descInput))) {
+                    return;
+                }
                 htmx.ajax('POST', `/characters/${characterId}/feat-and-trait/${featId}/update`, {
                     target: `#feat-row-${featId}`,
                     swap: 'outerHTML',
@@ -1376,6 +1390,9 @@ function bindInventoryAutoSave() {
             }
             inventoryAutoSaveTimers[inventoryId] = setTimeout(() => {
                 inventoryAutoSaveTimers[inventoryId] = null;
+                if (!document.contains(nameInput) || (descInput && !document.contains(descInput))) {
+                    return;
+                }
                 htmx.ajax('POST', `/characters/${characterId}/inventory/${inventoryId}/update`, {
                     target: `#inventory-row-${inventoryId}`,
                     swap: 'outerHTML',
@@ -1967,15 +1984,24 @@ function bindTrackerAutoSave() {
             trackerAutoSaveTimers[trackerId] = setTimeout(() => {
                 trackerAutoSaveTimers[trackerId] = null;
 
-                const values = {};
-                if (nameInput) {
-                    values['tracker-name'] = nameInput.value;
+                const liveItem = document.getElementById(`tracker-item-${trackerId}`);
+                if (!liveItem) {
+                    return;
                 }
-                entryNameInputs.forEach((input) => {
+
+                const liveNameInput = liveItem.querySelector('.tracker-name-input');
+                const liveEntryNameInputs = liveItem.querySelectorAll('.tracker-entry-name-input');
+                const liveEntryValueInputs = liveItem.querySelectorAll('.tracker-entry-value-input');
+
+                const values = {};
+                if (liveNameInput) {
+                    values['tracker-name'] = liveNameInput.value;
+                }
+                liveEntryNameInputs.forEach((input) => {
                     const eid = input.dataset.entryId;
                     if (eid) values[`entry-name-${eid}`] = input.value;
                 });
-                entryValueInputs.forEach((input) => {
+                liveEntryValueInputs.forEach((input) => {
                     const eid = input.dataset.entryId;
                     if (eid) values[`entry-value-${eid}`] = input.value;
                 });

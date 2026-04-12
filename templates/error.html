@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ status_code }} | Julie's Demiplane</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tourney:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dnd_sheet.css') }}">
+
+    <style id="user-theme-vars">
+    {% if user_theme is defined and user_theme %}
+    :root {
+        {% if user_theme.background_colour %}--primary-color: {{ user_theme.background_colour | e }};{% endif %}
+        {% if user_theme.border_colour %}--secondary-color-dark: {{ user_theme.border_colour | e }};{% endif %}
+        {% if user_theme.label_colour %}--label-colour: {{ user_theme.label_colour | e }};{% endif %}
+        {% if user_theme.critical_colour %}--critical-colour: {{ user_theme.critical_colour | e }};{% endif %}
+        {% if user_theme.success_colour %}--success-colour: {{ user_theme.success_colour | e }};{% endif %}
+        {% if user_theme.tracker_fill_colour %}--tracker-fill-colour: {{ user_theme.tracker_fill_colour | e }};{% endif %}
+        {% if user_theme.asterisk_colour %}--text-colour-one: {{ user_theme.asterisk_colour | e }};{% endif %}
+        {% if user_theme.field_text_colour %}--text-colour-three: {{ user_theme.field_text_colour | e }};{% endif %}
+        {% if user_theme.level_colour %}--level-colour: {{ user_theme.level_colour | e }};{% endif %}
+        {% if user_theme.button_icon_colour %}--button-icon-colour: {{ user_theme.button_icon_colour | e }};{% endif %}
+        {% if user_theme.title_colour %}--title-colour: {{ user_theme.title_colour | e }};{% endif %}
+        {% if user_theme.field_bg_colour %}--field-bg-colour: {{ user_theme.field_bg_colour | e }};{% endif %}
+    }
+    {% endif %}
+    </style>
+
+    <style>
+        .error-page::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 15% 0%, rgba(0, 0, 0, 0.22), transparent 55%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .error-page .site-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .error-page main,
+        .error-page .site-footer {
+            position: relative;
+            z-index: 1;
+        }
+
+        .error-page .site-navbar .page-container {
+            gap: 0.75rem;
+        }
+
+        .error-navbar-right {
+            color: var(--text-colour-three);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            border: 1px solid var(--secondary-color-dark);
+            background: var(--field-bg-colour);
+            padding: 0.25rem 0.55rem;
+            border-radius: 0.35rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .error-shell {
+            width: 100%;
+            max-width: none;
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 1.25rem;
+            padding-bottom: 1.25rem;
+        }
+
+        .error-card {
+            width: min(56rem, 100%);
+            max-width: none;
+            margin: 0;
+            border-width: 2px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .error-kicker {
+            margin: 0;
+            color: var(--label-colour);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            font-weight: 700;
+        }
+
+        .error-title {
+            margin: 0.6rem 0 0;
+            color: var(--label-colour);
+            font-size: clamp(1.6rem, 3.9vw, 2.3rem);
+        }
+
+        .error-code {
+            margin: 0.4rem 0 0;
+            color: var(--text-colour-one);
+            font-size: clamp(2.1rem, 7vw, 3.6rem);
+            line-height: 1;
+            font-weight: 800;
+            text-shadow: 3px 2px 0 var(--secondary-color-dark);
+        }
+
+        .error-message {
+            margin: 0.9rem 0 0;
+            color: var(--text-colour-three);
+            font-size: 1rem;
+            max-width: 52ch;
+            line-height: 1.5;
+        }
+
+        .error-tip {
+            margin: 0.9rem 0 0;
+            color: var(--success-colour);
+            border-left: 3px solid var(--success-colour);
+            padding-left: 0.65rem;
+            font-weight: 600;
+        }
+
+        .error-actions {
+            margin-top: 1.1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+        }
+
+        .error-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 0;
+            color: var(--label-colour);
+            border: 1px solid var(--secondary-color-dark);
+            background: var(--field-bg-colour);
+            line-height: 1.2;
+            text-decoration: none;
+            transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
+        }
+
+        .error-btn:hover,
+        .error-btn:focus-visible {
+            text-decoration: none;
+            color: var(--label-colour);
+            background: var(--primary-color-transparent);
+            border-color: var(--label-colour);
+            box-shadow: 0 0 0 1px var(--label-colour);
+            opacity: 1;
+        }
+
+        .error-btn-primary {
+            border-color: var(--secondary-color-dark);
+            background: var(--field-bg-colour);
+            color: var(--label-colour);
+        }
+
+        .error-btn:focus-visible {
+            outline: 2px solid var(--text-colour-one);
+            outline-offset: 1px;
+        }
+
+        .error-page .site-footer-right,
+        .error-page .site-footer-right a,
+        .error-page .site-footer-right i,
+        .error-page .site-footer-left a {
+            color: var(--label-colour);
+        }
+
+        .error-page .site-footer-right .liam-link {
+            color: var(--text-colour-one);
+        }
+
+        .error-page .site-footer {
+            margin-top: 0;
+        }
+
+        @media (max-width: 700px) {
+            .error-navbar-right {
+                font-size: 0.75rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .error-shell {
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="guest-page error-page">
+    <nav class="site-navbar" aria-label="Site navigation">
+        <div class="page-container">
+            <a class="site-navbar-title" href="{{ url_for('character_sheet') }}">
+                <span class="site-navbar-title-outline-word">Julie's</span>
+                <span class="site-navbar-title-asterisk-word">Demiplane</span>
+            </a>
+            <span class="error-navbar-right" aria-label="HTTP status">Error {{ status_code }}</span>
+        </div>
+    </nav>
+
+    <main class="page-container sheet-page-content error-shell" role="main" aria-live="polite">
+        <section class="guest-landing-panel-card error-card">
+            <p class="error-kicker">Request interrupted</p>
+            <h1 class="error-title">{{ title }}</h1>
+            <p class="error-code">{{ status_code }}</p>
+            <p class="error-message">{{ message }}</p>
+            {% if status_code == 431 %}
+                <p class="error-tip">Tip: remove old cookies for this site and refresh the page.</p>
+            {% endif %}
+
+            <div class="error-actions">
+                <a class="error-btn error-btn-primary" href="{{ url_for('character_sheet') }}">Return to home</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer" aria-label="Site footer links">
+        <div class="site-footer-right">
+            <p>Created by <a class="liam-link" href="https://www.webdevliam.uk" target="_blank" rel="noopener noreferrer">webDevLiam</a></p>
+        </div>
+        <div class="site-footer-left">
+            <p><a href="https://buymeacoffee.com/webdevliam" target="_blank" rel="noopener noreferrer">Coffee :)</a></p>
+        </div>
+    </footer>
+</body>
+</html>

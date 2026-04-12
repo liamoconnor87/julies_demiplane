@@ -90,6 +90,20 @@
             {% include 'components/auth_dropdown.html' %}
         </div>
     </nav>
+    {% if masquerade and masquerade.active %}
+    <div class="masquerade-banner" role="status" aria-live="polite">
+        <div class="page-container">
+            <p class="masquerade-banner-text">
+                Masquerading as <strong>{{ masquerade.target_username }}</strong>
+                (admin: {{ masquerade.admin_username }}).
+            </p>
+            <form class="masquerade-stop-form" method="POST" action="{{ url_for('auth.stop_masquerade') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn auth-btn auth-btn-logout masquerade-stop-btn">Stop masquerade</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
     {% if current_user.is_authenticated %}
     {% include 'components/character_bar.html' %}
     {% include 'components/sub_bar.html' %}

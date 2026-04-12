@@ -1,5 +1,5 @@
-from flask import Blueprint, current_app, make_response, render_template, request, session
-from flask_login import login_user, logout_user
+from flask import Blueprint, abort, current_app, make_response, redirect, render_template, request, session, url_for
+from flask_login import current_user, login_required, login_user, logout_user
 
 from typing import Optional
 
@@ -9,9 +9,17 @@ from character_sheet import guest_character as guest
 
 auth_bp = Blueprint('auth', __name__)
 
+_MASQUERADE_ADMIN_ID_KEY = 'masquerade_admin_id'
+_MASQUERADE_ADMIN_USERNAME_KEY = 'masquerade_admin_username'
+
 
 def _get_db():
     return current_app.config['AUTH_DB']
+
+
+def _clear_masquerade_session():
+    session.pop(_MASQUERADE_ADMIN_ID_KEY, None)
+    session.pop(_MASQUERADE_ADMIN_USERNAME_KEY, None)
 
 
 def _auth_error_response(error: Optional[str], active_tab: str = 'login'):
@@ -27,7 +35,10 @@ def _auth_error_response(error: Optional[str], active_tab: str = 'login'):
 
 
 def _redirect(url: str = '/'):
-    """Return an empty response with HX-Redirect so HTMX does a full page load."""
+    """Redirect for both HTMX and standard form submits."""
+    if (request.headers.get('HX-Request') or '').lower() != 'true':
+        return redirect(url)
+
     resp = make_response('', 200)
     resp.headers['HX-Redirect'] = url
     return resp
@@ -101,5 +112,50 @@ def login():
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
+    _clear_masquerade_session()
     logout_user()
     return _redirect('/')
+
+
+@auth_bp.route('/masquerade/start/<user_id>', methods=['POST'])
+@login_required
+def start_masquerade(user_id: str):
+    db = _get_db()
+
+    if not current_user.is_admin:
+        abort(403)
+
+    if session.get(_MASQUERADE_ADMIN_ID_KEY):
+        abort(400)
+
+    if current_user.id == user_id:
+        return _redirect(url_for('admin_home'))
+
+    target_user = User.get_by_id(db, user_id)
+    if not target_user:
+        abort(404)
+
+    session[_MASQUERADE_ADMIN_ID_KEY] = current_user.id
+    session[_MASQUERADE_ADMIN_USERNAME_KEY] = current_user.username
+    login_user(target_user)
+
+    return _redirect(url_for('character_sheet'))
+
+
+@auth_bp.route('/masquerade/stop', methods=['POST'])
+@login_required
+def stop_masquerade():
+    db = _get_db()
+    admin_user_id = session.get(_MASQUERADE_ADMIN_ID_KEY)
+    _clear_masquerade_session()
+
+    if not admin_user_id:
+        return _redirect(url_for('character_sheet'))
+
+    admin_user = User.get_by_id(db, admin_user_id)
+    if not admin_user or not admin_user.is_admin:
+        logout_user()
+        return _redirect(url_for('character_sheet'))
+
+    login_user(admin_user)
+    return _redirect(url_for('admin_home'))

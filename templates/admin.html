@@ -190,6 +190,22 @@
         .admin-actions-cell {
             white-space: nowrap;
         }
+
+        .admin-actions-cell .admin-inline-form + .admin-inline-form {
+            margin-left: 0.35rem;
+        }
+
+        .admin-masquerade-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border-color: var(--admin-meta);
+        }
+
+        .admin-masquerade-banner p {
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -197,6 +213,16 @@
         <h1>Admin</h1>
         <a href="/">← Back to Site</a>
     </div>
+
+    {% if masquerade and masquerade.active %}
+    <div class="flash admin-masquerade-banner">
+        <p>Masquerading as <strong>{{ masquerade.target_username }}</strong> (admin: {{ masquerade.admin_username }})</p>
+        <form class="admin-inline-form" method="POST" action="{{ url_for('auth.stop_masquerade') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">Stop masquerade</button>
+        </form>
+    </div>
+    {% endif %}
 
     {% if breadcrumbs %}
     <div class="breadcrumb">
@@ -230,11 +256,17 @@
                 <td>{{ '✓' if user.admin else '' }}</td>
                 <td>{{ user.created_at or '' }}</td>
                 <td>{{ user.character_count }}</td>
-                <td>
+                <td class="admin-actions-cell">
                     <form class="admin-inline-form" method="POST" action="/admin/table/user/{{ user.id }}/toggle-admin">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit">{{ 'Remove Admin' if user.admin else 'Make Admin' }}</button>
                     </form>
+                    {% if not (masquerade and masquerade.active) and user.id != current_user.id %}
+                    <form class="admin-inline-form" method="POST" action="{{ url_for('auth.start_masquerade', user_id=user.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">Masquerade</button>
+                    </form>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}

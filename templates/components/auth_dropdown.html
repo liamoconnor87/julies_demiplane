@@ -10,6 +10,17 @@
         <div class="dropdown-menu dropdown-menu-end auth-dropdown-menu">
             <div class="auth-dropdown-body">
                 <p class="auth-greeting">Signed in as <strong>{{ current_user.username }}</strong></p>
+                {% if masquerade and masquerade.active %}
+                <div class="auth-masquerade-note">
+                    Masquerading as <strong>{{ masquerade.target_username }}</strong>
+                    <br>
+                    <span>Admin: {{ masquerade.admin_username }}</span>
+                </div>
+                <form method="POST" action="{{ url_for('auth.stop_masquerade') }}" class="mb-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn auth-btn auth-btn-logout w-100">Stop masquerade</button>
+                </form>
+                {% endif %}
                 {% if current_user.is_admin %}
                 <a href="/admin" class="btn auth-btn auth-btn-admin w-100 mb-2" style="text-decoration:none;text-align:center;">Admin Panel</a>
                 {% endif %}

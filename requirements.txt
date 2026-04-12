@@ -6,3 +6,4 @@ Flask-Session
 Flask-Limiter
 Flask-Talisman
 captcha
+gunicorn

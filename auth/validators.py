@@ -4,8 +4,6 @@ Each returns (is_valid: bool, error_message: str | None).
 """
 import re
 
-from go_get_it.go_get_it import GoGetDB
-
 _USERNAME_RE = re.compile(r'^[a-zA-Z0-9_]+$')
 
 # Matches: #rgb, #rrggbb, #rrggbbaa, rgb(...), rgba(...), hsl(...), hsla(...),
@@ -39,10 +37,6 @@ def validate_username(value: str):
     if not _USERNAME_RE.match(value):
         return False, 'Username may only contain letters, numbers, and underscores.'
 
-    ggi = GoGetDB()
-    all_users = ggi.go_get_all('user')
-    if all_users and any(user['username'].lower() == value.lower() for user in all_users):
-        return False, 'Username is already taken.'
     return True, None
 
 

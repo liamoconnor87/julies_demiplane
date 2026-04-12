@@ -50,6 +50,26 @@ def setup_auth(app: Flask, db, limiter=None):
 
         return {'captcha_image': generate_captcha_image(challenge)}
 
+    @app.context_processor
+    def inject_masquerade():
+        admin_user_id = session.get('masquerade_admin_id')
+        admin_username = (session.get('masquerade_admin_username') or '').strip()
+
+        if not admin_user_id or not current_user.is_authenticated:
+            return {'masquerade': None}
+
+        if current_user.id == admin_user_id:
+            return {'masquerade': None}
+
+        return {
+            'masquerade': {
+                'active': True,
+                'admin_user_id': admin_user_id,
+                'admin_username': admin_username or 'Admin',
+                'target_username': current_user.username,
+            }
+        }
+
     # Apply rate limits to auth endpoints if limiter is available
     if limiter:
         limiter.limit('10/minute')(app.view_functions['auth.signup'])
