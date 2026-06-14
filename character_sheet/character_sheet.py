@@ -1,5 +1,6 @@
 from typing import Optional
 from go_get_it.go_get_it import GoGetDB
+from character_sheet import guest_character as guest_session
 from functions.functions import uuid
 from functions.validators import (
     sanitize_str, sanitize_optional_str,
@@ -48,8 +49,26 @@ class CharacterSheet:
     }
 
     # TODO: Add validation
-    def __init__(self, character_id: Optional[str] = None):
+    def __init__(self, character_id: Optional[str] = None, guest_character: bool = False):
         self.character_id = character_id
+        self.guest_character = guest_character
+        if self.guest_character:
+            self.store = guest_session.GuestSessionStore(character_id=self.character_id)
+            self.character_id = guest_session.get_guest_character_id() or self.store.character_id
+        else:
+            self.store = ggi
+
+    def _rows(self, table_name: str, params: Optional[dict] = None) -> list:
+        rows = self.store.go_get_all(table_name, params)
+        if isinstance(rows, list):
+            return rows
+        return []
+
+    def _count(self, table_name: str, params: Optional[dict] = None) -> int:
+        count_value = self.store.go_get_all(table_name, params, count=True)
+        if isinstance(count_value, int):
+            return count_value
+        return 0
 
     def create_form(self):
         """
@@ -57,7 +76,7 @@ class CharacterSheet:
         This data will be passed to Jinja2 templates for rendering.
         """
         # Get character data
-        character = ggi.go_get_one('character', {'id': self.character_id}) if self.character_id else {}
+        character = self.store.go_get_one('character', {'id': self.character_id}) if self.character_id else {}
 
         def _to_int(value):
             try:
@@ -67,7 +86,7 @@ class CharacterSheet:
 
         # Calculate total character level from base + class levels
         if character:
-            characters_class_levels = ggi.go_get_all('class_to_character', {'character_id': character.get('id')})
+            characters_class_levels = self.store.go_get_all('class_to_character', {'character_id': character.get('id')})
             character_level = character.get('level', 0)
 
             for char_class in characters_class_levels or []:
@@ -79,12 +98,12 @@ class CharacterSheet:
         # Get abilities and skills data
         abilities_data = []
         for ability_name in self.ABILITY_TO_SKILL_MAPPING:
-            ability = ggi.go_get_one(ability_name, {"character_id": self.character_id}) or {}
+            ability = self.store.go_get_one(ability_name, {"character_id": self.character_id}) or {}
 
             # Get skills for this ability
             skills = {}
             if ability.get('id'):
-                skills = ggi.go_get_one(f"{ability_name}_skills", {f"{ability_name}_id": ability['id']}) or {}
+                skills = self.store.go_get_one(f"{ability_name}_skills", {f"{ability_name}_id": ability['id']}) or {}
 
             # Get skill list for this ability
             skill_list = self.ABILITY_TO_SKILL_MAPPING[ability_name]
@@ -97,13 +116,8 @@ class CharacterSheet:
             })
 
         # Classes
-        all_classes = ggi.go_get_all('class') or []
-        if not isinstance(all_classes, list):
-            all_classes = []
-
-        classes = ggi.go_get_all('class_to_character', {'character_id': self.character_id}) or []
-        if not isinstance(classes, list):
-            classes = []
+        all_classes = self._rows('class')
+        classes = self._rows('class_to_character', {'character_id': self.character_id})
 
         # Get IDs of classes already assigned to this character
         assigned_class_ids = [char_class['class_id'] for char_class in classes]
@@ -125,13 +139,13 @@ class CharacterSheet:
         )
 
         # Feats & Traits
-        feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': self.character_id}) or []
+        feats_and_traits = self._rows('feat_and_trait', {'character_id': self.character_id})
 
         # Inventory
-        inventory = ggi.go_get_all('inventory', {'character_id': self.character_id}) or []
+        inventory = self._rows('inventory', {'character_id': self.character_id})
 
         # Custom Stats
-        custom_stats = ggi.go_get_all('custom_stat', {'character_id': self.character_id}) or []
+        custom_stats = self._rows('custom_stat', {'character_id': self.character_id})
 
         buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
         custom_buffs = self._get_custom_buffs()
@@ -198,9 +212,9 @@ class CharacterSheet:
         return options
 
     def _get_custom_buffs(self):
-        custom_buffs = ggi.go_get_all('custom_buff', {'character_id': self.character_id}) or []
-        custom_buff_tables = ggi.go_get_all('custom_buff_to_stat_table', {'character_id': self.character_id}) or []
-        table_to_stats = ggi.go_get_all('stat_table_to_stat', {'character_id': self.character_id}) or []
+        custom_buffs = self._rows('custom_buff', {'character_id': self.character_id})
+        custom_buff_tables = self._rows('custom_buff_to_stat_table', {'character_id': self.character_id})
+        table_to_stats = self._rows('stat_table_to_stat', {'character_id': self.character_id})
 
         stats_by_table_id = {}
         for stat_record in table_to_stats:
@@ -227,6 +241,59 @@ class CharacterSheet:
 
         return custom_buffs
 
+    def _recalculate_ability_skill_scores(self, character_id: str):
+        import math
+
+        if not is_valid_uuid(character_id):
+            return
+
+        character = self.store.go_get_one('character', {'id': character_id})
+        if not character:
+            return
+
+        character_proficiency = parse_optional_int(character.get('proficiency'), fallback=0)
+        if character_proficiency is None:
+            character_proficiency = 0
+
+        for ability_name, skill_list in self.ABILITY_TO_SKILL_MAPPING.items():
+            ability_row = self.store.go_get_one(ability_name, {'character_id': character_id})
+            if not ability_row:
+                continue
+
+            ability_id = ability_row.get('id')
+            if not is_valid_uuid(ability_id):
+                continue
+
+            ability_value = clamp_int(ability_row.get('value'), 1, 30, fallback=10)
+            modifier = math.floor((ability_value - 10) / 2)
+            saving_proficient = 1 if ability_row.get('proficient') else 0
+
+            # Keep stored ability modifier in sync with ability value.
+            self.store.go_update(ability_name, {
+                'id': ability_id,
+                'modifier': modifier,
+            })
+
+            skills_table = f'{ability_name}_skills'
+            existing_skills = self.store.go_get_one(skills_table, {f'{ability_name}_id': ability_id}) or {}
+            existing_skills_id = existing_skills.get('id')
+
+            recalculated_skills = {
+                'id': existing_skills_id if is_valid_uuid(existing_skills_id) else uuid(),
+                f'{ability_name}_id': ability_id,
+                'saving_throw': modifier + (character_proficiency if saving_proficient else 0),
+            }
+
+            for skill in skill_list:
+                skill_proficient = 1 if existing_skills.get(f'{skill}_proficient') else 0
+                recalculated_skills[skill] = modifier + (character_proficiency if skill_proficient else 0)
+                recalculated_skills[f'{skill}_proficient'] = skill_proficient
+
+            if is_valid_uuid(existing_skills_id):
+                self.store.go_update(skills_table, recalculated_skills)
+            else:
+                self.store.go_add_new(skills_table, recalculated_skills)
+
     _ID_BASED_TABLES = {'custom_stat', 'feat_and_trait', 'inventory'}
 
     def _get_valid_stat_values(self, buff_target_options, table_name):
@@ -244,12 +311,12 @@ class CharacterSheet:
         if not name:
             return
 
-        if (ggi.go_get_all('custom_buff', {'character_id': character_id}, count=True) or 0) >= CUSTOM_BUFF_MAX:
+        if self._count('custom_buff', {'character_id': character_id}) >= CUSTOM_BUFF_MAX:
             return
 
-        custom_stats = ggi.go_get_all('custom_stat', {'character_id': character_id}) or []
-        feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': character_id}) or []
-        inventory = ggi.go_get_all('inventory', {'character_id': character_id}) or []
+        custom_stats = self._rows('custom_stat', {'character_id': character_id})
+        feats_and_traits = self._rows('feat_and_trait', {'character_id': character_id})
+        inventory = self._rows('inventory', {'character_id': character_id})
         buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
 
         selected_tables = []
@@ -281,7 +348,7 @@ class CharacterSheet:
             return
 
         custom_buff_id = uuid()
-        ggi.go_add_new('custom_buff', {
+        self.store.go_add_new('custom_buff', {
             'id': custom_buff_id,
             'name': name,
             'value': value,
@@ -290,7 +357,7 @@ class CharacterSheet:
 
         for pending_target in pending_table_targets:
             stat_table_id = uuid()
-            ggi.go_add_new('custom_buff_to_stat_table', {
+            self.store.go_add_new('custom_buff_to_stat_table', {
                 'id': uuid(),
                 'custom_buff_id': custom_buff_id,
                 'stat_table_name': pending_target['table_name'],
@@ -298,7 +365,7 @@ class CharacterSheet:
                 'character_id': character_id,
             })
             for stat_name in pending_target['stats']:
-                ggi.go_add_new('stat_table_to_stat', {
+                self.store.go_add_new('stat_table_to_stat', {
                     'id': uuid(),
                     'stat_table_id': stat_table_id,
                     'stat_name': stat_name,
@@ -309,7 +376,7 @@ class CharacterSheet:
         if not is_valid_uuid(buff_id):
             return
 
-        existing_buff = ggi.go_get_one('custom_buff', {'id': buff_id, 'character_id': character_id})
+        existing_buff = self.store.go_get_one('custom_buff', {'id': buff_id, 'character_id': character_id})
         if not existing_buff:
             return
 
@@ -320,9 +387,9 @@ class CharacterSheet:
         if not name:
             return
 
-        custom_stats = ggi.go_get_all('custom_stat', {'character_id': character_id}) or []
-        feats_and_traits = ggi.go_get_all('feat_and_trait', {'character_id': character_id}) or []
-        inventory = ggi.go_get_all('inventory', {'character_id': character_id}) or []
+        custom_stats = self._rows('custom_stat', {'character_id': character_id})
+        feats_and_traits = self._rows('feat_and_trait', {'character_id': character_id})
+        inventory = self._rows('inventory', {'character_id': character_id})
         buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
 
         selected_tables = []
@@ -354,7 +421,7 @@ class CharacterSheet:
             return
 
         # Update the buff record itself
-        ggi.go_update('custom_buff', {
+        self.store.go_update('custom_buff', {
             'id': buff_id,
             'name': name,
             'value': value,
@@ -362,20 +429,20 @@ class CharacterSheet:
         })
 
         # Delete old target mappings
-        old_tables = ggi.go_get_all('custom_buff_to_stat_table', {'custom_buff_id': buff_id, 'character_id': character_id}) or []
+        old_tables = self._rows('custom_buff_to_stat_table', {'custom_buff_id': buff_id, 'character_id': character_id})
         for old_table in old_tables:
             old_stat_table_id = old_table.get('stat_table_id')
             if old_stat_table_id:
-                for old_stat in ggi.go_get_all('stat_table_to_stat', {'stat_table_id': old_stat_table_id, 'character_id': character_id}) or []:
+                for old_stat in self._rows('stat_table_to_stat', {'stat_table_id': old_stat_table_id, 'character_id': character_id}):
                     if old_stat.get('id'):
-                        ggi.go_delete_it('stat_table_to_stat', {'id': old_stat['id']})
+                        self.store.go_delete_it('stat_table_to_stat', {'id': old_stat['id']})
             if old_table.get('id'):
-                ggi.go_delete_it('custom_buff_to_stat_table', {'id': old_table['id']})
+                self.store.go_delete_it('custom_buff_to_stat_table', {'id': old_table['id']})
 
         # Insert new target mappings
         for pending_target in pending_table_targets:
             stat_table_id = uuid()
-            ggi.go_add_new('custom_buff_to_stat_table', {
+            self.store.go_add_new('custom_buff_to_stat_table', {
                 'id': uuid(),
                 'custom_buff_id': buff_id,
                 'stat_table_name': pending_target['table_name'],
@@ -383,7 +450,7 @@ class CharacterSheet:
                 'character_id': character_id,
             })
             for stat_name in pending_target['stats']:
-                ggi.go_add_new('stat_table_to_stat', {
+                self.store.go_add_new('stat_table_to_stat', {
                     'id': uuid(),
                     'stat_table_id': stat_table_id,
                     'stat_name': stat_name,
@@ -392,19 +459,36 @@ class CharacterSheet:
 
     def save_character_values(self, request_form) -> str:
         table_name = 'character'
-        character_id = request_form.get(f'{table_name}-id')
+        submitted_character_id = request_form.get(f'{table_name}-id')
+        character_id = self.character_id if self.guest_character else submitted_character_id
 
         # Reject a tampered/missing character id – fall through to create a new record
         if not is_valid_uuid(character_id):
             character_id = None
 
-        name = sanitize_optional_str(request_form.get(f'{table_name}-name'), max_len=255)
+        existing = self.store.go_get_one('character', {'id': character_id}) if character_id else None
+
+        def _has_field(field: str) -> bool:
+            return f'{table_name}-{field}' in request_form
+
+        def _optional_text(field: str, max_len: int):
+            if _has_field(field):
+                return sanitize_optional_str(request_form.get(f'{table_name}-{field}'), max_len=max_len)
+            if existing:
+                return existing.get(field)
+            return None
+
+        name = _optional_text('name', max_len=255)
         level = 0
-        race = sanitize_optional_str(request_form.get(f'{table_name}-race'), max_len=255)
-        background = sanitize_optional_str(request_form.get(f'{table_name}-background'), max_len=255)
-        alignment = sanitize_optional_str(request_form.get(f'{table_name}-alignment'), max_len=255)
+        race = _optional_text('race', max_len=255)
+        background = _optional_text('background', max_len=255)
+        alignment = _optional_text('alignment', max_len=255)
 
         def _optional_int(field, fallback=None):
+            if not _has_field(field):
+                if existing:
+                    return existing.get(field)
+                return fallback
             raw = request_form.get(f'{table_name}-{field}')
             return parse_optional_int(raw, fallback)
 
@@ -416,7 +500,15 @@ class CharacterSheet:
         passive_wisdom= _optional_int('passive_wisdom')
         temporary_hit_points = _optional_int('temporary_hit_points')
         xp= _optional_int('xp')
-        hit_dice= sanitize_optional_str(request_form.get(f'{table_name}-hit_dice'), max_len=255)
+        hit_dice = _optional_text('hit_dice', max_len=255)
+
+        existing_proficiency = parse_optional_int(existing.get('proficiency'), fallback=0) if existing else 0
+        if existing_proficiency is None:
+            existing_proficiency = 0
+        next_proficiency = parse_optional_int(proficiency, fallback=0)
+        if next_proficiency is None:
+            next_proficiency = 0
+        proficiency_changed = next_proficiency != existing_proficiency
 
         character = {
             "id": character_id,
@@ -436,14 +528,36 @@ class CharacterSheet:
             "xp": xp,
         }
 
+        if self.guest_character:
+            if not character_id:
+                character_id = guest_session.get_guest_character_id()
+            if not is_valid_uuid(character_id):
+                character_id = uuid()
+
+            character['id'] = character_id
+            existing = self.store.go_get_one('character', {'id': character_id})
+            if existing:
+                self.store.go_update('character', character)
+            else:
+                self.store.go_add_new('character', character)
+
+            if proficiency_changed:
+                self._recalculate_ability_skill_scores(character_id)
+
+            self.character_id = character_id
+            return str(character_id)
+
         if character_id:
-            ggi.go_update('character', character)
+            self.store.go_update('character', character)
         else:
             character_id = uuid()
             character['id'] = character_id
-            ggi.go_add_new('character', character)
+            self.store.go_add_new('character', character)
 
-        return character_id
+        if proficiency_changed:
+            self._recalculate_ability_skill_scores(character_id)
+
+        return str(character_id)
 
     def save_combat_values(self, character_id: str, request_form):
         """Save only combat-related fields without touching other character data."""
@@ -456,14 +570,14 @@ class CharacterSheet:
         temporary_hit_points = _optional_int('temporary_hit_points')
         hit_dice = sanitize_optional_str(request_form.get(f'{table_name}-hit_dice'), max_len=255)
 
-        existing = ggi.go_get_one('character', {'id': character_id})
+        existing = self.store.go_get_one('character', {'id': character_id})
         if not existing:
             return
 
         existing['health_points'] = health_points
         existing['temporary_hit_points'] = temporary_hit_points
         existing['hit_dice'] = hit_dice
-        ggi.go_update('character', existing)
+        self.store.go_update('character', existing)
 
     def save_class_to_character_values(self, character_id: str, request_form):
         table_name = 'class_to_character'
@@ -474,7 +588,7 @@ class CharacterSheet:
         # Validate: class_id must be a known class; level must be 1-20
         if level_raw and class_id:
             level = clamp_int(level_raw, 1, 20, fallback=1)
-            existing_class = ggi.go_get_one('class', {'id': class_id})
+            existing_class = self.store.go_get_one('class', {'id': class_id})
             if existing_class:
                 class_to_character = {
                     "id": uuid(),
@@ -482,7 +596,7 @@ class CharacterSheet:
                     "class_id": class_id,
                     "level": level,
                 }
-                ggi.go_add_new('class_to_character', class_to_character)
+                self.store.go_add_new('class_to_character', class_to_character)
 
         for field_name in request_form:
             if field_name.startswith('classes-level-'):
@@ -491,12 +605,12 @@ class CharacterSheet:
 
                 if new_level_raw and is_valid_uuid(class_to_character_id):
                     # Verify this record belongs to the current character
-                    existing = ggi.go_get_one('class_to_character', {
+                    existing = self.store.go_get_one('class_to_character', {
                         'id': class_to_character_id,
                         'character_id': character_id,
                     })
                     if existing:
-                        ggi.go_update('class_to_character', {
+                        self.store.go_update('class_to_character', {
                             'id': class_to_character_id,
                             'level': clamp_int(new_level_raw, 1, 20, fallback=existing.get('level', 1))
                         })
@@ -519,14 +633,14 @@ class CharacterSheet:
             return
 
         def update_inventory_by_id(inventory_id: str):
-            existing_inventory = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
+            existing_inventory = self.store.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
             if not existing_inventory:
                 return
 
             quantity_value = request_form.get(f'inventory-quantity-{inventory_id}')
 
             if quantity_value is None or str(quantity_value).strip() == '':
-                ggi.go_delete_it('inventory', {
+                self.store.go_delete_it('inventory', {
                     'id': inventory_id,
                     'character_id': character_id,
                 })
@@ -538,13 +652,13 @@ class CharacterSheet:
                 parsed_quantity = existing_inventory.get('quantity', 1)
 
             if parsed_quantity <= 0:
-                ggi.go_delete_it('inventory', {
+                self.store.go_delete_it('inventory', {
                     'id': inventory_id,
                     'character_id': character_id,
                 })
                 return
 
-            ggi.go_update('inventory', {
+            self.store.go_update('inventory', {
                 'id': inventory_id,
                 'name': existing_inventory.get('name'),
                 'description': existing_inventory.get('description'),
@@ -553,25 +667,24 @@ class CharacterSheet:
             })
 
         def step_inventory_by_id(inventory_id: str, step: int):
-            existing_inventory = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
+            existing_inventory = self.store.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
             if not existing_inventory:
                 return
 
             current_quantity = existing_inventory.get('quantity')
-            try:
-                parsed_current_quantity = int(current_quantity)
-            except (TypeError, ValueError):
+            parsed_current_quantity = parse_optional_int(current_quantity, fallback=1)
+            if parsed_current_quantity is None:
                 parsed_current_quantity = 1
 
             next_quantity = parsed_current_quantity + step
             if next_quantity <= 0:
-                ggi.go_delete_it('inventory', {
+                self.store.go_delete_it('inventory', {
                     'id': inventory_id,
                     'character_id': character_id,
                 })
                 return
 
-            ggi.go_update('inventory', {
+            self.store.go_update('inventory', {
                 'id': inventory_id,
                 'name': existing_inventory.get('name'),
                 'description': existing_inventory.get('description'),
@@ -580,7 +693,7 @@ class CharacterSheet:
             })
 
         if action == 'add' and name:
-            if (ggi.go_get_all('inventory', {'character_id': character_id}, count=True) or 0) >= INVENTORY_MAX:
+            if self._count('inventory', {'character_id': character_id}) >= INVENTORY_MAX:
                 return
             parsed_quantity = clamp_int(quantity, 1, 9999, fallback=1)
             inventory = {
@@ -591,7 +704,7 @@ class CharacterSheet:
                 "character_id": character_id,
             }
 
-            ggi.go_add_new('inventory', inventory)
+            self.store.go_add_new('inventory', inventory)
 
         if action == 'update' and update_id:
             update_inventory_by_id(update_id)
@@ -621,14 +734,14 @@ class CharacterSheet:
         """Update a single inventory item's name/description and return the updated record, or None."""
         if not is_valid_uuid(inventory_id):
             return None
-        existing = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
+        existing = self.store.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
         if not existing:
             return None
         clean_name = sanitize_optional_str(name, max_len=255)
         clean_desc = sanitize_optional_str(description, max_len=2000)
         if not clean_name:
             return existing
-        ggi.go_update('inventory', {
+        self.store.go_update('inventory', {
             'id': inventory_id,
             'name': clean_name,
             'description': clean_desc,
@@ -642,7 +755,7 @@ class CharacterSheet:
         clean_name = sanitize_optional_str(name, max_len=255)
         if not clean_name:
             return None
-        if (ggi.go_get_all('inventory', {'character_id': character_id}, count=True) or 0) >= INVENTORY_MAX:
+        if self._count('inventory', {'character_id': character_id}) >= INVENTORY_MAX:
             return None
         clean_desc = sanitize_optional_str(description, max_len=2000)
         parsed_quantity = clamp_int(quantity, 1, 9999, fallback=1)
@@ -654,7 +767,7 @@ class CharacterSheet:
             'quantity': parsed_quantity,
             'character_id': character_id,
         }
-        ggi.go_add_new('inventory', item)
+        self.store.go_add_new('inventory', item)
         return item
 
     def update_single_custom_stat(self, character_id: str, custom_stat_id: str, name: str, value):
@@ -662,14 +775,14 @@ class CharacterSheet:
         if not is_valid_uuid(custom_stat_id):
             return None
 
-        existing = ggi.go_get_one('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
+        existing = self.store.go_get_one('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
         if not existing:
             return None
 
         clean_name = sanitize_optional_str(name, max_len=255) or existing.get('name')
         parsed_value = parse_optional_int(value, fallback=existing.get('value', 0))
 
-        ggi.go_update('custom_stat', {
+        self.store.go_update('custom_stat', {
             'id': custom_stat_id,
             'name': clean_name,
             'value': parsed_value,
@@ -691,24 +804,23 @@ class CharacterSheet:
         if not is_valid_uuid(inventory_id):
             return None
 
-        existing = ggi.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
+        existing = self.store.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
         if not existing:
             return None
 
-        try:
-            current_quantity = int(existing.get('quantity'))
-        except (TypeError, ValueError):
+        current_quantity = parse_optional_int(existing.get('quantity'), fallback=1)
+        if current_quantity is None:
             current_quantity = 1
 
         next_quantity = current_quantity + int(step)
         if next_quantity <= 0:
-            ggi.go_delete_it('inventory', {
+            self.store.go_delete_it('inventory', {
                 'id': inventory_id,
                 'character_id': character_id,
             })
             return None
 
-        ggi.go_update('inventory', {
+        self.store.go_update('inventory', {
             'id': inventory_id,
             'name': existing.get('name'),
             'description': existing.get('description'),
@@ -740,13 +852,13 @@ class CharacterSheet:
         for feat_id in existing_feat_ids:
             if not is_valid_uuid(feat_id):
                 continue
-            existing_feat = ggi.go_get_one('feat_and_trait', {'id': feat_id, 'character_id': character_id})
+            existing_feat = self.store.go_get_one('feat_and_trait', {'id': feat_id, 'character_id': character_id})
             if not existing_feat:
                 continue
             updated_name = sanitize_optional_str(request_form.get(f'{name_prefix}{feat_id}'), max_len=255)
             updated_desc = sanitize_optional_str(request_form.get(f'{desc_prefix}{feat_id}'), max_len=2000)
             if updated_name:
-                ggi.go_update('feat_and_trait', {
+                self.store.go_update('feat_and_trait', {
                     'id': feat_id,
                     'name': updated_name,
                     'description': updated_desc,
@@ -759,7 +871,7 @@ class CharacterSheet:
         description = sanitize_optional_str(request_form.get(f'{table_name}-description'), max_len=2000)
 
         if name:
-            if (ggi.go_get_all('feat_and_trait', {'character_id': character_id}, count=True) or 0) >= FEAT_TRAIT_MAX:
+            if self._count('feat_and_trait', {'character_id': character_id}) >= FEAT_TRAIT_MAX:
                 return
             feat_and_trait = {
                 "id": feat_and_trait_id,
@@ -768,20 +880,20 @@ class CharacterSheet:
                 "character_id": character_id,
             }
 
-            ggi.go_add_new('feat_and_trait', feat_and_trait)
+            self.store.go_add_new('feat_and_trait', feat_and_trait)
 
     def update_single_feat(self, character_id: str, feat_id: str, name: str, description: str):
         """Update a single feat/trait and return the updated record, or None."""
         if not is_valid_uuid(feat_id):
             return None
-        existing = ggi.go_get_one('feat_and_trait', {'id': feat_id, 'character_id': character_id})
+        existing = self.store.go_get_one('feat_and_trait', {'id': feat_id, 'character_id': character_id})
         if not existing:
             return None
         clean_name = sanitize_optional_str(name, max_len=255)
         clean_desc = sanitize_optional_str(description, max_len=2000)
         if not clean_name:
             return existing
-        ggi.go_update('feat_and_trait', {
+        self.store.go_update('feat_and_trait', {
             'id': feat_id,
             'name': clean_name,
             'description': clean_desc,
@@ -794,7 +906,7 @@ class CharacterSheet:
         clean_name = sanitize_optional_str(name, max_len=255)
         if not clean_name:
             return None
-        if (ggi.go_get_all('feat_and_trait', {'character_id': character_id}, count=True) or 0) >= FEAT_TRAIT_MAX:
+        if self._count('feat_and_trait', {'character_id': character_id}) >= FEAT_TRAIT_MAX:
             return None
         clean_desc = sanitize_optional_str(description, max_len=2000)
         feat_id = uuid()
@@ -804,7 +916,7 @@ class CharacterSheet:
             'description': clean_desc,
             'character_id': character_id,
         }
-        ggi.go_add_new('feat_and_trait', feat)
+        self.store.go_add_new('feat_and_trait', feat)
         return feat
 
     def save_custom_stat_values(self, character_id: str, request_form):
@@ -823,7 +935,7 @@ class CharacterSheet:
             if not is_valid_uuid(custom_stat_id):
                 continue
 
-            existing_custom_stat = ggi.go_get_one('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
+            existing_custom_stat = self.store.go_get_one('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
             if not existing_custom_stat:
                 continue
 
@@ -834,7 +946,7 @@ class CharacterSheet:
             updated_value = request_form.get(f'{table_name}-value-{custom_stat_id}')
             parsed_updated_value = parse_optional_int(updated_value, fallback=existing_custom_stat.get('value', 0))
 
-            ggi.go_update('custom_stat', {
+            self.store.go_update('custom_stat', {
                 'id': custom_stat_id,
                 'name': updated_name,
                 'value': parsed_updated_value,
@@ -847,7 +959,7 @@ class CharacterSheet:
         if not name:
             return
 
-        if (ggi.go_get_all('custom_stat', {'character_id': character_id}, count=True) or 0) >= CUSTOM_STAT_MAX:
+        if self._count('custom_stat', {'character_id': character_id}) >= CUSTOM_STAT_MAX:
             return
 
         parsed_value = parse_optional_int(value, fallback=0)
@@ -859,28 +971,56 @@ class CharacterSheet:
             "character_id": character_id,
         }
 
-        ggi.go_add_new('custom_stat', custom_stat)
+        self.store.go_add_new('custom_stat', custom_stat)
 
     def save_ability_values(self, character_id: str, request_form):
         import math
-        character = ggi.go_get_one('character', {'id': character_id})
+        character = self.store.go_get_one('character', {'id': character_id})
         character_proficiency = 0
         if character:
-            character_proficiency = character.get('proficiency', 0)
+            character_proficiency = parse_optional_int(character.get('proficiency'), fallback=0)
+            if character_proficiency is None:
+                character_proficiency = 0
 
         for ability in self.ABILITY_TO_SKILL_MAPPING:
+            existing_ability = self.store.go_get_one(ability, {"character_id": character_id})
+            existing_skills = self.store.go_get_one(f"{ability}_skills", {f"{ability}_id": existing_ability['id']}) if existing_ability else None
+
             raw_value = request_form.get(f'{ability}-value')
-            if not raw_value or str(raw_value).strip() == '':
+            has_ability_value = f'{ability}-value' in request_form
+            has_saving_throw_toggle = f'{ability}-proficient' in request_form
+            has_any_skill_toggle = any(
+                f"{ability}_skills-{skill}_proficient" in request_form
+                for skill in self.ABILITY_TO_SKILL_MAPPING[ability]
+            )
+
+            # Ignore untouched abilities so partial row updates do not zero out
+            # proficiency flags on other abilities.
+            if not (has_ability_value or has_saving_throw_toggle or has_any_skill_toggle):
                 continue
+
+            existing_value_fallback = 10
+            if existing_ability:
+                existing_value_fallback = clamp_int(existing_ability.get('value'), 1, 30, fallback=10)
+
+            if raw_value is None or str(raw_value).strip() == '':
+                if not existing_ability:
+                    continue
+                value = existing_value_fallback
+            else:
+                # Preserve the current ability score when the posted value is malformed.
+                value = clamp_int(raw_value, 1, 30, fallback=existing_value_fallback)
+
             # Ability scores are 1-30 in D&D 5e; clamp to that range
-            value = clamp_int(raw_value, 1, 30, fallback=10)
 
             modifier = math.floor((value - 10) / 2)
 
-            saving_proficient = 0
-            if request_form.get(f'{ability}-proficient'):
-                if request_form[f"{ability}-proficient"] == "1":
-                    saving_proficient = 1
+            if has_saving_throw_toggle:
+                saving_proficient = 1 if request_form.get(f"{ability}-proficient") == "1" else 0
+            elif existing_ability:
+                saving_proficient = 1 if existing_ability.get('proficient') else 0
+            else:
+                saving_proficient = 0
 
             character_ability = {
                 "id": "",
@@ -890,24 +1030,21 @@ class CharacterSheet:
                 "proficient": int(saving_proficient),
             }
 
-            existing_ability = ggi.go_get_one(ability, {"character_id": character_id})
-
             if existing_ability:
                 ability_id = existing_ability['id']
                 character_ability['id'] = ability_id
-                ggi.go_update(ability, character_ability)
+                self.store.go_update(ability, character_ability)
             else:
                 ability_id = uuid()
                 character_ability['id'] = ability_id
-                ggi.go_add_new(ability, character_ability)
+                self.store.go_add_new(ability, character_ability)
 
-            skills = ggi.go_get_one(f"{ability}_skills", {f"{ability}_id": ability_id})
+            skills = self.store.go_get_one(f"{ability}_skills", {f"{ability}_id": ability_id})
 
             modifier_score = modifier
             saving_proficient_score = 0
             if saving_proficient:
-                if character and character.get('proficiency'):
-                    saving_proficient_score += character_proficiency
+                saving_proficient_score += character_proficiency
 
             characters_skills = {
                 "id": "",
@@ -916,12 +1053,15 @@ class CharacterSheet:
             }
 
             for skill in self.ABILITY_TO_SKILL_MAPPING[ability]:
-                skill_proficient = 0
-                skill_proficient_score = 0
-                if request_form.get(f'{ability}_skills-{skill}_proficient'):
-                    if request_form[f"{ability}_skills-{skill}_proficient"] == "1":
-                        skill_proficient_score += character_proficiency
-                        skill_proficient = 1
+                skill_toggle_key = f'{ability}_skills-{skill}_proficient'
+                if skill_toggle_key in request_form:
+                    skill_proficient = 1 if request_form.get(skill_toggle_key) == "1" else 0
+                elif existing_skills:
+                    skill_proficient = 1 if existing_skills.get(f'{skill}_proficient') else 0
+                else:
+                    skill_proficient = 0
+
+                skill_proficient_score = character_proficiency if skill_proficient else 0
 
                 characters_skills[skill] = modifier_score + skill_proficient_score
                 characters_skills[f"{skill}_proficient"] = int(skill_proficient)
@@ -929,10 +1069,34 @@ class CharacterSheet:
             if skills:
                 skill_id = skills['id']
                 characters_skills['id'] = skill_id
-                ggi.go_update(f"{ability}_skills", characters_skills)
+                self.store.go_update(f"{ability}_skills", characters_skills)
             else:
                 skill_id = uuid()
                 characters_skills['id'] = skill_id
-                ggi.go_add_new(f"{ability}_skills", characters_skills)
+                self.store.go_add_new(f"{ability}_skills", characters_skills)
+
+    def remove_feat_and_trait(self, character_id: str, feat_id: str):
+        if not is_valid_uuid(feat_id):
+            return
+        existing = self.store.go_get_one('feat_and_trait', {'id': feat_id, 'character_id': character_id})
+        if not existing:
+            return
+        self.store.go_delete_it('feat_and_trait', {'id': feat_id, 'character_id': character_id})
+
+    def remove_custom_stat(self, character_id: str, custom_stat_id: str):
+        if not is_valid_uuid(custom_stat_id):
+            return
+        existing = self.store.go_get_one('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
+        if not existing:
+            return
+        self.store.go_delete_it('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
+
+    def remove_class(self, character_id: str, class_id: str):
+        if not is_valid_uuid(class_id):
+            return
+        existing = self.store.go_get_one('class_to_character', {'id': class_id, 'character_id': character_id})
+        if not existing:
+            return
+        self.store.go_delete_it('class_to_character', {'id': class_id, 'character_id': character_id})
 
 

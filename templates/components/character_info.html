@@ -123,4 +123,23 @@
         {% set field_value = character.xp %}
         {% include 'base/field_number.html' %}
     </div>
+
+    {% set feedback_message = character_info_feedback_message if character_info_feedback_message is defined else '' %}
+    {% set feedback_kind = character_info_feedback_kind if character_info_feedback_kind is defined else '' %}
+    <p id="character-info-feedback"
+       class="character-info-feedback{% if feedback_kind == 'success' or feedback_message %} is-visible{% endif %}{% if feedback_kind == 'success' %} is-success{% elif feedback_kind == 'error' %} is-error{% endif %}"
+         data-feedback-kind="{{ feedback_kind }}"
+         data-feedback-message="{{ feedback_message }}"
+       aria-live="polite"
+       aria-label="{{ 'Saved' if feedback_kind == 'success' else feedback_message }}"
+       role="status">
+        {% if feedback_kind == 'success' %}
+            <i class="bi bi-check-circle-fill character-info-feedback-icon" aria-hidden="true"></i>
+        {% elif feedback_kind == 'error' and feedback_message %}
+            <i class="bi bi-exclamation-circle-fill character-info-feedback-icon" aria-hidden="true"></i>
+            <span class="character-info-feedback-text">{{ feedback_message }}</span>
+        {% elif feedback_message %}
+            <span class="character-info-feedback-text">{{ feedback_message }}</span>
+        {% endif %}
+    </p>
 </div>

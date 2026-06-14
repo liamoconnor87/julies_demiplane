@@ -3,6 +3,7 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 0 1rem;
+    margin-bottom: 0;
 }
 
 .character-info-main-row {
@@ -182,6 +183,57 @@
     padding: 0.25rem 0;
 }
 
+.character-info-feedback {
+    margin: -0.25rem 0 0.6rem;
+    align-self: flex-start;
+    width: fit-content;
+    max-width: 100%;
+    min-height: 1.35rem;
+    height: 1.35rem;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.28rem;
+    box-sizing: border-box;
+    padding-top: 0.08rem;
+    padding-left: 0.34rem;
+    padding-right: 0.34rem;
+    background: var(--field-bg-colour);
+    color: var(--text-colour-three);
+    opacity: 0;
+    visibility: hidden;
+    font-weight: 800;
+}
+
+.character-info-feedback.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.character-info-feedback.is-success {
+    color: var(--text-colour-three);
+}
+
+.character-info-feedback-icon {
+    margin-right: 0;
+    font-size: 0.95rem;
+    vertical-align: 0;
+}
+
+.character-info-feedback.is-error {
+    height: auto;
+    color: var(--text-colour-three);
+}
+
+.character-info-feedback.is-success .character-info-feedback-icon {
+    color: var(--success-colour);
+}
+
+.character-info-feedback.is-error .character-info-feedback-icon {
+    color: var(--error-colour);
+}
+
 @media (min-width: 500px) {
     .character-info-main-row {
         flex-direction: row;
@@ -230,6 +282,14 @@
     /* Reduce section padding */
     .character-info-section {
         padding: 0 0.25rem;
+    }
+
+    .character-info-feedback {
+        font-size: 0.7rem;
+    }
+
+    .character-info-feedback-icon {
+        font-size: 0.86rem;
     }
 
     /* Shrink name field to match race/alignment/background */

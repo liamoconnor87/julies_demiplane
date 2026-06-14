@@ -3,9 +3,10 @@
     {% if current_user.is_authenticated %}
         {# ── Logged-in state ── #}
         <button class="btn auth-dropdown-toggle dropdown-toggle" type="button"
-                data-bs-toggle="dropdown" aria-expanded="false">
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-label="Account for {{ current_user.username }}">
             <i class="bi bi-person-fill"></i>
-            {{ current_user.username }}
+            <span class="auth-toggle-username">{{ current_user.username }}</span>
         </button>
         <div class="dropdown-menu dropdown-menu-end auth-dropdown-menu">
             <div class="auth-dropdown-body">

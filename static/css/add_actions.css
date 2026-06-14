@@ -42,15 +42,16 @@
 }
 
 .add-actions-stat-name-field {
-    width: 9.75rem;
-    min-width: 9.75rem;
-    max-width: 9.75rem;
-}
-
-.add-actions-stat-value-field {
     width: 8rem;
     min-width: 8rem;
     max-width: 8rem;
+    flex: 0 0 auto;
+}
+
+.add-actions-stat-value-field {
+    max-width: 3rem;
+    min-width: 3rem;
+    align-items: center;
 }
 
 .add-actions-input {
@@ -62,7 +63,8 @@
     height: 2.58rem;
 }
 
-.add-actions-level-field .add-actions-input {
+.add-actions-level-field .add-actions-input,
+.add-actions-stat-value-field .add-actions-input {
     text-align: center;
     padding: 0.5rem 0;
     width: 100%;
@@ -71,21 +73,23 @@
 }
 
 .add-actions-level-field .add-actions-input::-webkit-outer-spin-button,
-.add-actions-level-field .add-actions-input::-webkit-inner-spin-button {
+.add-actions-level-field .add-actions-input::-webkit-inner-spin-button,
+.add-actions-stat-value-field .add-actions-input::-webkit-outer-spin-button,
+.add-actions-stat-value-field .add-actions-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
 .add-actions-stat-value-field .add-actions-input {
-    font-size: 0.8rem;
-    height: 2.55rem;
+    /* inherits from .add-actions-input */
 }
 
 .add-actions-label {
     /* inherits from .field-label */
 }
 
-.add-actions-level-field .add-actions-label {
+.add-actions-level-field .add-actions-label,
+.add-actions-stat-value-field .add-actions-label {
     text-align: center;
     padding-left: 0;
     width: 100%;
@@ -123,14 +127,12 @@
     }
 
     .add-actions-stat-name-field {
-        flex: 1 1 0;
-        min-width: 0;
-        min-width: calc(100% - 7rem);
+        max-width: calc(8rem - 3.25rem);
     }
 
     .add-actions-stat-value-field {
-        width: 4rem;
-        min-width: 4rem;
-        max-width: 4rem;
+        width: 3rem;
+        min-width: 3rem;
+        max-width: 3rem;
     }
 }

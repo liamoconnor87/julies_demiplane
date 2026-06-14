@@ -4,6 +4,24 @@ window.addEventListener("load", () => {
     bindSubBarTabs();
     bindThemePanel();
 
+    const reopenAuthDropdownIfError = () => {
+        const authDropdown = document.getElementById('auth-dropdown');
+        if (!authDropdown || !authDropdown.querySelector('.auth-error')) {
+            return false;
+        }
+
+        const toggle = authDropdown.querySelector('.dropdown-toggle');
+        if (!toggle) {
+            return false;
+        }
+
+        const dropdown = bootstrap.Dropdown.getOrCreateInstance(toggle);
+        requestAnimationFrame(() => {
+            dropdown.show();
+        });
+        return true;
+    };
+
     // Inject the CSRF token into every htmx AJAX request as a header.
     // Flask-WTF's CSRFProtect accepts tokens from the X-CSRFToken header,
     document.body.addEventListener('htmx:configRequest', (event) => {
@@ -37,15 +55,11 @@ window.addEventListener("load", () => {
             return;
         }
 
-        // Re-open the auth dropdown if a validation error was returned
-        if (target.id === 'auth-dropdown') {
-            if (target.querySelector('.auth-error')) {
-                const toggle = target.querySelector('.dropdown-toggle');
-                if (toggle) {
-                    const dropdown = new bootstrap.Dropdown(toggle);
-                    dropdown.show();
-                }
-            }
+        // Re-open the auth dropdown if a validation error was returned.
+        // Resolve the live DOM node after swap instead of using the event target,
+        // because outerHTML swaps can leave the target reference stale.
+        if (target.id === 'auth-dropdown' || target.id === 'auth-area') {
+            reopenAuthDropdownIfError();
             return;
         }
 
@@ -68,13 +82,19 @@ window.addEventListener("load", () => {
 
             // When a new character is saved for the first time, reveal the
             // rest of the sheet sections that were hidden during creation.
+            // Guard on a persisted name so partial/failed saves do not reveal
+            // the full sheet prematurely.
             const sheetContent = document.getElementById('sheet-content');
-            if (sheetContent && sheetContent.dataset.isNew === 'true') {
+            const nameInput = document.getElementById('character-name');
+            const hasSavedName = nameInput && String(nameInput.value || '').trim().length > 0;
+            if (sheetContent && sheetContent.dataset.isNew === 'true' && hasSavedName) {
                 sheetContent.dataset.isNew = 'false';
                 document.querySelectorAll('.new-char-hidden').forEach(el => {
                     el.classList.remove('new-char-hidden');
                 });
             }
+
+            hydrateCharacterInfoFeedbackFromServer();
             return;
         }
 
@@ -244,6 +264,14 @@ window.addEventListener("load", () => {
         }
     });
 
+    document.body.addEventListener('htmx:responseError', (event) => {
+        if (!isCharacterInfoFragmentRequest(event.detail)) {
+            return;
+        }
+
+        showCharacterInfoFeedback('Something went wrong. Please try again.', 'error');
+    });
+
     // Combat values can be changed by HTMX swaps (including OOB fragments)
     // without emitting user input events, so re-apply state classes here.
     document.body.addEventListener('htmx:afterSettle', () => {
@@ -255,6 +283,226 @@ let featDescriptionResizeWindowBound = false;
 let inventoryDescriptionResizeWindowBound = false;
 const ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 5;
 const CURRENT_HP_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+const CHARACTER_INFO_FEEDBACK_HIDE_MS = 3000;
+const GLOBAL_FEEDBACK_HIDE_MS = 3000;
+const GLOBAL_ERROR_FEEDBACK_TEXT = 'Please try again';
+let characterInfoFeedbackHideTimer = null;
+let globalFeedbackHideTimer = null;
+
+function getCharacterInfoFeedbackElement() {
+    return document.getElementById('character-info-feedback');
+}
+
+function getGlobalFeedbackElement() {
+    return document.getElementById('global-feedback');
+}
+
+function clearGlobalFeedback() {
+    if (globalFeedbackHideTimer) {
+        clearTimeout(globalFeedbackHideTimer);
+        globalFeedbackHideTimer = null;
+    }
+
+    const feedback = getGlobalFeedbackElement();
+    if (!feedback) {
+        return;
+    }
+
+    feedback.replaceChildren();
+    feedback.classList.remove('is-visible', 'is-success', 'is-error');
+    feedback.removeAttribute('aria-label');
+}
+
+function armGlobalFeedbackAutoHide() {
+    const feedback = getGlobalFeedbackElement();
+    if (!feedback || !feedback.classList.contains('is-visible')) {
+        return;
+    }
+
+    if (globalFeedbackHideTimer) {
+        clearTimeout(globalFeedbackHideTimer);
+    }
+
+    globalFeedbackHideTimer = setTimeout(() => {
+        clearGlobalFeedback();
+    }, GLOBAL_FEEDBACK_HIDE_MS);
+}
+
+function showGlobalFeedback(message, kind = 'success') {
+    const feedback = getGlobalFeedbackElement();
+    if (!feedback) {
+        return;
+    }
+
+    const isError = kind === 'error';
+    const safeMessage = String(message || '').trim();
+    const renderedMessage = isError ? GLOBAL_ERROR_FEEDBACK_TEXT : safeMessage;
+
+    feedback.replaceChildren();
+
+    const icon = document.createElement('i');
+    icon.className = isError
+        ? 'bi bi-exclamation-circle-fill global-feedback-icon'
+        : 'bi bi-check-circle-fill global-feedback-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    feedback.appendChild(icon);
+
+    if (!isError) {
+        feedback.setAttribute('aria-label', 'Saved');
+    } else {
+        feedback.setAttribute('aria-label', renderedMessage);
+    }
+
+    if (renderedMessage) {
+        const messageNode = document.createElement('span');
+        messageNode.className = 'global-feedback-text';
+        messageNode.textContent = renderedMessage;
+        feedback.appendChild(messageNode);
+    }
+
+    feedback.classList.add('is-visible');
+    feedback.classList.remove('is-success', 'is-error');
+    feedback.classList.add(isError ? 'is-error' : 'is-success');
+    armGlobalFeedbackAutoHide();
+}
+
+function clearCharacterInfoFeedback() {
+    if (characterInfoFeedbackHideTimer) {
+        clearTimeout(characterInfoFeedbackHideTimer);
+        characterInfoFeedbackHideTimer = null;
+    }
+
+    const feedback = getCharacterInfoFeedbackElement();
+    if (!feedback) {
+        return;
+    }
+
+    feedback.replaceChildren();
+    feedback.classList.remove('is-visible', 'is-success', 'is-error');
+    feedback.dataset.feedbackKind = '';
+    feedback.dataset.feedbackMessage = '';
+    feedback.removeAttribute('aria-label');
+}
+
+function armCharacterInfoFeedbackAutoHide() {
+    const feedback = getCharacterInfoFeedbackElement();
+    if (!feedback) {
+        return;
+    }
+
+    if (!feedback.classList.contains('is-visible')) {
+        return;
+    }
+
+    if (characterInfoFeedbackHideTimer) {
+        clearTimeout(characterInfoFeedbackHideTimer);
+    }
+
+    characterInfoFeedbackHideTimer = setTimeout(() => {
+        clearCharacterInfoFeedback();
+    }, CHARACTER_INFO_FEEDBACK_HIDE_MS);
+}
+
+function showCharacterInfoFeedback(message, kind = 'success') {
+    const feedback = getCharacterInfoFeedbackElement();
+    if (!feedback) {
+        return;
+    }
+
+    const isError = kind === 'error';
+    const safeMessage = String(message || '').trim();
+    if (isError && !safeMessage) {
+        clearCharacterInfoFeedback();
+        return;
+    }
+
+    feedback.replaceChildren();
+
+    const icon = document.createElement('i');
+    icon.className = isError
+        ? 'bi bi-exclamation-circle-fill character-info-feedback-icon'
+        : 'bi bi-check-circle-fill character-info-feedback-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    feedback.appendChild(icon);
+
+    if (!isError) {
+        feedback.setAttribute('aria-label', 'Saved');
+    } else {
+        feedback.setAttribute('aria-label', safeMessage);
+    }
+
+    if (safeMessage) {
+        const messageNode = document.createElement('span');
+        messageNode.className = 'character-info-feedback-text';
+        messageNode.textContent = safeMessage;
+        feedback.appendChild(messageNode);
+    }
+
+    feedback.dataset.feedbackKind = isError ? 'error' : 'success';
+    feedback.dataset.feedbackMessage = safeMessage;
+    feedback.classList.add('is-visible');
+    feedback.classList.remove('is-success', 'is-error');
+    feedback.classList.add(isError ? 'is-error' : 'is-success');
+
+    showGlobalFeedback(safeMessage, isError ? 'error' : 'success');
+    armCharacterInfoFeedbackAutoHide();
+}
+
+function hydrateCharacterInfoFeedbackFromServer() {
+    const feedback = getCharacterInfoFeedbackElement();
+    if (!feedback) {
+        return;
+    }
+
+    const feedbackKind = String(feedback.dataset.feedbackKind || '').trim();
+    const feedbackMessage = String(feedback.dataset.feedbackMessage || '').trim();
+
+    if (feedbackKind === 'success') {
+        showCharacterInfoFeedback('', 'success');
+        return;
+    }
+
+    if (feedbackKind === 'error' && feedbackMessage) {
+        showCharacterInfoFeedback(feedbackMessage, 'error');
+        return;
+    }
+
+    if (feedback.classList.contains('is-visible')) {
+        armCharacterInfoFeedbackAutoHide();
+    }
+}
+
+function getHtmxRequestPath(detail) {
+    if (!detail) {
+        return '';
+    }
+
+    const requestConfigPath = detail.requestConfig && detail.requestConfig.path;
+    if (requestConfigPath) {
+        return String(requestConfigPath);
+    }
+
+    const requestPath = detail.pathInfo && detail.pathInfo.requestPath;
+    if (requestPath) {
+        return String(requestPath);
+    }
+
+    const xhr = detail.xhr;
+    if (xhr && typeof xhr.responseURL === 'string') {
+        try {
+            return new URL(xhr.responseURL, window.location.origin).pathname;
+        } catch (_) {
+            return xhr.responseURL;
+        }
+    }
+
+    return '';
+}
+
+function isCharacterInfoFragmentRequest(detail) {
+    const requestPath = getHtmxRequestPath(detail);
+    return requestPath.includes('/character-info/fragment');
+}
 
 function getCookieValue(name) {
     const encodedName = encodeURIComponent(name);
@@ -2119,7 +2367,7 @@ function bindSubBarTabs() {
  * Must stay in sync with THEME_DEFAULTS in auth/models.py.
  */
 const THEME_VAR_MAP = {
-    '--primary-color':        { field: 'background_colour',   default: '#b8a8cd' },
+    '--primary-color':        { field: 'background_colour',   default: '#ffffff' },
     '--secondary-color-dark': { field: 'border_colour',       default: 'rgb(0, 189, 91)' },
     '--label-colour':         { field: 'label_colour',        default: 'rgb(255, 255, 255)' },
     '--critical-colour':      { field: 'critical_colour',     default: 'rgb(220, 50, 50)' },
