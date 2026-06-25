@@ -2,5 +2,11 @@ misc
 data
 flask_session/
 .env
+.venv/
+venv/
 **/*.pyc
 **/__pycache__/
+*.db
+*.sqlite
+*.log
+.DS_Store
