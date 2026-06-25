@@ -2,3 +2,5 @@ misc
 data
 flask_session/
 .env
+**/*.pyc
+**/__pycache__/

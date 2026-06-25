@@ -6,6 +6,7 @@ from auth.models import User
 from character_sheet.character_sheet import CharacterSheet, TRACKER_MAX, TRACKER_ENTRY_MAX
 from character_sheet.custom_buff import BuffProcessor
 from character_sheet import guest_character as guest
+from functions.feedback import default_feedback, error_feedback, feedback_template_context
 from functions.functions import uuid as generate_uuid
 from functions.validators import is_valid_uuid
 
@@ -51,8 +52,7 @@ def register_fragment_routes(
     @guest_or_login_required
     @limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
     def character_info_fragment(character_id: str):
-        feedback_message = ''
-        feedback_kind = 'success'
+        feedback = default_feedback()
 
         if guest.is_guest() and not current_user.is_authenticated:
             sheet, data = build_guest_character_sheet_data(character_id)
@@ -63,8 +63,7 @@ def register_fragment_routes(
                 raise
             except Exception:
                 app.logger.exception('Character info save failed for guest character_id=%s', character_id)
-                feedback_message = 'Something went wrong. Please try again.'
-                feedback_kind = 'error'
+                feedback = error_feedback()
                 data = sheet.create_form()
 
             is_new_character = not data['character'].get('name')
@@ -78,8 +77,7 @@ def register_fragment_routes(
                 show_guest_landing_panel=is_new_character,
                 show_guest_name_entry=is_new_character,
                 guest_character_name=guest_name,
-                character_info_feedback_message=feedback_message,
-                character_info_feedback_kind=feedback_kind,
+                **feedback_template_context('character_info', feedback),
             )
 
         if not User.owns_character(db, current_user.id, character_id):
@@ -93,8 +91,7 @@ def register_fragment_routes(
             raise
         except Exception:
             app.logger.exception('Character info save failed for user_id=%s character_id=%s', current_user.id, character_id)
-            feedback_message = 'Something went wrong. Please try again.'
-            feedback_kind = 'error'
+            feedback = error_feedback()
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
@@ -103,8 +100,7 @@ def register_fragment_routes(
             character=data['character'],
             abilities=data['abilities'],
             is_guest=False,
-            character_info_feedback_message=feedback_message,
-            character_info_feedback_kind=feedback_kind,
+            **feedback_template_context('character_info', feedback),
         )
 
     @app.route('/characters/<character_id>/combat/fragment', methods=['POST'])

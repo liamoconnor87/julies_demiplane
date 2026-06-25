@@ -102,6 +102,7 @@ window.addEventListener("load", () => {
             bindAddActionButtons();
             bindClassLevelAutoSave();
             syncGlobalLockState();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -111,6 +112,7 @@ window.addEventListener("load", () => {
             syncGlobalLockState();
             bindFeatAutoSave();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -136,6 +138,7 @@ window.addEventListener("load", () => {
             syncGlobalLockState();
             bindFeatAutoSave();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -145,6 +148,7 @@ window.addEventListener("load", () => {
             bindFeatAutoSave();
             syncGlobalLockState();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -152,6 +156,7 @@ window.addEventListener("load", () => {
             bindProficiencyToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -159,6 +164,7 @@ window.addEventListener("load", () => {
             bindProficiencyToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -168,6 +174,7 @@ window.addEventListener("load", () => {
             syncGlobalLockState();
             bindInventoryAutoSave();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -197,6 +204,7 @@ window.addEventListener("load", () => {
             syncGlobalLockState();
             bindInventoryAutoSave();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -207,6 +215,7 @@ window.addEventListener("load", () => {
             bindInventoryAutoSave();
             syncGlobalLockState();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -215,6 +224,7 @@ window.addEventListener("load", () => {
             bindTrackerAddEntryToggles();
             syncGlobalLockState();
             bindTrackerAutoSave();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -224,6 +234,7 @@ window.addEventListener("load", () => {
             bindTrackerAddEntryToggles();
             syncGlobalLockState();
             bindTrackerAutoSave();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -232,6 +243,7 @@ window.addEventListener("load", () => {
             bindCustomStatAutoSave();
             syncGlobalLockState();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -242,6 +254,7 @@ window.addEventListener("load", () => {
             selectCustomBuffField();
             bindBuffCardEdit();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -253,6 +266,7 @@ window.addEventListener("load", () => {
             bindCombatFieldAutoSave();
             bindBuffCardEdit();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -260,16 +274,17 @@ window.addEventListener("load", () => {
             bindCurrentHpCalculation();
             bindCombatFieldAutoSave();
             syncGlobalLockState();
+            showGlobalFeedback('', 'success');
             return;
         }
     });
 
-    document.body.addEventListener('htmx:responseError', (event) => {
-        if (!isCharacterInfoFragmentRequest(event.detail)) {
-            return;
-        }
+    document.body.addEventListener('htmx:responseError', () => {
+        showGlobalFeedback('Something went wrong. Please try again.', 'error');
+    });
 
-        showCharacterInfoFeedback('Something went wrong. Please try again.', 'error');
+    document.body.addEventListener('htmx:sendError', () => {
+        showGlobalFeedback('Something went wrong. Please try again.', 'error');
     });
 
     // Combat values can be changed by HTMX swaps (including OOB fragments)
@@ -286,8 +301,7 @@ const CURRENT_HP_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const CHARACTER_INFO_FEEDBACK_HIDE_MS = 3000;
 const GLOBAL_FEEDBACK_HIDE_MS = 3000;
 const GLOBAL_ERROR_FEEDBACK_TEXT = 'Please try again';
-let characterInfoFeedbackHideTimer = null;
-let globalFeedbackHideTimer = null;
+const feedbackHideTimers = new Map();
 
 function getCharacterInfoFeedbackElement() {
     return document.getElementById('character-info-feedback');
@@ -297,35 +311,116 @@ function getGlobalFeedbackElement() {
     return document.getElementById('global-feedback');
 }
 
-function clearGlobalFeedback() {
-    if (globalFeedbackHideTimer) {
-        clearTimeout(globalFeedbackHideTimer);
-        globalFeedbackHideTimer = null;
+function clearFeedbackHideTimer(feedbackId) {
+    if (!feedbackId) {
+        return;
     }
 
-    const feedback = getGlobalFeedbackElement();
+    const existingTimer = feedbackHideTimers.get(feedbackId);
+    if (existingTimer) {
+        clearTimeout(existingTimer);
+        feedbackHideTimers.delete(feedbackId);
+    }
+}
+
+function resetFeedbackElement(feedback, { resetDataset = false } = {}) {
     if (!feedback) {
         return;
     }
 
+    clearFeedbackHideTimer(feedback.id);
     feedback.replaceChildren();
     feedback.classList.remove('is-visible', 'is-success', 'is-error');
     feedback.removeAttribute('aria-label');
+
+    if (resetDataset) {
+        feedback.dataset.feedbackKind = '';
+        feedback.dataset.feedbackMessage = '';
+    }
 }
 
-function armGlobalFeedbackAutoHide() {
-    const feedback = getGlobalFeedbackElement();
+function armFeedbackAutoHide(feedback, hideMs, clearFn) {
     if (!feedback || !feedback.classList.contains('is-visible')) {
         return;
     }
 
-    if (globalFeedbackHideTimer) {
-        clearTimeout(globalFeedbackHideTimer);
+    const feedbackId = feedback.id;
+    if (!feedbackId) {
+        return;
     }
 
-    globalFeedbackHideTimer = setTimeout(() => {
-        clearGlobalFeedback();
-    }, GLOBAL_FEEDBACK_HIDE_MS);
+    clearFeedbackHideTimer(feedbackId);
+    feedbackHideTimers.set(feedbackId, setTimeout(() => {
+        clearFn();
+    }, hideMs));
+}
+
+function renderFeedbackElement(feedback, {
+    kind = 'success',
+    message = '',
+    successIconClass = '',
+    errorIconClass = successIconClass,
+    textClass = '',
+    successAriaLabel = 'Saved',
+    errorMessageOverride = '',
+    updateDataset = false,
+} = {}) {
+    if (!feedback) {
+        return {
+            isError: kind === 'error',
+            safeMessage: '',
+            renderedMessage: '',
+        };
+    }
+
+    const isError = kind === 'error';
+    const safeMessage = String(message || '').trim();
+    const overrideMessage = String(errorMessageOverride || '').trim();
+    const renderedMessage = isError ? (overrideMessage || safeMessage) : safeMessage;
+
+    resetFeedbackElement(feedback, { resetDataset: updateDataset });
+
+    if (isError && !renderedMessage) {
+        return { isError, safeMessage, renderedMessage };
+    }
+
+    const icon = document.createElement('i');
+    icon.className = isError
+        ? `bi bi-exclamation-circle-fill ${errorIconClass}`.trim()
+        : `bi bi-check-circle-fill ${successIconClass}`.trim();
+    icon.setAttribute('aria-hidden', 'true');
+    feedback.appendChild(icon);
+
+    feedback.setAttribute('aria-label', isError ? renderedMessage : successAriaLabel);
+
+    if (renderedMessage) {
+        const messageNode = document.createElement('span');
+        messageNode.className = textClass;
+        messageNode.textContent = renderedMessage;
+        feedback.appendChild(messageNode);
+    }
+
+    if (updateDataset) {
+        feedback.dataset.feedbackKind = isError ? 'error' : 'success';
+        feedback.dataset.feedbackMessage = safeMessage;
+    }
+
+    feedback.classList.add('is-visible');
+    feedback.classList.remove('is-success', 'is-error');
+    feedback.classList.add(isError ? 'is-error' : 'is-success');
+
+    return { isError, safeMessage, renderedMessage };
+}
+
+function clearGlobalFeedback() {
+    clearFeedbackHideTimer('global-feedback');
+    const feedback = getGlobalFeedbackElement();
+    resetFeedbackElement(feedback);
+}
+
+function armGlobalFeedbackAutoHide() {
+    const feedback = getGlobalFeedbackElement();
+    armFeedbackAutoHide(feedback, GLOBAL_FEEDBACK_HIDE_MS, clearGlobalFeedback);
 }
 
 function showGlobalFeedback(message, kind = 'success') {
@@ -334,118 +429,32 @@ function showGlobalFeedback(message, kind = 'success') {
         return;
     }
 
-    const isError = kind === 'error';
-    const safeMessage = String(message || '').trim();
-    const renderedMessage = isError ? GLOBAL_ERROR_FEEDBACK_TEXT : safeMessage;
+    renderFeedbackElement(feedback, {
+        kind,
+        message,
+        successIconClass: 'global-feedback-icon feedback-message-icon',
+        errorIconClass: 'global-feedback-icon feedback-message-icon',
+        textClass: 'global-feedback-text feedback-message-text',
+        successAriaLabel: 'Saved',
+        errorMessageOverride: GLOBAL_ERROR_FEEDBACK_TEXT,
+    });
 
-    feedback.replaceChildren();
-
-    const icon = document.createElement('i');
-    icon.className = isError
-        ? 'bi bi-exclamation-circle-fill global-feedback-icon'
-        : 'bi bi-check-circle-fill global-feedback-icon';
-    icon.setAttribute('aria-hidden', 'true');
-    feedback.appendChild(icon);
-
-    if (!isError) {
-        feedback.setAttribute('aria-label', 'Saved');
-    } else {
-        feedback.setAttribute('aria-label', renderedMessage);
-    }
-
-    if (renderedMessage) {
-        const messageNode = document.createElement('span');
-        messageNode.className = 'global-feedback-text';
-        messageNode.textContent = renderedMessage;
-        feedback.appendChild(messageNode);
-    }
-
-    feedback.classList.add('is-visible');
-    feedback.classList.remove('is-success', 'is-error');
-    feedback.classList.add(isError ? 'is-error' : 'is-success');
     armGlobalFeedbackAutoHide();
 }
 
 function clearCharacterInfoFeedback() {
-    if (characterInfoFeedbackHideTimer) {
-        clearTimeout(characterInfoFeedbackHideTimer);
-        characterInfoFeedbackHideTimer = null;
-    }
-
+    clearFeedbackHideTimer('character-info-feedback');
     const feedback = getCharacterInfoFeedbackElement();
-    if (!feedback) {
-        return;
-    }
-
-    feedback.replaceChildren();
-    feedback.classList.remove('is-visible', 'is-success', 'is-error');
-    feedback.dataset.feedbackKind = '';
-    feedback.dataset.feedbackMessage = '';
-    feedback.removeAttribute('aria-label');
+    resetFeedbackElement(feedback, { resetDataset: true });
 }
 
 function armCharacterInfoFeedbackAutoHide() {
     const feedback = getCharacterInfoFeedbackElement();
-    if (!feedback) {
-        return;
-    }
-
-    if (!feedback.classList.contains('is-visible')) {
-        return;
-    }
-
-    if (characterInfoFeedbackHideTimer) {
-        clearTimeout(characterInfoFeedbackHideTimer);
-    }
-
-    characterInfoFeedbackHideTimer = setTimeout(() => {
-        clearCharacterInfoFeedback();
-    }, CHARACTER_INFO_FEEDBACK_HIDE_MS);
+    armFeedbackAutoHide(feedback, CHARACTER_INFO_FEEDBACK_HIDE_MS, clearCharacterInfoFeedback);
 }
 
 function showCharacterInfoFeedback(message, kind = 'success') {
-    const feedback = getCharacterInfoFeedbackElement();
-    if (!feedback) {
-        return;
-    }
-
-    const isError = kind === 'error';
-    const safeMessage = String(message || '').trim();
-    if (isError && !safeMessage) {
-        clearCharacterInfoFeedback();
-        return;
-    }
-
-    feedback.replaceChildren();
-
-    const icon = document.createElement('i');
-    icon.className = isError
-        ? 'bi bi-exclamation-circle-fill character-info-feedback-icon'
-        : 'bi bi-check-circle-fill character-info-feedback-icon';
-    icon.setAttribute('aria-hidden', 'true');
-    feedback.appendChild(icon);
-
-    if (!isError) {
-        feedback.setAttribute('aria-label', 'Saved');
-    } else {
-        feedback.setAttribute('aria-label', safeMessage);
-    }
-
-    if (safeMessage) {
-        const messageNode = document.createElement('span');
-        messageNode.className = 'character-info-feedback-text';
-        messageNode.textContent = safeMessage;
-        feedback.appendChild(messageNode);
-    }
-
-    feedback.dataset.feedbackKind = isError ? 'error' : 'success';
-    feedback.dataset.feedbackMessage = safeMessage;
-    feedback.classList.add('is-visible');
-    feedback.classList.remove('is-success', 'is-error');
-    feedback.classList.add(isError ? 'is-error' : 'is-success');
-
-    showGlobalFeedback(safeMessage, isError ? 'error' : 'success');
-    armCharacterInfoFeedbackAutoHide();
+    showGlobalFeedback(message, kind);
 }
 
 function hydrateCharacterInfoFeedbackFromServer() {

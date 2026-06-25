@@ -1015,7 +1015,7 @@ class CharacterSheet:
 
             modifier = math.floor((value - 10) / 2)
 
-            if has_saving_throw_toggle:
+            if has_ability_value or has_saving_throw_toggle:
                 saving_proficient = 1 if request_form.get(f"{ability}-proficient") == "1" else 0
             elif existing_ability:
                 saving_proficient = 1 if existing_ability.get('proficient') else 0
@@ -1054,7 +1054,7 @@ class CharacterSheet:
 
             for skill in self.ABILITY_TO_SKILL_MAPPING[ability]:
                 skill_toggle_key = f'{ability}_skills-{skill}_proficient'
-                if skill_toggle_key in request_form:
+                if has_ability_value or skill_toggle_key in request_form:
                     skill_proficient = 1 if request_form.get(skill_toggle_key) == "1" else 0
                 elif existing_skills:
                     skill_proficient = 1 if existing_skills.get(f'{skill}_proficient') else 0

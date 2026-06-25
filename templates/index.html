@@ -39,6 +39,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
     <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dnd_sheet.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/character_info.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classes.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/combat.css') }}">
@@ -257,7 +258,15 @@
         </div>
     </footer>
 
-    <div id="global-feedback" class="global-feedback" role="status" aria-live="polite" aria-atomic="true"></div>
+    {% set feedback_id = 'global-feedback' %}
+    {% set feedback_tag = 'div' %}
+    {% set feedback_kind = '' %}
+    {% set feedback_message = '' %}
+    {% set feedback_base_class = 'global-feedback feedback-message' %}
+    {% set feedback_icon_class = 'global-feedback-icon feedback-message-icon' %}
+    {% set feedback_text_class = 'global-feedback-text feedback-message-text' %}
+    {% set feedback_aria_atomic = 'true' %}
+    {% include 'components/feedback_message.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
