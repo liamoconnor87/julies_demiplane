@@ -80,13 +80,6 @@
     margin: 0;
 }
 
-.add-actions-stat-value-field .add-actions-input {
-    /* inherits from .add-actions-input */
-}
-
-.add-actions-label {
-    /* inherits from .field-label */
-}
 
 .add-actions-level-field .add-actions-label,
 .add-actions-stat-value-field .add-actions-label {
@@ -95,9 +88,6 @@
     width: 100%;
 }
 
-.add-actions-btn {
-    /* inherits from .field-btn */
-}
 
 .add-actions-field.section-action-field .add-actions-label {
     min-width: 0;

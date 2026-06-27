@@ -21,6 +21,6 @@ def register_user_theme_routes(app, db):
             colours[field] = value
 
         UserTheme.save(db, current_user.id, colours)
-        return render_template('components/theme_vars_oob.html', colours=colours), 200
+        return render_template('components/ui/theme_vars_oob.html', colours=colours), 200
 
     app.register_blueprint(user_theme_bp)

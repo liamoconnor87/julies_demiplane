@@ -88,7 +88,7 @@
                 {% set navbar_title_href = '/' %}
             {% endif %}
             <a class="site-navbar-title" href="{{ navbar_title_href }}"><span class="site-navbar-title-outline-word">Julie's</span> <span class="site-navbar-title-asterisk-word">Demiplane</span></a>
-            {% include 'components/auth_dropdown.html' %}
+            {% include 'components/auth/auth_dropdown.html' %}
         </div>
     </nav>
     {% if masquerade and masquerade.active %}
@@ -106,13 +106,13 @@
     </div>
     {% endif %}
     {% if current_user.is_authenticated %}
-    {% include 'components/character_bar.html' %}
-    {% include 'components/sub_bar.html' %}
+    {% include 'components/character/character_bar.html' %}
+    {% include 'components/ui/sub_bar.html' %}
     {% endif %}
     {# Theme panel — only for authenticated users #}
     {% if current_user.is_authenticated and active_character_id %}
     <div id="theme-panel-container" class="theme-panel-container d-none">
-        {% include 'components/theme_panel.html' %}
+        {% include 'components/ui/theme_panel.html' %}
     </div>
     {% endif %}
     </div>
@@ -125,7 +125,7 @@
     {% if is_guest and character %}
 
         <div id="guest-landing-panel">
-            {% include 'components/guest_landing_panel_inner.html' %}
+            {% include 'components/character/guest_landing_panel_inner.html' %}
         </div>
 
         {% if guest_show_sheet %}
@@ -134,36 +134,40 @@
             <div id="sheet-content" class="sheet-layout" data-is-new="{{ 'true' if is_new_character else 'false' }}">
                 <div id="char-group-container" class="sheet-column">
                     <div id="character-info-section-container">
-                        {% include 'components/character_info.html' %}
+                        {% include 'components/character/character_info.html' %}
                     </div>
 
                     <div id="classes-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                        {% include 'components/classes_section.html' %}
+                        {% include 'components/classes/classes_section.html' %}
+                    </div>
+
+                    <div id="add-class-action-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                        {% include 'components/classes/add_class_action.html' %}
                     </div>
 
                     <div id="custom-stats-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                        {% include 'components/custom_stats_section.html' %}
+                        {% include 'components/stats/custom_stats_section.html' %}
                     </div>
 
-                    <div id="add-actions-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                        {% include 'components/add_actions.html' %}
+                    <div id="add-stat-action-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                        {% include 'components/stats/add_stat_action.html' %}
                     </div>
                 </div>
 
                 <div id="abilities-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
-                    {% include 'components/abilities_section.html' %}
+                    {% include 'components/abilities/abilities_section.html' %}
                 </div>
 
                 <div id="feats-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
-                    {% include 'components/feats_traits_section.html' %}
+                    {% include 'components/feats/feats_traits_section.html' %}
                 </div>
 
                 <div id="guest-combat-death-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
                     <div id="combat-stats-section-container">
-                        {% include 'components/guest_combat_stats.html' %}
+                        {% include 'components/combat/guest_combat_stats.html' %}
                     </div>
                     <div id="guest-death-saves-section-container">
-                        {% include 'components/guest_death_saves.html' %}
+                        {% include 'components/combat/guest_death_saves.html' %}
                     </div>
                 </div>
             </div>
@@ -179,28 +183,32 @@
                 <div id="sheet-content" class="sheet-layout" data-is-new="{{ 'true' if is_new_character else 'false' }}">
                     <div id="char-group-container" class="sheet-column">
                         <div id="character-info-section-container">
-                            {% include 'components/character_info.html' %}
+                            {% include 'components/character/character_info.html' %}
                         </div>
 
                         <div id="classes-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                            {% include 'components/classes_section.html' %}
+                            {% include 'components/classes/classes_section.html' %}
+                        </div>
+
+                        <div id="add-class-action-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                            {% include 'components/classes/add_class_action.html' %}
                         </div>
 
                         <div id="custom-stats-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                            {% include 'components/custom_stats_section.html' %}
+                            {% include 'components/stats/custom_stats_section.html' %}
                         </div>
 
-                        <div id="add-actions-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                            {% include 'components/add_actions.html' %}
+                        <div id="add-stat-action-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                            {% include 'components/stats/add_stat_action.html' %}
                         </div>
                     </div>
 
                     <div id="abilities-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
-                        {% include 'components/abilities_section.html' %}
+                        {% include 'components/abilities/abilities_section.html' %}
                     </div>
 
                     <div id="feats-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
-                        {% include 'components/feats_traits_section.html' %}
+                        {% include 'components/feats/feats_traits_section.html' %}
                     </div>
                 </div>
             </form>
@@ -212,7 +220,7 @@
             <form action="/" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div id="inventory-section-container">
-                    {% include 'components/inventory_section.html' %}
+                    {% include 'components/inventory/inventory_section.html' %}
                 </div>
             </form>
         </div>
@@ -227,15 +235,15 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="tracker-top-row{% if is_new_character %} new-char-hidden{% endif %}">
                     <div id="combat-stats-section-container">
-                        {% include 'components/combat_stats.html' %}
+                        {% include 'components/combat/combat_stats.html' %}
                     </div>
                     <div id="custom-buffs-section-container">
-                        {% include 'components/custom_buffs_section.html' %}
+                        {% include 'components/buffs/custom_buffs_section.html' %}
                     </div>
                 </div>
             </form>
             <div id="tracker-page-container">
-                {% include 'components/tracker_page.html' %}
+                {% include 'components/tracker/tracker_page.html' %}
             </div>
         </div>
         {% endif %}
@@ -266,7 +274,7 @@
     {% set feedback_icon_class = 'global-feedback-icon feedback-message-icon' %}
     {% set feedback_text_class = 'global-feedback-text feedback-message-text' %}
     {% set feedback_aria_atomic = 'true' %}
-    {% include 'components/feedback_message.html' %}
+    {% include 'components/ui/feedback_message.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"

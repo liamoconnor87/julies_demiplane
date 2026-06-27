@@ -5,11 +5,11 @@
     <h4>Trackers</h4>
     <p class="section-help-text">Build custom counters for your spells, rages, or anything else you track.</p>
 
-    {% include 'components/death_saves_tracker_item.html' %}
+    {% include 'components/combat/death_saves_tracker_item.html' %}
 
     {% if trackers %}
     {% for tracker in trackers %}
-    {% include 'components/tracker_item.html' %}
+    {% include 'components/tracker/tracker_item.html' %}
     {% endfor %}
     {% endif %}
 

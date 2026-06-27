@@ -7,3 +7,4 @@ Flask-Limiter
 Flask-Talisman
 captcha
 gunicorn
+psycopg2-binary

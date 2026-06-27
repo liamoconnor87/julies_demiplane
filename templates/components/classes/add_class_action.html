@@ -1,0 +1,56 @@
+<div class="add-actions-section" id="add-class-action-container">
+    <div class="add-actions-row">
+        {% if class_options %}
+        {# Add Class button — shown by default #}
+        {% set btn_wrapper_class = 'add-actions-field' %}
+        {% set btn_btn_class = 'add-actions-btn' %}
+        {% set btn_wrapper_id = 'add-class-btn-wrapper' %}
+        {% set btn_id = 'add-class-btn' %}
+        {% set btn_icon = '+' %}
+        {% set btn_label = 'Add Class' %}
+        {% include 'base/field_button.html' %}
+
+        {# Class select field (hidden by default) #}
+        <div class="add-actions-field add-actions-name-field" id="add-class-field-dropdown" style="display:none;">
+            <label for="class_to_character-class_id" class="field-label add-actions-label">Select Class</label>
+            <select id="class_to_character-class_id" name="class_to_character-class_id" class="field-input add-actions-input">
+                <option value="" disabled selected>Classes</option>
+                {% for class_option in class_options %}
+                    <option value="{{ class_option.id }}">{{ class_option.name | title() }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        {# Level field (hidden by default) #}
+        <div class="add-actions-field add-actions-level-field" id="add-class-field-level" style="display:none;">
+            <label for="class_to_character-level" class="field-label add-actions-label">Level</label>
+            <input type="number" id="class_to_character-level"
+                name="class_to_character-level" placeholder="1" class="field-input add-actions-input">
+        </div>
+
+        {# Submit button (hidden by default) #}
+        {% set btn_wrapper_style = 'display:none;' %}
+        {% set btn_wrapper_id = 'add-class-submit-btn' %}
+        {% set btn_id = 'add-class-submit' %}
+        {% set btn_hx_post = '/characters/' ~ character_id ~ '/classes/fragment' %}
+        {% set btn_hx_target = '#classes-section-container' %}
+        {% set btn_hx_swap = 'innerHTML' %}
+        {% set btn_hx_include = 'closest form' %}
+        {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+        {% set btn_label = 'Add' %}
+        {% include 'base/field_button.html' %}
+
+        {# Close button (hidden by default) #}
+        {% set btn_hx_post = '' %}
+        {% set btn_hx_target = '' %}
+        {% set btn_hx_swap = '' %}
+        {% set btn_hx_include = '' %}
+        {% set btn_wrapper_id = 'close-add-class-btn-wrapper' %}
+        {% set btn_id = 'close-add-class-btn' %}
+        {% set btn_icon = '×' %}
+        {% set btn_label = 'Close' %}
+        {% include 'base/field_button.html' %}
+        {% set btn_wrapper_style = '' %}
+        {% endif %}
+    </div>
+</div>

@@ -149,9 +149,6 @@
 
 /* ── Input ─────────────────────────────────────────────────────────────────── */
 
-.card-item-input {
-    /* inherits from .field-input */
-}
 
 .card-item-field .card-item-input {
     height: var(--card-item-field-input-height);
@@ -211,9 +208,6 @@
 
 /* ── Button ────────────────────────────────────────────────────────────────── */
 
-.card-item-btn {
-    /* inherits from .field-btn */
-}
 
 /* ══════════════════════════════════════════════════════════════════════════════
    Inventory-specific: quantity control

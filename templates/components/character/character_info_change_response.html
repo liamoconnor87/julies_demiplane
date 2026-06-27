@@ -1,13 +1,13 @@
-{% include 'components/character_info.html' %}
+{% include 'components/character/character_info.html' %}
 
 <div id="abilities-section-container" hx-swap-oob="innerHTML">
-    {% include 'components/abilities_section.html' %}
+    {% include 'components/abilities/abilities_section.html' %}
 </div>
 
 {% if is_guest is defined and is_guest %}
 <div id="guest-landing-panel" hx-swap-oob="innerHTML">
     {% if show_guest_landing_panel is defined %}
-        {% include 'components/guest_landing_panel_inner.html' %}
+        {% include 'components/character/guest_landing_panel_inner.html' %}
     {% endif %}
 </div>
 {% endif %}
@@ -20,6 +20,6 @@
 </a>
 
 <div id="delete-character-dropdown" class="delete-character-dropdown d-none" hx-swap-oob="true">
-    {% include 'components/delete_character_dropdown.html' %}
+    {% include 'components/auth/delete_character_dropdown.html' %}
 </div>
 {% endif %}

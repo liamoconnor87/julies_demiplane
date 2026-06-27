@@ -9,6 +9,7 @@ from character_sheet import guest_character as guest
 from functions.feedback import default_feedback, error_feedback, feedback_template_context
 from functions.functions import uuid as generate_uuid
 from functions.validators import is_valid_uuid
+from routes.helpers import guest_or_login_required, build_character_sheet_data, build_guest_character_sheet_data
 
 
 def _rows_or_empty(result):
@@ -40,14 +41,7 @@ def get_trackers_for_character(db, character_id: str):
     return result
 
 
-def register_fragment_routes(
-    app,
-    db,
-    limiter,
-    guest_or_login_required,
-    build_character_sheet_data,
-    build_guest_character_sheet_data,
-):
+def register_fragment_routes(app, db, limiter):
     @app.route('/characters/<character_id>/character-info/fragment', methods=['POST'])
     @guest_or_login_required
     @limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
@@ -69,7 +63,7 @@ def register_fragment_routes(
             is_new_character = not data['character'].get('name')
             guest_name = str(data['character'].get('name') or '').strip()
             return render_template(
-                'components/character_info_change_response.html',
+                'components/character/character_info_change_response.html',
                 character_id=character_id,
                 character=data['character'],
                 abilities=data['abilities'],
@@ -95,7 +89,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/character_info_change_response.html',
+            'components/character/character_info_change_response.html',
             character_id=character_id,
             character=data['character'],
             abilities=data['abilities'],
@@ -112,7 +106,7 @@ def register_fragment_routes(
             sheet.save_combat_values(character_id, request.form)
             data = sheet.create_form()
             return render_template(
-                'components/guest_combat_stats.html',
+                'components/combat/guest_combat_stats.html',
                 character_id=character_id,
                 character=data['character'],
                 is_guest=True,
@@ -124,7 +118,7 @@ def register_fragment_routes(
         sheet.save_combat_values(character_id, request.form)
 
         _, data = build_character_sheet_data(character_id)
-        return render_template('components/combat_stats.html', character_id=character_id, character=data['character'])
+        return render_template('components/combat/combat_stats.html', character_id=character_id, character=data['character'])
 
     @app.route('/characters/<character_id>/classes/fragment', methods=['POST'])
     @guest_or_login_required
@@ -135,7 +129,7 @@ def register_fragment_routes(
             sheet.save_class_to_character_values(character_id, request.form)
             data = sheet.create_form()
             return render_template(
-                'components/classes_fragment_response.html',
+                'components/classes/classes_fragment_response.html',
                 character_id=character_id,
                 classes=data['classes'],
                 class_options=data['class_options'],
@@ -151,7 +145,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/classes_fragment_response.html',
+            'components/classes/classes_fragment_response.html',
             character_id=character_id,
             classes=data['classes'],
             class_options=data['class_options'],
@@ -170,7 +164,7 @@ def register_fragment_routes(
             sheet.save_feat_and_trait_values(character_id, request.form)
             data = sheet.create_form()
             return render_template(
-                'components/feats_traits_section.html',
+                'components/feats/feats_traits_section.html',
                 character_id=character_id,
                 feats_and_traits=data['feats_and_traits'],
                 feats_and_traits_at_capacity=data['feats_and_traits_at_capacity'],
@@ -183,7 +177,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/feats_traits_change_response.html',
+            'components/feats/feats_traits_change_response.html',
             character_id=character_id,
             feats_and_traits=data['feats_and_traits'],
             feats_and_traits_at_capacity=data['feats_and_traits_at_capacity'],
@@ -202,7 +196,7 @@ def register_fragment_routes(
             sheet.save_ability_values(character_id, request.form)
             data = sheet.create_form()
             return render_template(
-                'components/abilities_section.html',
+                'components/abilities/abilities_section.html',
                 abilities=data['abilities'],
                 character_id=character_id,
                 is_guest=True,
@@ -215,7 +209,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/abilities_section.html',
+            'components/abilities/abilities_section.html',
             abilities=data['abilities'],
             character_id=character_id,
             is_guest=False,
@@ -237,7 +231,7 @@ def register_fragment_routes(
             if not ability_data:
                 abort(404)
             return render_template(
-                'components/ability_row.html',
+                'components/abilities/ability_row.html',
                 ability_name=ability_data['ability_name'],
                 ability=ability_data['ability'],
                 skills=ability_data['skills'],
@@ -259,7 +253,7 @@ def register_fragment_routes(
             abort(404)
 
         return render_template(
-            'components/ability_row.html',
+            'components/abilities/ability_row.html',
             ability_name=ability_data['ability_name'],
             ability=ability_data['ability'],
             skills=ability_data['skills'],
@@ -278,7 +272,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/inventory_change_response.html',
+            'components/inventory/inventory_change_response.html',
             inventory=data['inventory'],
             inventory_at_capacity=data['inventory_at_capacity'],
             custom_buffs=data['custom_buffs'],
@@ -296,7 +290,7 @@ def register_fragment_routes(
             sheet.save_custom_stat_values(character_id, request.form)
             data = sheet.create_form()
             return render_template(
-                'components/custom_stats_change_response.html',
+                'components/stats/custom_stats_change_response.html',
                 custom_stats=data['custom_stats'],
                 custom_stats_at_capacity=data['custom_stats_at_capacity'],
                 custom_buffs=data['custom_buffs'],
@@ -314,7 +308,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/custom_stats_change_response.html',
+            'components/stats/custom_stats_change_response.html',
             custom_stats=data['custom_stats'],
             custom_stats_at_capacity=data['custom_stats_at_capacity'],
             custom_buffs=data['custom_buffs'],
@@ -343,7 +337,7 @@ def register_fragment_routes(
             )
             if not updated_stat:
                 abort(400)
-            return render_template('components/custom_stat_row.html', stat=updated_stat, character_id=character_id)
+            return render_template('components/stats/custom_stat_row.html', stat=updated_stat, character_id=character_id)
 
         if not User.owns_character(db, current_user.id, character_id):
             abort(403)
@@ -364,7 +358,7 @@ def register_fragment_routes(
         if not rendered_stat:
             abort(404)
 
-        return render_template('components/custom_stat_row.html', stat=rendered_stat, character_id=character_id)
+        return render_template('components/stats/custom_stat_row.html', stat=rendered_stat, character_id=character_id)
 
     @app.route('/characters/<character_id>/custom-buffs/fragment', methods=['POST'])
     @login_required
@@ -376,7 +370,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/buff_change_response.html',
+            'components/buffs/buff_change_response.html',
             custom_buffs=data['custom_buffs'],
             custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
             buff_target_options=data['buff_target_options'],
@@ -400,7 +394,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/buff_change_response.html',
+            'components/buffs/buff_change_response.html',
             custom_buffs=data['custom_buffs'],
             custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
             buff_target_options=data['buff_target_options'],
@@ -424,7 +418,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/inventory_change_response.html',
+            'components/inventory/inventory_change_response.html',
             inventory=data['inventory'],
             inventory_at_capacity=data['inventory_at_capacity'],
             custom_buffs=data['custom_buffs'],
@@ -448,7 +442,7 @@ def register_fragment_routes(
         _, data = build_character_sheet_data(character_id)
         rendered_item = next((entry for entry in data['inventory'] if entry.get('id') == inventory_id), item)
         return render_template(
-            'components/inventory_row_change_response.html',
+            'components/inventory/inventory_row_change_response.html',
             item=rendered_item,
             character_id=character_id,
             custom_buffs=data['custom_buffs'],
@@ -475,18 +469,19 @@ def register_fragment_routes(
         sheet = CharacterSheet(character_id=character_id)
         item = sheet.step_single_inventory_item(character_id, inventory_id, step)
 
+        if item is None:
+            return ('', 200, {
+                'HX-Retarget': f'#inventory-row-{inventory_id}',
+                'HX-Reswap': 'outerHTML',
+            })
+
         _, data = build_character_sheet_data(character_id)
-        rendered_item = None
-        if item is not None:
-            rendered_item = next((entry for entry in data['inventory'] if entry.get('id') == inventory_id), item)
+        rendered_item = next((entry for entry in data['inventory'] if entry.get('id') == inventory_id), item)
 
         return render_template(
-            'components/inventory_row_change_response.html',
+            'components/inventory/inventory_quantity_response.html',
             item=rendered_item,
             character_id=character_id,
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
         )
 
     @app.route('/characters/<character_id>/inventory/add', methods=['POST'])
@@ -505,7 +500,7 @@ def register_fragment_routes(
         _, data = build_character_sheet_data(character_id)
         rendered_item = next((entry for entry in data['inventory'] if entry.get('id') == item.get('id')), item)
         return render_template(
-            'components/inventory_row_change_response.html',
+            'components/inventory/inventory_row_change_response.html',
             item=rendered_item,
             character_id=character_id,
             custom_buffs=data['custom_buffs'],
@@ -522,7 +517,7 @@ def register_fragment_routes(
             sheet.remove_feat_and_trait(character_id, feat_and_trait_id)
             data = sheet.create_form()
             return render_template(
-                'components/feats_traits_section.html',
+                'components/feats/feats_traits_section.html',
                 character_id=character_id,
                 feats_and_traits=data['feats_and_traits'],
                 feats_and_traits_at_capacity=data['feats_and_traits_at_capacity'],
@@ -538,7 +533,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/feats_traits_change_response.html',
+            'components/feats/feats_traits_change_response.html',
             character_id=character_id,
             feats_and_traits=data['feats_and_traits'],
             feats_and_traits_at_capacity=data['feats_and_traits_at_capacity'],
@@ -559,7 +554,7 @@ def register_fragment_routes(
             feat = sheet.update_single_feat(character_id, feat_and_trait_id, name, description)
             if not feat:
                 abort(400)
-            return render_template('components/feat_row.html', feat=feat, character_id=character_id)
+            return render_template('components/feats/feat_row.html', feat=feat, character_id=character_id)
         if not User.owns_character(db, current_user.id, character_id):
             abort(403)
         sheet = CharacterSheet(character_id=character_id)
@@ -570,7 +565,7 @@ def register_fragment_routes(
         _, data = build_character_sheet_data(character_id)
         rendered_feat = next((entry for entry in data['feats_and_traits'] if entry.get('id') == feat_and_trait_id), feat)
         return render_template(
-            'components/feat_row_change_response.html',
+            'components/feats/feat_row_change_response.html',
             feat=rendered_feat,
             character_id=character_id,
             custom_buffs=data['custom_buffs'],
@@ -589,7 +584,7 @@ def register_fragment_routes(
             feat = sheet.add_single_feat(character_id, name, description)
             if not feat:
                 abort(400)
-            return render_template('components/feat_row.html', feat=feat, character_id=character_id)
+            return render_template('components/feats/feat_row.html', feat=feat, character_id=character_id)
         if not User.owns_character(db, current_user.id, character_id):
             abort(403)
         sheet = CharacterSheet(character_id=character_id)
@@ -600,7 +595,7 @@ def register_fragment_routes(
         _, data = build_character_sheet_data(character_id)
         rendered_feat = next((entry for entry in data['feats_and_traits'] if entry.get('id') == feat.get('id')), feat)
         return render_template(
-            'components/feat_row_change_response.html',
+            'components/feats/feat_row_change_response.html',
             feat=rendered_feat,
             character_id=character_id,
             custom_buffs=data['custom_buffs'],
@@ -617,7 +612,7 @@ def register_fragment_routes(
             sheet.remove_custom_stat(character_id, custom_stat_id)
             data = sheet.create_form()
             return render_template(
-                'components/custom_stats_change_response.html',
+                'components/stats/custom_stats_change_response.html',
                 character_id=character_id,
                 custom_stats=data['custom_stats'],
                 custom_stats_at_capacity=data['custom_stats_at_capacity'],
@@ -638,7 +633,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/custom_stats_change_response.html',
+            'components/stats/custom_stats_change_response.html',
             character_id=character_id,
             custom_stats=data['custom_stats'],
             custom_stats_at_capacity=data['custom_stats_at_capacity'],
@@ -674,7 +669,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/buff_change_response.html',
+            'components/buffs/buff_change_response.html',
             custom_buffs=data['custom_buffs'],
             custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
             buff_target_options=data['buff_target_options'],
@@ -695,7 +690,7 @@ def register_fragment_routes(
             sheet.remove_class(character_id, class_id)
             data = sheet.create_form()
             return render_template(
-                'components/classes_fragment_response.html',
+                'components/classes/classes_fragment_response.html',
                 character_id=character_id,
                 classes=data['classes'],
                 class_options=data['class_options'],
@@ -714,7 +709,7 @@ def register_fragment_routes(
 
         _, data = build_character_sheet_data(character_id)
         return render_template(
-            'components/classes_fragment_response.html',
+            'components/classes/classes_fragment_response.html',
             character_id=character_id,
             classes=data['classes'],
             class_options=data['class_options'],
@@ -739,7 +734,7 @@ def register_fragment_routes(
     def _render_tracker_page(character_id: str):
         trackers = get_trackers_for_character(db, character_id)
         return render_template(
-            'components/tracker_page.html',
+            'components/tracker/tracker_page.html',
             character_id=character_id,
             trackers=trackers,
             trackers_at_capacity=len(trackers) >= TRACKER_MAX,
@@ -752,7 +747,7 @@ def register_fragment_routes(
         if not tracker:
             abort(404)
         return render_template(
-            'components/tracker_item.html',
+            'components/tracker/tracker_item.html',
             character_id=character_id,
             tracker=tracker,
             tracker_entry_max=TRACKER_ENTRY_MAX,

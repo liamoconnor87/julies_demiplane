@@ -6,8 +6,10 @@
     <div id="feats-list">
     {% if feats_and_traits %}
         {% for feat in feats_and_traits %}
-            {% include 'components/feat_row.html' %}
+            {% include 'components/feats/feat_row.html' %}
         {% endfor %}
+    <!-- {% else %}
+        <p>No feats or traits added yet...</p> -->
     {% endif %}
     {% if not feats_and_traits_at_capacity %}
     <div class="card-item-row card-item-add-row" id="add-feat-row">

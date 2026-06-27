@@ -1,0 +1,7 @@
+{% if item %}
+{% include 'components/inventory/inventory_row.html' %}
+{% endif %}
+
+<div id="custom-buffs-section-container" hx-swap-oob="innerHTML">
+    {% include 'components/buffs/custom_buffs_section.html' %}
+</div>

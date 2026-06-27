@@ -98,7 +98,7 @@ def register_dnd_character_sheet_routes(app, db, limiter):
         if confirmation != 'DELETE':
             char = db.go_get_one('character', {'id': character_id})
             return render_template(
-                'components/delete_character_dropdown.html',
+                'components/auth/delete_character_dropdown.html',
                 character_id=character_id,
                 character=char,
                 error='You must type DELETE to confirm.',

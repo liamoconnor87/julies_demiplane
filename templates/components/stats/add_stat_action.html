@@ -1,0 +1,50 @@
+<div class="add-actions-section" id="add-stat-action-container">
+    <div class="add-actions-row">
+        {% if not custom_stats_at_capacity %}
+        {# Add Stat button — shown by default #}
+        {% set btn_wrapper_class = 'add-actions-field' %}
+        {% set btn_btn_class = 'add-actions-btn' %}
+        {% set btn_wrapper_id = 'add-custom-stat-btn-wrapper' %}
+        {% set btn_id = 'add-custom-stat-btn' %}
+        {% set btn_icon = '+' %}
+        {% set btn_label = 'Add Stat' %}
+        {% include 'base/field_button.html' %}
+
+        {# Stat name field (hidden by default) #}
+        <div class="add-actions-field add-actions-stat-name-field" id="add-custom-stat-field-name" style="display:none;">
+            <label for="custom_stat-name" class="field-label add-actions-label">Stat Name</label>
+            <input type="text" id="custom_stat-name" name="custom_stat-name" placeholder="Enter name" class="field-input add-actions-input">
+        </div>
+
+        {# Stat value field (hidden by default) #}
+        <div class="add-actions-field add-actions-stat-value-field" id="add-custom-stat-field-value" style="display:none;">
+            <label for="custom_stat-value" class="field-label add-actions-label">Value</label>
+            <input type="number" id="custom_stat-value" name="custom_stat-value" value="0" class="field-input add-actions-input">
+        </div>
+
+        {# Submit button (hidden by default) #}
+        {% set btn_wrapper_style = 'display:none;' %}
+        {% set btn_wrapper_id = 'add-custom-stat-submit-btn-wrapper' %}
+        {% set btn_id = 'custom-stat-add' %}
+        {% set btn_hx_post = '/characters/' ~ character_id ~ '/custom-stats/fragment' %}
+        {% set btn_hx_target = '#custom-stats-section-container' %}
+        {% set btn_hx_swap = 'innerHTML' %}
+        {% set btn_hx_include = 'closest form' %}
+        {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+        {% set btn_label = 'Add' %}
+        {% include 'base/field_button.html' %}
+
+        {# Close button (hidden by default) #}
+        {% set btn_hx_post = '' %}
+        {% set btn_hx_target = '' %}
+        {% set btn_hx_swap = '' %}
+        {% set btn_hx_include = '' %}
+        {% set btn_wrapper_id = 'close-add-stat-btn-wrapper' %}
+        {% set btn_id = 'close-add-stat-btn' %}
+        {% set btn_icon = '×' %}
+        {% set btn_label = 'Close' %}
+        {% include 'base/field_button.html' %}
+        {% set btn_wrapper_style = '' %}
+        {% endif %}
+    </div>
+</div>

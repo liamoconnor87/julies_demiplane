@@ -99,7 +99,7 @@ window.addEventListener("load", () => {
         }
 
         if (target.id === 'classes-section-container') {
-            bindAddActionButtons();
+            bindAddClassButton();
             bindClassLevelAutoSave();
             syncGlobalLockState();
             showGlobalFeedback('', 'success');
@@ -219,6 +219,13 @@ window.addEventListener("load", () => {
             return;
         }
 
+        // Quantity-only update (outerHTML swap on the qty control div)
+        if (target.id && target.id.startsWith('inventory-qty-control-')) {
+            syncGlobalLockState();
+            showGlobalFeedback('', 'success');
+            return;
+        }
+
         if (target.id === 'tracker-page-container') {
             bindTrackerToggles();
             bindTrackerAddEntryToggles();
@@ -248,7 +255,7 @@ window.addEventListener("load", () => {
         }
 
         if (target.id === 'custom-stats-section-container') {
-            bindAddActionButtons();
+            bindAddStatButton();
             syncGlobalLockState();
             bindCustomStatAutoSave();
             selectCustomBuffField();
@@ -626,7 +633,8 @@ function bindDeleteConfirmInput() {
 }
 
 function initializeUiBindings() {
-    bindAddActionButtons();
+    bindAddClassButton();
+    bindAddStatButton();
     selectFeatField();
     selectInventoryField();
     selectCustomBuffField();
@@ -1100,6 +1108,60 @@ function syncGlobalLockState() {
         button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
     });
 
+    // ── Add Class action (lock-gated) ──
+    const addClassContainer = document.getElementById('add-class-action-container');
+    if (addClassContainer) {
+        addClassContainer.style.display = isLocked ? 'none' : '';
+        if (isLocked) {
+            const w = document.getElementById('add-class-btn-wrapper');
+            const d = document.getElementById('add-class-field-dropdown');
+            const l = document.getElementById('add-class-field-level');
+            const s = document.getElementById('add-class-submit-btn');
+            const c = document.getElementById('close-add-class-btn-wrapper');
+            if (w) w.style.display = '';
+            if (d) d.style.display = 'none';
+            if (l) l.style.display = 'none';
+            if (s) s.style.display = 'none';
+            if (c) c.style.display = 'none';
+        }
+    }
+
+    // ── Add Stat action (lock-gated) ──
+    const addStatContainer = document.getElementById('add-stat-action-container');
+    if (addStatContainer) {
+        addStatContainer.style.display = isLocked ? 'none' : '';
+        if (isLocked) {
+            const w = document.getElementById('add-custom-stat-btn-wrapper');
+            const n = document.getElementById('add-custom-stat-field-name');
+            const v = document.getElementById('add-custom-stat-field-value');
+            const s = document.getElementById('add-custom-stat-submit-btn-wrapper');
+            const c = document.getElementById('close-add-stat-btn-wrapper');
+            if (w) w.style.display = '';
+            if (n) n.style.display = 'none';
+            if (v) v.style.display = 'none';
+            if (s) s.style.display = 'none';
+            if (c) c.style.display = 'none';
+        }
+    }
+
+    // ── Add Feat row (lock-gated) ──
+    const addFeatRow = document.getElementById('add-feat-row');
+    if (addFeatRow) {
+        addFeatRow.style.display = isLocked ? 'none' : '';
+        if (isLocked) {
+            const bw = document.getElementById('add-feat-btn-wrapper');
+            const fn = document.getElementById('add-feat-field-name');
+            const fd = document.getElementById('add-feat-field-description');
+            const fs = document.getElementById('add-feat-submit-btn-wrapper');
+            const fc = document.getElementById('close-feat-btn-wrapper');
+            if (bw) bw.style.display = 'flex';
+            if (fn) fn.style.display = 'none';
+            if (fd) fd.style.display = 'none';
+            if (fs) fs.style.display = 'none';
+            if (fc) fc.style.display = 'none';
+        }
+    }
+
     // ── Feats section ──
     const featsSection = document.querySelector('.feats-section');
     if (featsSection) {
@@ -1127,6 +1189,10 @@ function syncGlobalLockState() {
         const shouldDisable = isLocked && quantity <= 1;
         button.disabled = shouldDisable;
         button.setAttribute('aria-disabled', shouldDisable ? 'true' : 'false');
+        const showTrash = !isLocked && quantity <= 1;
+        button.innerHTML = showTrash
+            ? '<i class="bi bi-trash-fill" aria-hidden="true" style="font-size:0.75em;"></i>'
+            : '−';
     });
     document.querySelectorAll('[data-inventory-delete="true"]').forEach((button) => {
         button.disabled = isLocked;
@@ -1441,43 +1507,30 @@ function selectCustomBuffField() {
     updateTableStatGroups();
 }
 
-function bindAddActionButtons() {
+function bindAddClassButton() {
     const addClassBtn = document.getElementById('add-class-btn');
     const addClassBtnWrapper = document.getElementById('add-class-btn-wrapper');
-    const addCustomStatBtn = document.getElementById('add-custom-stat-btn');
-    const addCustomStatBtnWrapper = document.getElementById('add-custom-stat-btn-wrapper');
-
     const addClassFieldDropdown = document.getElementById('add-class-field-dropdown');
     const addClassFieldLevel = document.getElementById('add-class-field-level');
     const addClassSubmitBtn = document.getElementById('add-class-submit-btn');
-
-    const addCustomStatFieldName = document.getElementById('add-custom-stat-field-name');
-    const addCustomStatFieldValue = document.getElementById('add-custom-stat-field-value');
-    const addCustomStatSubmitBtnWrapper = document.getElementById('add-custom-stat-submit-btn-wrapper');
-
-    const closeBtn = document.getElementById('close-add-action-field-x-btn');
-    const closeBtnWrapper = document.getElementById('close-add-action-btn-wrapper');
+    const closeBtn = document.getElementById('close-add-class-btn');
+    const closeBtnWrapper = document.getElementById('close-add-class-btn-wrapper');
 
     const showElement = (el) => { if (el) el.style.display = 'flex'; };
     const showBlockElement = (el) => { if (el) el.style.display = 'block'; };
     const hideElement = (el) => { if (el) el.style.display = 'none'; };
 
-    const hideAllForms = () => {
+    const hideForm = () => {
         showElement(addClassBtnWrapper);
-        showElement(addCustomStatBtnWrapper);
         hideElement(addClassFieldDropdown);
         hideElement(addClassFieldLevel);
         hideElement(addClassSubmitBtn);
-        hideElement(addCustomStatFieldName);
-        hideElement(addCustomStatFieldValue);
-        hideElement(addCustomStatSubmitBtnWrapper);
         hideElement(closeBtnWrapper);
     };
 
     if (addClassBtn && addClassBtn.dataset.bound !== 'true') {
         addClassBtn.addEventListener('click', () => {
             hideElement(addClassBtnWrapper);
-            hideElement(addCustomStatBtnWrapper);
             showBlockElement(addClassFieldDropdown);
             showElement(addClassFieldLevel);
             showElement(addClassSubmitBtn);
@@ -1486,9 +1539,34 @@ function bindAddActionButtons() {
         addClassBtn.dataset.bound = 'true';
     }
 
+    if (closeBtn && closeBtn.dataset.bound !== 'true') {
+        closeBtn.addEventListener('click', hideForm);
+        closeBtn.dataset.bound = 'true';
+    }
+}
+
+function bindAddStatButton() {
+    const addCustomStatBtn = document.getElementById('add-custom-stat-btn');
+    const addCustomStatBtnWrapper = document.getElementById('add-custom-stat-btn-wrapper');
+    const addCustomStatFieldName = document.getElementById('add-custom-stat-field-name');
+    const addCustomStatFieldValue = document.getElementById('add-custom-stat-field-value');
+    const addCustomStatSubmitBtnWrapper = document.getElementById('add-custom-stat-submit-btn-wrapper');
+    const closeBtn = document.getElementById('close-add-stat-btn');
+    const closeBtnWrapper = document.getElementById('close-add-stat-btn-wrapper');
+
+    const showElement = (el) => { if (el) el.style.display = 'flex'; };
+    const hideElement = (el) => { if (el) el.style.display = 'none'; };
+
+    const hideForm = () => {
+        showElement(addCustomStatBtnWrapper);
+        hideElement(addCustomStatFieldName);
+        hideElement(addCustomStatFieldValue);
+        hideElement(addCustomStatSubmitBtnWrapper);
+        hideElement(closeBtnWrapper);
+    };
+
     if (addCustomStatBtn && addCustomStatBtn.dataset.bound !== 'true') {
         addCustomStatBtn.addEventListener('click', () => {
-            hideElement(addClassBtnWrapper);
             hideElement(addCustomStatBtnWrapper);
             showElement(addCustomStatFieldName);
             showElement(addCustomStatFieldValue);
@@ -1499,7 +1577,7 @@ function bindAddActionButtons() {
     }
 
     if (closeBtn && closeBtn.dataset.bound !== 'true') {
-        closeBtn.addEventListener('click', hideAllForms);
+        closeBtn.addEventListener('click', hideForm);
         closeBtn.dataset.bound = 'true';
     }
 }
