@@ -2,7 +2,7 @@ import os
 import sqlite3
 from typing import Optional
 from functions.functions import uuid
-from go_get_it.seed import SEED, SEED_ROWS
+from misc.seed import SEED, SEED_ROWS
 from go_get_it.tables import TABLES
 from misc.config import DB_ROUTE
 

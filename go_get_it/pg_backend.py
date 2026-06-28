@@ -7,7 +7,7 @@ import psycopg2.extras
 import psycopg2.errors
 
 from functions.functions import uuid
-from go_get_it.seed import SEED, SEED_ROWS
+from misc.seed import SEED, SEED_ROWS
 from go_get_it.tables import TABLES
 
 
