@@ -3,6 +3,7 @@ import logging
 import os
 
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
 from flask_limiter import Limiter
@@ -32,6 +33,7 @@ from routes.user_theme import register_user_theme_routes
 
 # ── App creation ──────────────────────────────────────────────────────────────
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.secret_key = secret_key
 
 # Under Gunicorn, align Flask logger handlers so request-form logs are visible.
