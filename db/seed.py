@@ -1,4 +1,4 @@
-from misc.admin import ADMIN_SEED
+from db.admin import ADMIN_SEED
 
 SEED = {
     "class": {
