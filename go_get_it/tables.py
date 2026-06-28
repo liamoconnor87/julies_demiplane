@@ -1,6 +1,6 @@
 from typing import Optional
 
-from misc.tables import APP_TABLES
+from db.tables import APP_TABLES
 
 _id = "TEXT(32) PRIMARY KEY"
 

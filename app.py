@@ -11,7 +11,7 @@ from flask_talisman import Talisman
 
 from go_get_it.go_get_it import GoGetDB
 from auth import setup_auth
-from misc.config import (
+from db.config import (
     DEBUG,
     FORCE_HTTPS,
     secret_key,
@@ -22,7 +22,7 @@ from misc.config import (
     SESSION_FILE_THRESHOLD,
     RATE_LIMIT_STORAGE_URI,
 )
-from misc.monitoring import register_monitoring
+from db.monitoring import register_monitoring
 from routes.admin import register_admin_routes
 from routes.dnd_character_sheet import register_dnd_character_sheet_routes
 from routes.errors import register_error_handlers

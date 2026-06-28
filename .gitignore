@@ -1,4 +1,5 @@
-misc
+db/data
+db/db_export.json
 data
 flask_session/
 .env
@@ -10,3 +11,4 @@ venv/
 *.sqlite
 *.log
 .DS_Store
+misc

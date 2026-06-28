@@ -7,6 +7,6 @@
 }
 """
 
-from misc.seed import SEED, SEED_ROWS
+from db.seed import SEED, SEED_ROWS
 
 __all__ = ["SEED", "SEED_ROWS"]

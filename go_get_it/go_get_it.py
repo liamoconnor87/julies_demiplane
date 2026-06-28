@@ -2,9 +2,9 @@ import os
 import sqlite3
 from typing import Optional
 from functions.functions import uuid
-from misc.seed import SEED, SEED_ROWS
+from db.seed import SEED, SEED_ROWS
 from go_get_it.tables import TABLES
-from misc.config import DB_ROUTE
+from db.config import DB_ROUTE
 
 
 class SQLiteGoGetDB():
