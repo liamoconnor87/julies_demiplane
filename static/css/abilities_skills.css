@@ -191,9 +191,8 @@
 }
 
 .proficiency-toggle-item.proficient-active {
-    border: 2px solid var(--secondary-color-dark);
+    border: 4px solid var(--secondary-color-dark);
 }
-
 .proficiency-toggle-item.toggle-border-suppressed,
 .proficiency-toggle-item.toggle-border-suppressed:hover,
 .proficiency-toggle-item.toggle-border-suppressed:active {

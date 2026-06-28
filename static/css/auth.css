@@ -231,13 +231,14 @@
 
 /* ── Error message ────────────────────────────────────────────────────────── */
 
+.form-error,
 .auth-error {
-    color: var(--text-colour-one);
+    color: var(--error-colour);
     font-size: 0.8rem;
     background: var(--field-bg-colour);
-    border: 1px solid var(--text-colour-one);
+    border: 1px solid var(--error-colour);
     border-radius: 0;
-    box-shadow: 0 0 0 1px var(--text-colour-one);
+    box-shadow: 0 0 0 1px var(--error-colour);
     padding: 0.35rem 0.6rem;
     margin-bottom: 0.75rem;
 }
@@ -499,6 +500,14 @@
     .auth-dropdown-toggle {
         font-size: 0.78rem;
         padding: 0.2rem 0.5rem;
+    }
+
+    .auth-toggle-username {
+        display: none;
+    }
+
+    .auth-dropdown-toggle .bi-person-fill {
+        margin-right: 0;
     }
 
     .masquerade-banner .page-container {

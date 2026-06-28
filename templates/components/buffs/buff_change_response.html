@@ -1,0 +1,17 @@
+{% include 'components/buffs/custom_buffs_section.html' %}
+
+<div id="character-info-section-container" hx-swap-oob="innerHTML">
+    {% include 'components/character/character_info.html' %}
+</div>
+
+<div id="combat-stats-section-container" hx-swap-oob="innerHTML">
+    {% include 'components/combat/combat_stats.html' %}
+</div>
+
+<div id="abilities-section-container" hx-swap-oob="innerHTML">
+    {% include 'components/abilities/abilities_section.html' %}
+</div>
+
+<div id="custom-stats-section-container" hx-swap-oob="innerHTML">
+    {% include 'components/stats/custom_stats_section.html' %}
+</div>

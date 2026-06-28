@@ -1,12 +1,13 @@
+import os
 import sqlite3
 from typing import Optional
 from functions.functions import uuid
-from go_get_it.seed import SEED, SEED_ROWS
+from misc.seed import SEED, SEED_ROWS
 from go_get_it.tables import TABLES
 from misc.config import DB_ROUTE
 
 
-class GoGetDB():
+class SQLiteGoGetDB():
     """
     Go Get It is a simple wrapper around sqlite3 to make it easier to interact with the database. It provides methods to create the database, get all data from a table, get one data from a table, add new data to a table, update data in a table and delete data from a table.
     """
@@ -238,6 +239,13 @@ class GoGetDB():
                 record = {field: value for value, field in row.items()}
                 if not self.go_get_one(table, {"id": record["id"]}):
                     self.go_add_new(table, record)
+
+
+def GoGetDB():
+    if os.environ.get('DATABASE_URL'):
+        from go_get_it.pg_backend import PostgreSQLGoGetDB
+        return PostgreSQLGoGetDB()
+    return SQLiteGoGetDB()
 
 
 

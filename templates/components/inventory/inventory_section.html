@@ -1,0 +1,63 @@
+<div class="card-item-section inventory-section">
+    <h4>
+        Inventory
+    </h4>
+    <p class="section-help-text">Track items, quantities, and notes so gear is easy to manage mid-session.</p>
+
+    <div id="inventory-list">
+    {% if inventory %}
+        {% for item in inventory %}
+            {% include 'components/inventory/inventory_row.html' %}
+        {% endfor %}
+    {% endif %}
+    </div>
+
+    {% if not inventory_at_capacity %}
+    <div class="card-item-row card-item-add-row">
+        <div class="card-item-top-row">
+            {% set btn_wrapper_class = 'card-item-field card-item-action-field' %}
+            {% set btn_btn_class = 'card-item-btn' %}
+            {% set btn_wrapper_id = 'add-inventory-btn-wrapper' %}
+            {% set btn_id = 'add-inventory-btn' %}
+            {% set btn_icon = '+' %}
+            {% set btn_label = 'Add Item' %}
+            {% include 'base/field_button.html' %}
+
+            <div class="card-item-field card-item-name-field" id="add-inventory-field-name">
+                <label for="inventory-name" class="field-label card-item-label">New Item</label>
+                <input type="text" id="inventory-name" name="inventory-name" placeholder="Enter item" class="field-input card-item-input">
+            </div>
+
+            <div class="card-item-field card-item-quantity-field" id="add-inventory-field-quantity">
+                <label for="inventory-quantity" class="field-label card-item-label">Qty</label>
+                <input type="number" id="inventory-quantity" name="inventory-quantity" value="1" min="0" class="field-input card-item-input">
+            </div>
+
+            {% set btn_wrapper_id = 'add-inventory-submit-btn-wrapper' %}
+            {% set btn_id = 'inventory-add' %}
+            {% set btn_hx_post = '/characters/' ~ character_id ~ '/inventory/add' %}
+            {% set btn_hx_target = '#inventory-list' %}
+            {% set btn_hx_swap = 'beforeend' %}
+            {% set btn_hx_include = '#inventory-name, #inventory-description, #inventory-quantity' %}
+            {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+            {% set btn_label = 'Add' %}
+            {% include 'base/field_button.html' %}
+
+            {% set btn_hx_post = '' %}
+            {% set btn_hx_target = '' %}
+            {% set btn_hx_swap = '' %}
+            {% set btn_hx_include = '' %}
+            {% set btn_wrapper_id = 'close-inventory-btn-wrapper' %}
+            {% set btn_id = 'close-inventory-field-x-btn' %}
+            {% set btn_icon = '×' %}
+            {% set btn_label = 'Close' %}
+            {% include 'base/field_button.html' %}
+        </div>
+
+        <div class="card-item-field card-item-description-field" id="add-inventory-field-description">
+            <label for="inventory-description" class="field-label card-item-label">Description</label>
+            <textarea id="inventory-description" name="inventory-description" rows="2" placeholder="Enter description" class="field-input card-item-input card-item-description-input"></textarea>
+        </div>
+    </div>
+    {% endif %}
+</div>

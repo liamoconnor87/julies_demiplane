@@ -1,0 +1,9 @@
+<div class="custom-stats-section">
+    <div class="custom-stats-section-grid">
+        {% if custom_stats %}
+            {% for stat in custom_stats %}
+                {% include 'components/stats/custom_stat_row.html' %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>

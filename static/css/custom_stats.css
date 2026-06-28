@@ -87,9 +87,6 @@
     max-width: var(--custom-stats-action-width);
 }
 
-.custom-stats-section-input {
-    /* inherits from .field-input */
-}
 
 .custom-stats-square-field .custom-stats-section-label,
 .custom-stats-square-field .custom-stats-section-input {
@@ -116,13 +113,6 @@
     margin: 0;
 }
 
-.custom-stats-section-label {
-    /* inherits from .field-label */
-}
-
-.custom-stats-section-btn {
-    /* inherits from .field-btn */
-}
 
 .custom-stats-section-action-field .custom-stats-section-label {
     min-width: 0;

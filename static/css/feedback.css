@@ -1,0 +1,23 @@
+.feedback-message {
+    width: fit-content;
+    max-width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.25rem;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.feedback-message.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.feedback-message-icon {
+    flex: 0 0 auto;
+    line-height: 1;
+}
+
+.feedback-message-text {
+    overflow-wrap: anywhere;
+}

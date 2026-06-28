@@ -1,0 +1,60 @@
+<div class="card-item-section feats-section">
+    <h4>
+        Feats & Traits
+    </h4>
+    <p class="section-help-text">Keep quick references for your feats and traits. Note any effects by adding a passive stat or buffs/debuffs in the Trackers tab.</p>
+    <div id="feats-list">
+    {% if feats_and_traits|length > 0 %}
+        {% for feat in feats_and_traits %}
+            {% include 'components/feats/feat_row.html' %}
+        {% endfor %}
+    {% else %}
+        <p id="feats-empty-state" class="empty-state-text">No feats or traits added yet...</p>
+    {% endif %}
+    {% if not feats_and_traits_at_capacity %}
+    <div class="card-item-row card-item-add-row" id="add-feat-row">
+        <div class="card-item-top-row">
+            {% set btn_wrapper_class = 'card-item-field card-item-action-field' %}
+            {% set btn_btn_class = 'card-item-btn' %}
+            {% set btn_wrapper_id = 'add-feat-btn-wrapper' %}
+            {% set btn_id = 'add-feat-btn' %}
+            {% set btn_icon = '+' %}
+            {% set btn_label = 'Add Feat' %}
+            {% include 'base/field_button.html' %}
+
+            <div class="card-item-field card-item-name-field" id="add-feat-field-name">
+                <label for="feat_and_trait-name" class="field-label card-item-label">New Feat/Trait</label>
+                <input type="text" id="feat_and_trait-name"
+                       name="feat_and_trait-name" placeholder="Enter name" class="field-input card-item-input">
+            </div>
+
+            {% set btn_wrapper_id = 'add-feat-submit-btn-wrapper' %}
+            {% set btn_id = 'feat-and-trait-add' %}
+            {% set btn_hx_post = '/characters/' ~ character_id ~ '/feat-and-trait/add' %}
+            {% set btn_hx_target = '#add-feat-row' %}
+            {% set btn_hx_swap = 'beforebegin' %}
+            {% set btn_hx_include = '#feat_and_trait-name, #feat_and_trait-description' %}
+            {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
+            {% set btn_label = 'Add' %}
+            {% include 'base/field_button.html' %}
+
+            {% set btn_hx_post = '' %}
+            {% set btn_hx_target = '' %}
+            {% set btn_hx_swap = '' %}
+            {% set btn_hx_include = '' %}
+            {% set btn_wrapper_id = 'close-feat-btn-wrapper' %}
+            {% set btn_id = 'close-feat-field-x-btn' %}
+            {% set btn_icon = '×' %}
+            {% set btn_label = 'Close' %}
+            {% include 'base/field_button.html' %}
+        </div>
+
+        <div class="card-item-field card-item-description-field" id="add-feat-field-description">
+            <label for="feat_and_trait-description" class="field-label card-item-label">Description</label>
+            <textarea id="feat_and_trait-description"
+                      name="feat_and_trait-description" rows="3" placeholder="Enter description" class="field-input card-item-input card-item-description-input"></textarea>
+        </div>
+    </div>
+    {% endif %}
+    </div>
+</div>

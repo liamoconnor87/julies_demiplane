@@ -1,0 +1,12 @@
+{# Shared Death Saves tracker item for authenticated tracker-page rendering. #}
+{% set tracker = {
+    'id': 'death-saves',
+    'name': 'Death Saves',
+    'fixed': true,
+    'entries_at_capacity': false,
+    'entries': [
+        {'id': 'death-saves-pass', 'tracker_id': 'death-saves', 'name': 'Pass', 'value': 3},
+        {'id': 'death-saves-fail', 'tracker_id': 'death-saves', 'name': 'Fail', 'value': 3},
+    ],
+} %}
+{% include 'components/tracker/tracker_item.html' %}

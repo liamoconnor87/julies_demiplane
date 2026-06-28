@@ -4,6 +4,24 @@ window.addEventListener("load", () => {
     bindSubBarTabs();
     bindThemePanel();
 
+    const reopenAuthDropdownIfError = () => {
+        const authDropdown = document.getElementById('auth-dropdown');
+        if (!authDropdown || !authDropdown.querySelector('.auth-error')) {
+            return false;
+        }
+
+        const toggle = authDropdown.querySelector('.dropdown-toggle');
+        if (!toggle) {
+            return false;
+        }
+
+        const dropdown = bootstrap.Dropdown.getOrCreateInstance(toggle);
+        requestAnimationFrame(() => {
+            dropdown.show();
+        });
+        return true;
+    };
+
     // Inject the CSRF token into every htmx AJAX request as a header.
     // Flask-WTF's CSRFProtect accepts tokens from the X-CSRFToken header,
     document.body.addEventListener('htmx:configRequest', (event) => {
@@ -37,15 +55,11 @@ window.addEventListener("load", () => {
             return;
         }
 
-        // Re-open the auth dropdown if a validation error was returned
-        if (target.id === 'auth-dropdown') {
-            if (target.querySelector('.auth-error')) {
-                const toggle = target.querySelector('.dropdown-toggle');
-                if (toggle) {
-                    const dropdown = new bootstrap.Dropdown(toggle);
-                    dropdown.show();
-                }
-            }
+        // Re-open the auth dropdown if a validation error was returned.
+        // Resolve the live DOM node after swap instead of using the event target,
+        // because outerHTML swaps can leave the target reference stale.
+        if (target.id === 'auth-dropdown' || target.id === 'auth-area') {
+            reopenAuthDropdownIfError();
             return;
         }
 
@@ -68,20 +82,27 @@ window.addEventListener("load", () => {
 
             // When a new character is saved for the first time, reveal the
             // rest of the sheet sections that were hidden during creation.
+            // Guard on a persisted name so partial/failed saves do not reveal
+            // the full sheet prematurely.
             const sheetContent = document.getElementById('sheet-content');
-            if (sheetContent && sheetContent.dataset.isNew === 'true') {
+            const nameInput = document.getElementById('character-name');
+            const hasSavedName = nameInput && String(nameInput.value || '').trim().length > 0;
+            if (sheetContent && sheetContent.dataset.isNew === 'true' && hasSavedName) {
                 sheetContent.dataset.isNew = 'false';
                 document.querySelectorAll('.new-char-hidden').forEach(el => {
                     el.classList.remove('new-char-hidden');
                 });
             }
+
+            hydrateCharacterInfoFeedbackFromServer();
             return;
         }
 
         if (target.id === 'classes-section-container') {
-            bindAddActionButtons();
+            bindAddClassButton();
             bindClassLevelAutoSave();
             syncGlobalLockState();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -91,6 +112,7 @@ window.addEventListener("load", () => {
             syncGlobalLockState();
             bindFeatAutoSave();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -116,6 +138,7 @@ window.addEventListener("load", () => {
             syncGlobalLockState();
             bindFeatAutoSave();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -125,6 +148,7 @@ window.addEventListener("load", () => {
             bindFeatAutoSave();
             syncGlobalLockState();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -132,6 +156,7 @@ window.addEventListener("load", () => {
             bindProficiencyToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -139,6 +164,7 @@ window.addEventListener("load", () => {
             bindProficiencyToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -148,6 +174,7 @@ window.addEventListener("load", () => {
             syncGlobalLockState();
             bindInventoryAutoSave();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -177,6 +204,7 @@ window.addEventListener("load", () => {
             syncGlobalLockState();
             bindInventoryAutoSave();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -187,6 +215,14 @@ window.addEventListener("load", () => {
             bindInventoryAutoSave();
             syncGlobalLockState();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
+            return;
+        }
+
+        // Quantity-only update (outerHTML swap on the qty control div)
+        if (target.id && target.id.startsWith('inventory-qty-control-')) {
+            syncGlobalLockState();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -195,6 +231,7 @@ window.addEventListener("load", () => {
             bindTrackerAddEntryToggles();
             syncGlobalLockState();
             bindTrackerAutoSave();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -204,6 +241,7 @@ window.addEventListener("load", () => {
             bindTrackerAddEntryToggles();
             syncGlobalLockState();
             bindTrackerAutoSave();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -212,16 +250,18 @@ window.addEventListener("load", () => {
             bindCustomStatAutoSave();
             syncGlobalLockState();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
         if (target.id === 'custom-stats-section-container') {
-            bindAddActionButtons();
+            bindAddStatButton();
             syncGlobalLockState();
             bindCustomStatAutoSave();
             selectCustomBuffField();
             bindBuffCardEdit();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -233,6 +273,7 @@ window.addEventListener("load", () => {
             bindCombatFieldAutoSave();
             bindBuffCardEdit();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
             return;
         }
 
@@ -240,8 +281,17 @@ window.addEventListener("load", () => {
             bindCurrentHpCalculation();
             bindCombatFieldAutoSave();
             syncGlobalLockState();
+            showGlobalFeedback('', 'success');
             return;
         }
+    });
+
+    document.body.addEventListener('htmx:responseError', () => {
+        showGlobalFeedback('Something went wrong. Please try again.', 'error');
+    });
+
+    document.body.addEventListener('htmx:sendError', () => {
+        showGlobalFeedback('Something went wrong. Please try again.', 'error');
     });
 
     // Combat values can be changed by HTMX swaps (including OOB fragments)
@@ -255,6 +305,220 @@ let featDescriptionResizeWindowBound = false;
 let inventoryDescriptionResizeWindowBound = false;
 const ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 5;
 const CURRENT_HP_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+const CHARACTER_INFO_FEEDBACK_HIDE_MS = 3000;
+const GLOBAL_FEEDBACK_HIDE_MS = 3000;
+const GLOBAL_ERROR_FEEDBACK_TEXT = 'Please try again';
+const feedbackHideTimers = new Map();
+
+function getCharacterInfoFeedbackElement() {
+    return document.getElementById('character-info-feedback');
+}
+
+function getGlobalFeedbackElement() {
+    return document.getElementById('global-feedback');
+}
+
+function clearFeedbackHideTimer(feedbackId) {
+    if (!feedbackId) {
+        return;
+    }
+
+    const existingTimer = feedbackHideTimers.get(feedbackId);
+    if (existingTimer) {
+        clearTimeout(existingTimer);
+        feedbackHideTimers.delete(feedbackId);
+    }
+}
+
+function resetFeedbackElement(feedback, { resetDataset = false } = {}) {
+    if (!feedback) {
+        return;
+    }
+
+    clearFeedbackHideTimer(feedback.id);
+    feedback.replaceChildren();
+    feedback.classList.remove('is-visible', 'is-success', 'is-error');
+    feedback.removeAttribute('aria-label');
+
+    if (resetDataset) {
+        feedback.dataset.feedbackKind = '';
+        feedback.dataset.feedbackMessage = '';
+    }
+}
+
+function armFeedbackAutoHide(feedback, hideMs, clearFn) {
+    if (!feedback || !feedback.classList.contains('is-visible')) {
+        return;
+    }
+
+    const feedbackId = feedback.id;
+    if (!feedbackId) {
+        return;
+    }
+
+    clearFeedbackHideTimer(feedbackId);
+    feedbackHideTimers.set(feedbackId, setTimeout(() => {
+        clearFn();
+    }, hideMs));
+}
+
+function renderFeedbackElement(feedback, {
+    kind = 'success',
+    message = '',
+    successIconClass = '',
+    errorIconClass = successIconClass,
+    textClass = '',
+    successAriaLabel = 'Saved',
+    errorMessageOverride = '',
+    updateDataset = false,
+} = {}) {
+    if (!feedback) {
+        return {
+            isError: kind === 'error',
+            safeMessage: '',
+            renderedMessage: '',
+        };
+    }
+
+    const isError = kind === 'error';
+    const safeMessage = String(message || '').trim();
+    const overrideMessage = String(errorMessageOverride || '').trim();
+    const renderedMessage = isError ? (overrideMessage || safeMessage) : safeMessage;
+
+    resetFeedbackElement(feedback, { resetDataset: updateDataset });
+
+    if (isError && !renderedMessage) {
+        return { isError, safeMessage, renderedMessage };
+    }
+
+    const icon = document.createElement('i');
+    icon.className = isError
+        ? `bi bi-exclamation-circle-fill ${errorIconClass}`.trim()
+        : `bi bi-check-circle-fill ${successIconClass}`.trim();
+    icon.setAttribute('aria-hidden', 'true');
+    feedback.appendChild(icon);
+
+    feedback.setAttribute('aria-label', isError ? renderedMessage : successAriaLabel);
+
+    if (renderedMessage) {
+        const messageNode = document.createElement('span');
+        messageNode.className = textClass;
+        messageNode.textContent = renderedMessage;
+        feedback.appendChild(messageNode);
+    }
+
+    if (updateDataset) {
+        feedback.dataset.feedbackKind = isError ? 'error' : 'success';
+        feedback.dataset.feedbackMessage = safeMessage;
+    }
+
+    feedback.classList.add('is-visible');
+    feedback.classList.remove('is-success', 'is-error');
+    feedback.classList.add(isError ? 'is-error' : 'is-success');
+
+    return { isError, safeMessage, renderedMessage };
+}
+
+function clearGlobalFeedback() {
+    clearFeedbackHideTimer('global-feedback');
+    const feedback = getGlobalFeedbackElement();
+    resetFeedbackElement(feedback);
+}
+
+function armGlobalFeedbackAutoHide() {
+    const feedback = getGlobalFeedbackElement();
+    armFeedbackAutoHide(feedback, GLOBAL_FEEDBACK_HIDE_MS, clearGlobalFeedback);
+}
+
+function showGlobalFeedback(message, kind = 'success') {
+    const feedback = getGlobalFeedbackElement();
+    if (!feedback) {
+        return;
+    }
+
+    renderFeedbackElement(feedback, {
+        kind,
+        message,
+        successIconClass: 'global-feedback-icon feedback-message-icon',
+        errorIconClass: 'global-feedback-icon feedback-message-icon',
+        textClass: 'global-feedback-text feedback-message-text',
+        successAriaLabel: 'Saved',
+        errorMessageOverride: GLOBAL_ERROR_FEEDBACK_TEXT,
+    });
+
+    armGlobalFeedbackAutoHide();
+}
+
+function clearCharacterInfoFeedback() {
+    clearFeedbackHideTimer('character-info-feedback');
+    const feedback = getCharacterInfoFeedbackElement();
+    resetFeedbackElement(feedback, { resetDataset: true });
+}
+
+function armCharacterInfoFeedbackAutoHide() {
+    const feedback = getCharacterInfoFeedbackElement();
+    armFeedbackAutoHide(feedback, CHARACTER_INFO_FEEDBACK_HIDE_MS, clearCharacterInfoFeedback);
+}
+
+function showCharacterInfoFeedback(message, kind = 'success') {
+    showGlobalFeedback(message, kind);
+}
+
+function hydrateCharacterInfoFeedbackFromServer() {
+    const feedback = getCharacterInfoFeedbackElement();
+    if (!feedback) {
+        return;
+    }
+
+    const feedbackKind = String(feedback.dataset.feedbackKind || '').trim();
+    const feedbackMessage = String(feedback.dataset.feedbackMessage || '').trim();
+
+    if (feedbackKind === 'success') {
+        showCharacterInfoFeedback('', 'success');
+        return;
+    }
+
+    if (feedbackKind === 'error' && feedbackMessage) {
+        showCharacterInfoFeedback(feedbackMessage, 'error');
+        return;
+    }
+
+    if (feedback.classList.contains('is-visible')) {
+        armCharacterInfoFeedbackAutoHide();
+    }
+}
+
+function getHtmxRequestPath(detail) {
+    if (!detail) {
+        return '';
+    }
+
+    const requestConfigPath = detail.requestConfig && detail.requestConfig.path;
+    if (requestConfigPath) {
+        return String(requestConfigPath);
+    }
+
+    const requestPath = detail.pathInfo && detail.pathInfo.requestPath;
+    if (requestPath) {
+        return String(requestPath);
+    }
+
+    const xhr = detail.xhr;
+    if (xhr && typeof xhr.responseURL === 'string') {
+        try {
+            return new URL(xhr.responseURL, window.location.origin).pathname;
+        } catch (_) {
+            return xhr.responseURL;
+        }
+    }
+
+    return '';
+}
+
+function isCharacterInfoFragmentRequest(detail) {
+    const requestPath = getHtmxRequestPath(detail);
+    return requestPath.includes('/character-info/fragment');
+}
 
 function getCookieValue(name) {
     const encodedName = encodeURIComponent(name);
@@ -369,7 +633,8 @@ function bindDeleteConfirmInput() {
 }
 
 function initializeUiBindings() {
-    bindAddActionButtons();
+    bindAddClassButton();
+    bindAddStatButton();
     selectFeatField();
     selectInventoryField();
     selectCustomBuffField();
@@ -843,6 +1108,60 @@ function syncGlobalLockState() {
         button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
     });
 
+    // ── Add Class action (lock-gated) ──
+    const addClassContainer = document.getElementById('add-class-action-container');
+    if (addClassContainer) {
+        addClassContainer.style.display = isLocked ? 'none' : '';
+        if (isLocked) {
+            const w = document.getElementById('add-class-btn-wrapper');
+            const d = document.getElementById('add-class-field-dropdown');
+            const l = document.getElementById('add-class-field-level');
+            const s = document.getElementById('add-class-submit-btn');
+            const c = document.getElementById('close-add-class-btn-wrapper');
+            if (w) w.style.display = '';
+            if (d) d.style.display = 'none';
+            if (l) l.style.display = 'none';
+            if (s) s.style.display = 'none';
+            if (c) c.style.display = 'none';
+        }
+    }
+
+    // ── Add Stat action (lock-gated) ──
+    const addStatContainer = document.getElementById('add-stat-action-container');
+    if (addStatContainer) {
+        addStatContainer.style.display = isLocked ? 'none' : '';
+        if (isLocked) {
+            const w = document.getElementById('add-custom-stat-btn-wrapper');
+            const n = document.getElementById('add-custom-stat-field-name');
+            const v = document.getElementById('add-custom-stat-field-value');
+            const s = document.getElementById('add-custom-stat-submit-btn-wrapper');
+            const c = document.getElementById('close-add-stat-btn-wrapper');
+            if (w) w.style.display = '';
+            if (n) n.style.display = 'none';
+            if (v) v.style.display = 'none';
+            if (s) s.style.display = 'none';
+            if (c) c.style.display = 'none';
+        }
+    }
+
+    // ── Add Feat row (lock-gated) ──
+    const addFeatRow = document.getElementById('add-feat-row');
+    if (addFeatRow) {
+        addFeatRow.style.display = isLocked ? 'none' : '';
+        if (isLocked) {
+            const bw = document.getElementById('add-feat-btn-wrapper');
+            const fn = document.getElementById('add-feat-field-name');
+            const fd = document.getElementById('add-feat-field-description');
+            const fs = document.getElementById('add-feat-submit-btn-wrapper');
+            const fc = document.getElementById('close-feat-btn-wrapper');
+            if (bw) bw.style.display = 'flex';
+            if (fn) fn.style.display = 'none';
+            if (fd) fd.style.display = 'none';
+            if (fs) fs.style.display = 'none';
+            if (fc) fc.style.display = 'none';
+        }
+    }
+
     // ── Feats section ──
     const featsSection = document.querySelector('.feats-section');
     if (featsSection) {
@@ -870,6 +1189,10 @@ function syncGlobalLockState() {
         const shouldDisable = isLocked && quantity <= 1;
         button.disabled = shouldDisable;
         button.setAttribute('aria-disabled', shouldDisable ? 'true' : 'false');
+        const showTrash = !isLocked && quantity <= 1;
+        button.innerHTML = showTrash
+            ? '<i class="bi bi-trash-fill" aria-hidden="true" style="font-size:0.75em;"></i>'
+            : '−';
     });
     document.querySelectorAll('[data-inventory-delete="true"]').forEach((button) => {
         button.disabled = isLocked;
@@ -1184,43 +1507,30 @@ function selectCustomBuffField() {
     updateTableStatGroups();
 }
 
-function bindAddActionButtons() {
+function bindAddClassButton() {
     const addClassBtn = document.getElementById('add-class-btn');
     const addClassBtnWrapper = document.getElementById('add-class-btn-wrapper');
-    const addCustomStatBtn = document.getElementById('add-custom-stat-btn');
-    const addCustomStatBtnWrapper = document.getElementById('add-custom-stat-btn-wrapper');
-
     const addClassFieldDropdown = document.getElementById('add-class-field-dropdown');
     const addClassFieldLevel = document.getElementById('add-class-field-level');
     const addClassSubmitBtn = document.getElementById('add-class-submit-btn');
-
-    const addCustomStatFieldName = document.getElementById('add-custom-stat-field-name');
-    const addCustomStatFieldValue = document.getElementById('add-custom-stat-field-value');
-    const addCustomStatSubmitBtnWrapper = document.getElementById('add-custom-stat-submit-btn-wrapper');
-
-    const closeBtn = document.getElementById('close-add-action-field-x-btn');
-    const closeBtnWrapper = document.getElementById('close-add-action-btn-wrapper');
+    const closeBtn = document.getElementById('close-add-class-btn');
+    const closeBtnWrapper = document.getElementById('close-add-class-btn-wrapper');
 
     const showElement = (el) => { if (el) el.style.display = 'flex'; };
     const showBlockElement = (el) => { if (el) el.style.display = 'block'; };
     const hideElement = (el) => { if (el) el.style.display = 'none'; };
 
-    const hideAllForms = () => {
+    const hideForm = () => {
         showElement(addClassBtnWrapper);
-        showElement(addCustomStatBtnWrapper);
         hideElement(addClassFieldDropdown);
         hideElement(addClassFieldLevel);
         hideElement(addClassSubmitBtn);
-        hideElement(addCustomStatFieldName);
-        hideElement(addCustomStatFieldValue);
-        hideElement(addCustomStatSubmitBtnWrapper);
         hideElement(closeBtnWrapper);
     };
 
     if (addClassBtn && addClassBtn.dataset.bound !== 'true') {
         addClassBtn.addEventListener('click', () => {
             hideElement(addClassBtnWrapper);
-            hideElement(addCustomStatBtnWrapper);
             showBlockElement(addClassFieldDropdown);
             showElement(addClassFieldLevel);
             showElement(addClassSubmitBtn);
@@ -1229,9 +1539,34 @@ function bindAddActionButtons() {
         addClassBtn.dataset.bound = 'true';
     }
 
+    if (closeBtn && closeBtn.dataset.bound !== 'true') {
+        closeBtn.addEventListener('click', hideForm);
+        closeBtn.dataset.bound = 'true';
+    }
+}
+
+function bindAddStatButton() {
+    const addCustomStatBtn = document.getElementById('add-custom-stat-btn');
+    const addCustomStatBtnWrapper = document.getElementById('add-custom-stat-btn-wrapper');
+    const addCustomStatFieldName = document.getElementById('add-custom-stat-field-name');
+    const addCustomStatFieldValue = document.getElementById('add-custom-stat-field-value');
+    const addCustomStatSubmitBtnWrapper = document.getElementById('add-custom-stat-submit-btn-wrapper');
+    const closeBtn = document.getElementById('close-add-stat-btn');
+    const closeBtnWrapper = document.getElementById('close-add-stat-btn-wrapper');
+
+    const showElement = (el) => { if (el) el.style.display = 'flex'; };
+    const hideElement = (el) => { if (el) el.style.display = 'none'; };
+
+    const hideForm = () => {
+        showElement(addCustomStatBtnWrapper);
+        hideElement(addCustomStatFieldName);
+        hideElement(addCustomStatFieldValue);
+        hideElement(addCustomStatSubmitBtnWrapper);
+        hideElement(closeBtnWrapper);
+    };
+
     if (addCustomStatBtn && addCustomStatBtn.dataset.bound !== 'true') {
         addCustomStatBtn.addEventListener('click', () => {
-            hideElement(addClassBtnWrapper);
             hideElement(addCustomStatBtnWrapper);
             showElement(addCustomStatFieldName);
             showElement(addCustomStatFieldValue);
@@ -1242,7 +1577,7 @@ function bindAddActionButtons() {
     }
 
     if (closeBtn && closeBtn.dataset.bound !== 'true') {
-        closeBtn.addEventListener('click', hideAllForms);
+        closeBtn.addEventListener('click', hideForm);
         closeBtn.dataset.bound = 'true';
     }
 }
@@ -2119,7 +2454,7 @@ function bindSubBarTabs() {
  * Must stay in sync with THEME_DEFAULTS in auth/models.py.
  */
 const THEME_VAR_MAP = {
-    '--primary-color':        { field: 'background_colour',   default: '#b8a8cd' },
+    '--primary-color':        { field: 'background_colour',   default: '#ffffff' },
     '--secondary-color-dark': { field: 'border_colour',       default: 'rgb(0, 189, 91)' },
     '--label-colour':         { field: 'label_colour',        default: 'rgb(255, 255, 255)' },
     '--critical-colour':      { field: 'critical_colour',     default: 'rgb(220, 50, 50)' },

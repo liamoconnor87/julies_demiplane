@@ -1,5 +1,5 @@
 :root {
-    --primary-color: #b8a8cd;
+    --primary-color: #ffffff;
     --primary-color-transparent: rgba(184, 168, 205, 0.85);
     --secondary-color: rgb(0, 189, 91);
     --secondary-color-dark: rgb(0, 189, 91);
@@ -9,6 +9,7 @@
     /* ── User-themeable colour vars ─────────────────────── */
     --label-colour: rgb(255, 255, 255);
     --critical-colour: rgb(220, 50, 50);
+    --error-colour: var(--critical-colour);
     --success-colour: rgb(0, 189, 91);
     --tracker-fill-colour: rgb(0, 153, 74);
     --level-colour: rgb(255, 0, 234);
@@ -28,6 +29,7 @@
 .buff-indicator {
     color: var(--text-colour-one);
     font-weight: bold;
+    font-size: 1.2em;
     pointer-events: none;
     user-select: none;
 }
@@ -281,6 +283,88 @@ h4 {
     display: none;
 }
 
+.empty-state-text {
+    margin: -0.25rem 0 0.6rem;
+    color: var(--title-colour);
+    font-size: 0.62rem;
+    line-height: 1.35;
+    opacity: 0.9;
+}
+
+.global-feedback {
+    position: fixed;
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    z-index: 1100;
+    min-height: 0;
+    min-width: 0;
+    width: fit-content;
+    max-width: min(22rem, calc(100vw - 1.5rem));
+    padding: 0.14rem 0.34rem;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    background: var(--field-bg-colour);
+    color: var(--text-colour-three);
+    box-shadow: 0 0 0 1px transparent;
+    font-size: 0.76rem;
+    font-weight: 800;
+    line-height: 1.1;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.global-feedback.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.global-feedback.is-success {
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.global-feedback.is-error {
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.global-feedback.is-success .global-feedback-icon {
+    color: var(--success-colour);
+}
+
+.global-feedback.is-error .global-feedback-icon {
+    color: var(--error-colour);
+}
+
+.global-feedback-icon {
+    flex: 0 0 auto;
+    font-size: 0.84rem;
+    line-height: 1;
+}
+
+.global-feedback-text {
+    white-space: nowrap;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 499px) {
+    .global-feedback {
+        right: max(0.35rem, env(safe-area-inset-right));
+        bottom: max(0.35rem, env(safe-area-inset-bottom));
+        max-width: calc(100vw - 0.7rem);
+        font-size: 0.68rem;
+        padding: 0.1rem 0.28rem;
+    }
+
+    .global-feedback-icon {
+        font-size: 0.82rem;
+    }
+}
+
 /* ══════════════════════════════════════════════════════════════════════════════
    Generic field primitives — shared across all sections
    ══════════════════════════════════════════════════════════════════════════════ */
@@ -364,7 +448,7 @@ h4 {
    Responsive breakpoints
    ══════════════════════════════════════════════════════════════════════════════ */
 
-@media (max-width: 1500px) {
+@media (max-width: 1600px) {
     .sheet-layout {
         flex-wrap: wrap;
     }

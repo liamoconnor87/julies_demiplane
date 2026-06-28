@@ -1,0 +1,34 @@
+{% set feedback_tag_value = feedback_tag if feedback_tag is defined else 'p' %}
+{% set feedback_id_value = feedback_id if feedback_id is defined else '' %}
+{% set feedback_kind_value = feedback_kind if feedback_kind is defined else '' %}
+{% set feedback_message_value = feedback_message if feedback_message is defined else '' %}
+{% set feedback_base_class_value = feedback_base_class if feedback_base_class is defined else 'feedback-message' %}
+{% set feedback_icon_class_value = feedback_icon_class if feedback_icon_class is defined else 'feedback-message-icon' %}
+{% set feedback_text_class_value = feedback_text_class if feedback_text_class is defined else 'feedback-message-text' %}
+{% set feedback_role_value = feedback_role if feedback_role is defined else 'status' %}
+{% set feedback_live_value = feedback_live if feedback_live is defined else 'polite' %}
+{% set feedback_success_aria_label_value = feedback_success_aria_label if feedback_success_aria_label is defined else 'Saved' %}
+{% set feedback_aria_atomic_value = feedback_aria_atomic if feedback_aria_atomic is defined else none %}
+{% set feedback_show_success_text_value = feedback_show_success_text if feedback_show_success_text is defined else false %}
+{% set feedback_visible_value = feedback_kind_value == 'success' or feedback_message_value %}
+
+<{{ feedback_tag_value }}{% if feedback_id_value %} id="{{ feedback_id_value }}"{% endif %}
+    class="{{ feedback_base_class_value }}{% if feedback_visible_value %} is-visible{% endif %}{% if feedback_kind_value == 'success' %} is-success{% elif feedback_kind_value == 'error' %} is-error{% endif %}"
+    data-feedback-kind="{{ feedback_kind_value }}"
+    data-feedback-message="{{ feedback_message_value }}"
+    role="{{ feedback_role_value }}"
+    aria-live="{{ feedback_live_value }}"
+    {% if feedback_aria_atomic_value is not none %}aria-atomic="{{ feedback_aria_atomic_value }}"{% endif %}
+    aria-label="{{ feedback_success_aria_label_value if feedback_kind_value == 'success' else feedback_message_value }}">
+    {% if feedback_kind_value == 'success' %}
+        <i class="bi bi-check-circle-fill {{ feedback_icon_class_value }}" aria-hidden="true"></i>
+        {% if feedback_show_success_text_value and feedback_message_value %}
+            <span class="{{ feedback_text_class_value }}">{{ feedback_message_value }}</span>
+        {% endif %}
+    {% elif feedback_kind_value == 'error' and feedback_message_value %}
+        <i class="bi bi-exclamation-circle-fill {{ feedback_icon_class_value }}" aria-hidden="true"></i>
+        <span class="{{ feedback_text_class_value }}">{{ feedback_message_value }}</span>
+    {% elif feedback_message_value %}
+        <span class="{{ feedback_text_class_value }}">{{ feedback_message_value }}</span>
+    {% endif %}
+</{{ feedback_tag_value }}>

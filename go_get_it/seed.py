@@ -6,26 +6,7 @@
     }
 }
 """
-from misc.admin import ADMIN_SEED
 
+from misc.seed import SEED, SEED_ROWS
 
-SEED = {
-    "class": {
-        "artificer": "name",
-        "barbarian": "name",
-        "bard": "name",
-        "cleric": "name",
-        "druid": "name",
-        "fighter": "name",
-        "monk": "name",
-        "paladin": "name",
-        "ranger": "name",
-        "rogue": "name",
-        "sorcerer": "name",
-        "warlock": "name",
-        "wizard": "name"
-    },
-}
-
-# Full-row seeds (tables where each entry needs multiple fields)
-SEED_ROWS = ADMIN_SEED
+__all__ = ["SEED", "SEED_ROWS"]

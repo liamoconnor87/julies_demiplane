@@ -48,9 +48,6 @@
     border-color: var(--critical-colour);
 }
 
-.combat-section-label {
-    /* inherits from .field-label */
-}
 
 .combat-section-col-one-field .combat-section-input {
     order: 1;

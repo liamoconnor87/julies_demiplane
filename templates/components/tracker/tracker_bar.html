@@ -1,0 +1,44 @@
+{# Tracker bar — fixed strip below the character bar. Only shown for authenticated users with a character. #}
+{% if current_user.is_authenticated and active_character_id %}
+<nav id="tracker-bar" class="tracker-bar">
+    <div class="page-container">
+        <div class="tracker-bar-trackers" id="tracker-bar-inner">
+            {% if trackers %}
+                {% for tracker in trackers %}
+                    {% if not loop.first %}
+                    <span class="tracker-bar-sep"></span>
+                    {% endif %}
+                    <div class="tracker-bar-group" data-tracker-id="{{ tracker.id }}">
+                        <span class="tracker-bar-name">{{ tracker.name }}</span>
+                        {% for entry in tracker.entries %}
+                        <div class="tracker-bar-entry">
+                            <span class="tracker-bar-entry-name">{{ entry.name }}</span>
+                            {% for i in range(entry.value) %}
+                            <span class="tracker-toggle"
+                                  data-tracker-id="{{ tracker.id }}"
+                                  data-entry-id="{{ entry.id }}"
+                                  data-index="{{ loop.index0 }}"
+                                  role="checkbox"
+                                  tabindex="0"
+                                  aria-checked="false"
+                                  aria-label="{{ entry.name }} {{ loop.index }}"></span>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <button class="tracker-bar-manage-btn" id="tracker-manage-btn" title="Manage trackers">
+            + Trackers
+        </button>
+    </div>
+</nav>
+
+{# Tracker management panel (hidden by default) #}
+<div id="tracker-panel-backdrop" class="tracker-panel-backdrop d-none">
+    <div class="tracker-panel" id="tracker-panel-container">
+        {% include 'components/tracker/tracker_section.html' %}
+    </div>
+</div>
+{% endif %}
