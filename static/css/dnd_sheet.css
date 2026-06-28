@@ -283,6 +283,14 @@ h4 {
     display: none;
 }
 
+.empty-state-text {
+    margin: -0.25rem 0 0.6rem;
+    color: var(--title-colour);
+    font-size: 0.62rem;
+    line-height: 1.35;
+    opacity: 0.9;
+}
+
 .global-feedback {
     position: fixed;
     right: max(0.75rem, env(safe-area-inset-right));

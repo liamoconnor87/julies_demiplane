@@ -4,12 +4,12 @@
     </h4>
     <p class="section-help-text">Keep quick references for your feats and traits. Note any effects by adding a passive stat or buffs/debuffs in the Trackers tab.</p>
     <div id="feats-list">
-    {% if feats_and_traits %}
+    {% if feats_and_traits|length > 0 %}
         {% for feat in feats_and_traits %}
             {% include 'components/feats/feat_row.html' %}
         {% endfor %}
-    <!-- {% else %}
-        <p>No feats or traits added yet...</p> -->
+    {% else %}
+        <p id="feats-empty-state" class="empty-state-text">No feats or traits added yet...</p>
     {% endif %}
     {% if not feats_and_traits_at_capacity %}
     <div class="card-item-row card-item-add-row" id="add-feat-row">

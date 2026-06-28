@@ -584,7 +584,7 @@ def register_fragment_routes(app, db, limiter):
             feat = sheet.add_single_feat(character_id, name, description)
             if not feat:
                 abort(400)
-            return render_template('components/feats/feat_row.html', feat=feat, character_id=character_id)
+            return render_template('components/feats/feat_row_guest_add_response.html', feat=feat, character_id=character_id)
         if not User.owns_character(db, current_user.id, character_id):
             abort(403)
         sheet = CharacterSheet(character_id=character_id)

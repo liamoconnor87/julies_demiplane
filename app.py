@@ -1,5 +1,6 @@
 from datetime import timedelta
 import logging
+import os
 
 from flask import Flask
 from flask_wtf.csrf import CSRFProtect
@@ -100,6 +101,20 @@ Talisman(
     content_security_policy=csp,
     session_cookie_secure=SESSION_COOKIE_SECURE,
 )
+
+# ── Static asset cache-busting ────────────────────────────────────────────────
+@app.context_processor
+def inject_static_version():
+    js_path = os.path.join(app.static_folder, 'scripts', 'dnd_sheet.js')
+    version = int(os.path.getmtime(js_path)) if os.path.exists(js_path) else 1
+    return {'static_version': version}
+
+@app.after_request
+def no_cache_html(response):
+    if 'text/html' in response.content_type:
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+    return response
 
 # ── Database, auth & routes ───────────────────────────────────────────────────
 db = GoGetDB()
