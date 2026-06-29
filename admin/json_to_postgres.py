@@ -20,6 +20,7 @@ import psycopg2
 import psycopg2.extras
 
 from go_get_it.pg_backend import PostgreSQLGoGetDB
+from go_get_it.tables import TABLES
 
 DEFAULT_INPUT = 'db/db_export.json'
 
@@ -61,6 +62,8 @@ def import_data(input_path: str) -> None:
         inserted = 0
         skipped = 0
 
+        schema_columns = set(TABLES.get(table, {}).keys())
+
         for row in rows:
             if not row:
                 continue
@@ -70,11 +73,12 @@ def import_data(input_path: str) -> None:
                 skipped += 1
                 continue
 
-            keys = ', '.join(row.keys())
-            placeholders = ', '.join(['%s'] * len(row))
+            filtered = {k: v for k, v in row.items() if k in schema_columns}
+            keys = ', '.join(filtered.keys())
+            placeholders = ', '.join(['%s'] * len(filtered))
             sql = f'INSERT INTO "{table}" ({keys}) VALUES ({placeholders})'
             try:
-                cursor.execute(sql, tuple(row.values()))
+                cursor.execute(sql, tuple(filtered.values()))
                 inserted += 1
             except Exception as e:
                 print(f"  {table} row {row.get('id', '?')}: ERROR — {e}")
