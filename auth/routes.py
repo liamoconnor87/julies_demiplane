@@ -28,7 +28,7 @@ def _auth_error_response(error: Optional[str], active_tab: str = 'login'):
     The dropdown stays open so the user sees what went wrong.
     """
     return render_template(
-        'components/auth_dropdown.html',
+        'components/auth/auth_dropdown.html',
         auth_error=error,
         active_tab=active_tab,
     )
