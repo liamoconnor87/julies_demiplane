@@ -16,6 +16,12 @@ from go_get_it.tables import TABLES
 _pool: Optional[ThreadedConnectionPool] = None
 _pool_lock = threading.Lock()
 
+# Arbitrary constant used with pg_advisory_xact_lock to serialize schema
+# creation/migration across concurrently-booting processes (e.g. gunicorn
+# workers), which otherwise race on "IF NOT EXISTS" DDL and can crash a
+# worker with a duplicate_table/duplicate_object error on startup.
+_SCHEMA_LOCK_KEY = 891273465
+
 
 def _pg_type(t: str) -> str:
     t = re.sub(r'TEXT\(\d+\)', 'TEXT', t.upper())
@@ -102,27 +108,35 @@ class PostgreSQLGoGetDB():
             except psycopg2.errors.UniqueViolation:
                 print(f"[db] warning: could not create unique index '{index_name}' due to existing duplicate rows")
 
-    def go_sync_schema(self):
+    def _sync_schema(self, cursor):
         applied_updates = {}
+        for table, schema in self.TABLES.items():
+            added_columns = self._go_sync_table_columns(cursor, table, schema)
+            if added_columns:
+                applied_updates[table] = added_columns
+        self._go_ensure_indexes(cursor)
+        return applied_updates
+
+    def go_sync_schema(self):
         with self._conn() as conn:
             cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            for table, schema in self.TABLES.items():
-                added_columns = self._go_sync_table_columns(cursor, table, schema)
-                if added_columns:
-                    applied_updates[table] = added_columns
-            self._go_ensure_indexes(cursor)
+            cursor.execute("SELECT pg_advisory_xact_lock(%s)", (_SCHEMA_LOCK_KEY,))
+            applied_updates = self._sync_schema(cursor)
             conn.commit()
         for table, columns in applied_updates.items():
             print(f"[db] schema sync: added columns to '{table}': {', '.join(columns)}")
 
     def go_create_db(self):
         with self._conn() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cursor.execute("SELECT pg_advisory_xact_lock(%s)", (_SCHEMA_LOCK_KEY,))
             for table, schema in self.TABLES.items():
                 columns_sql = ', '.join([f"{col} {_pg_type(dtype)}" for col, dtype in schema.items()])
                 cursor.execute(f'CREATE TABLE IF NOT EXISTS {self._qt(table)} ({columns_sql})')
+            applied_updates = self._sync_schema(cursor)
             conn.commit()
-        self.go_sync_schema()
+        for table, columns in applied_updates.items():
+            print(f"[db] schema sync: added columns to '{table}': {', '.join(columns)}")
 
     def go_get_all(self, table: str, params: Optional[dict] = None, count: bool = False):
         self._validate_table(table)
