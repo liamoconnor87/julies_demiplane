@@ -1,3 +1,4 @@
+import functools
 import os
 import re
 import threading
@@ -41,6 +42,21 @@ def _get_pool() -> ThreadedConnectionPool:
     return _pool
 
 
+def _retry_stale_connection(fn):
+    # Pooled connections can go stale between requests (idle timeout on the
+    # DB side, network blip, etc). _conn() detects this and discards the
+    # dead connection instead of recycling it, so a single retry here always
+    # gets a fresh one. If the retry also fails, the DB is genuinely
+    # unreachable and the error should propagate.
+    @functools.wraps(fn)
+    def wrapper(self, *args, **kwargs):
+        try:
+            return fn(self, *args, **kwargs)
+        except (psycopg2.OperationalError, psycopg2.InterfaceError):
+            return fn(self, *args, **kwargs)
+    return wrapper
+
+
 class PostgreSQLGoGetDB():
     TABLES = TABLES
     SEED = SEED
@@ -54,13 +70,19 @@ class PostgreSQLGoGetDB():
     def _conn(self):
         pool = _get_pool()
         conn = pool.getconn()
+        stale = False
         try:
             yield conn
+        except (psycopg2.OperationalError, psycopg2.InterfaceError):
+            # Connection is already dead - rolling back would itself raise
+            # and mask this (more useful) exception, so just discard it.
+            stale = True
+            raise
         except Exception:
             conn.rollback()
             raise
         finally:
-            pool.putconn(conn)
+            pool.putconn(conn, close=stale)
 
     def _validate_table(self, table: str):
         if table not in self.TABLES:
@@ -138,6 +160,7 @@ class PostgreSQLGoGetDB():
         for table, columns in applied_updates.items():
             print(f"[db] schema sync: added columns to '{table}': {', '.join(columns)}")
 
+    @_retry_stale_connection
     def go_get_all(self, table: str, params: Optional[dict] = None, count: bool = False):
         self._validate_table(table)
         safe_params = dict(params or {})
@@ -166,6 +189,7 @@ class PostgreSQLGoGetDB():
 
         return [dict(row) for row in data] if data else None
 
+    @_retry_stale_connection
     def go_get_one(self, table: str, params: Optional[dict] = None):
         self._validate_table(table)
         safe_params = dict(params or {})
@@ -183,6 +207,7 @@ class PostgreSQLGoGetDB():
 
         return dict(data) if data else None
 
+    @_retry_stale_connection
     def go_add_new(self, table: str, data: dict):
         self._validate_table(table)
         payload = dict(data)
@@ -199,6 +224,7 @@ class PostgreSQLGoGetDB():
             cursor.execute(insert, tuple(payload.values()))
             conn.commit()
 
+    @_retry_stale_connection
     def go_update(self, table: str, data: dict):
         self._validate_table(table)
         payload = dict(data)
@@ -219,6 +245,7 @@ class PostgreSQLGoGetDB():
             cursor.execute(update, tuple(update_data.values()) + (_id,))
             conn.commit()
 
+    @_retry_stale_connection
     def go_delete_it(self, table: str, data: dict):
         self._validate_table(table)
         filters = dict(data)
@@ -233,6 +260,7 @@ class PostgreSQLGoGetDB():
             cursor.execute(f"DELETE FROM {self._qt(table)} WHERE {where}", tuple(filters.values()))
             conn.commit()
 
+    @_retry_stale_connection
     def go_delete_by(self, table: str, params: dict):
         self._validate_table(table)
         safe_params = dict(params)
