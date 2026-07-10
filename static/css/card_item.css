@@ -133,7 +133,7 @@
 .card-item-saved-row .card-item-name-wrapper {
     width: var(--card-item-total-width);
     min-width: 0;
-    max-width: var(--card-item-total-width);
+    max-width: 100%;
 }
 
 .card-item-saved-row .card-item-name-wrapper .card-item-input {
@@ -164,8 +164,8 @@
 
 .card-item-description-field {
     width: var(--card-item-total-width);
-    min-width: var(--card-item-total-width);
-    max-width: var(--card-item-total-width);
+    min-width: 0;
+    max-width: 100%;
 }
 
 /* ── Input ─────────────────────────────────────────────────────────────────── */
@@ -340,18 +340,6 @@
 
     .card-item-top-row {
         flex-wrap: nowrap;
-        max-width: 19.75rem;
-    }
-
-    .card-item-description-field {
-        width: 100%;
-        min-width: 0;
-        max-width: 19.75rem;
-    }
-
-    .card-item-saved-row .card-item-name-wrapper {
-        width: 100%;
-        min-width: 0;
         max-width: 19.75rem;
     }
 
