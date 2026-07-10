@@ -1,8 +1,1 @@
-{% if is_guest is defined and is_guest and character and character.name %}
-    {% set navbar_title_href = url_for('character_sheet') ~ '?landing=1' %}
-{% elif current_user.is_authenticated and active_character_id is defined and active_character_id %}
-    {% set navbar_title_href = url_for('character_sheet') ~ '?character_id=' ~ active_character_id %}
-{% else %}
-    {% set navbar_title_href = url_for('character_sheet') %}
-{% endif %}
-<a class="site-navbar-title" href="{{ navbar_title_href }}"><span class="site-navbar-title-outline-word">Julie's</span> <span class="site-navbar-title-asterisk-word">Demiplane</span></a>
+<a class="site-navbar-title" href="{{ url_for('character_sheet') }}"><span class="site-navbar-title-outline-word">Julie's</span> <span class="site-navbar-title-asterisk-word">Demiplane</span></a>

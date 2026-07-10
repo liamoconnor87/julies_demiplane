@@ -23,13 +23,17 @@ def register_main_routes(app, db):
             character_id = sheet.character_id
             is_new_character = not data['character'].get('name')
             guest_name = str(data['character'].get('name') or '').strip()
-            landing_requested = (request.args.get('landing') or '').strip() == '1'
+            # A guest only ever has one (session-bound) character, so this is never
+            # looked up — its mere presence just signals "go to the sheet", same as
+            # character_id does for authenticated users. The session cookie alone
+            # still determines which character actually loads.
+            character_id_requested = bool((request.args.get('character_id') or '').strip())
 
             # Landing panel is visible for first-time guests, or when a named guest
-            # explicitly returns to landing mode via the navbar title.
-            show_guest_landing_panel = is_new_character or (landing_requested and bool(guest_name))
+            # visits the bare homepage instead of following a "go to your character" link.
+            show_guest_landing_panel = is_new_character or (not character_id_requested and bool(guest_name))
             show_guest_name_entry = is_new_character
-            guest_show_sheet = not (landing_requested and bool(guest_name))
+            guest_show_sheet = is_new_character or (character_id_requested and bool(guest_name))
 
             return render_template(
                 'index.html',
@@ -64,10 +68,6 @@ def register_main_routes(app, db):
         user_theme = UserTheme.get_by_user_id(db, current_user.id)
         character_id = request.args.get('character_id')
 
-        # If no character_id specified, default to first owned character
-        if not character_id and characters:
-            character_id = characters[0]['id']
-
         # Verify ownership
         if character_id and not User.owns_character(db, current_user.id, character_id):
             abort(403)
@@ -75,7 +75,8 @@ def register_main_routes(app, db):
         active_character_id = character_id
 
         # ── Unsaved new character (no DB row yet) ──────────────────────────────
-        if request.args.get('new') == 'true':
+        # Also covers a characterless account landing on '/' — same blank-slate view.
+        if request.args.get('new') == 'true' or (not character_id and not characters):
             blank_character = {
                 'id': None, 'name': None, 'level': 0,
                 'race': None, 'background': None, 'alignment': None,
@@ -118,6 +119,7 @@ def register_main_routes(app, db):
                 at_character_limit=at_character_limit,
                 is_guest=False,
                 character=None,
+                first_character=characters[0],
                 trackers=[],
                 user_theme=user_theme,
             )

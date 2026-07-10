@@ -102,14 +102,6 @@ body.guest-page {
     max-width: none;
 }
 
-/* ── Auth empty state ───────────────────────────────────────────────────── */
-.auth-empty-state {
-    text-align: center;
-    padding: 4rem 1rem;
-    color: var(--secondary-color-dark);
-    font-size: 1.1rem;
-}
-
 .site-navbar-title {
     display: inline-flex;
     align-items: center;
@@ -174,6 +166,10 @@ body.guest-page {
 
 #guest-landing-panel:empty {
     margin-bottom: 0;
+}
+
+#auth-landing-panel {
+    margin-bottom: 0.85rem;
 }
 
 .guest-landing-panel-card {
