@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Julie's Demiplane</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
         {% set canonical_url = request.url_root.rstrip('/') ~ '/' %}
         <meta name="description" content="Julie's Demiplane is a browser-based D&D 5e character sheet with live trackers, buffs, inventory management, and quick autosave editing.">
         <link rel="canonical" href="{{ canonical_url }}">
@@ -77,17 +78,24 @@
 
 <body class="{% if is_guest is defined and is_guest %}guest-page{% endif %}">
 
+    <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;">
+        <defs>
+            <path id="rune-shape" fill-rule="evenodd" clip-rule="evenodd"
+                d="M -1.2 -0.5 L 98.46 -0.5 L 48.63 111.62 Z M 21.2 10.5 L 81.54 10.5 L 51.37 78.38 Z" />
+            <path id="rune-outer" d="M -1.2 -0.5 L 98.46 -0.5 L 48.63 111.62 Z" />
+            <clipPath id="green-outer-clip">
+                <use href="#rune-outer" />
+            </clipPath>
+            <clipPath id="purple-outer-clip">
+                <use href="#rune-outer" transform="translate(39,0)" />
+            </clipPath>
+        </defs>
+    </svg>
+
     <div id="auth-area">
     <nav class="site-navbar">
         <div class="page-container">
-            {% if is_guest is defined and is_guest and character and character.name %}
-                {% set navbar_title_href = '/?landing=1' %}
-            {% elif current_user.is_authenticated and active_character_id %}
-                {% set navbar_title_href = '/?character_id=' ~ active_character_id %}
-            {% else %}
-                {% set navbar_title_href = '/' %}
-            {% endif %}
-            <a class="site-navbar-title" href="{{ navbar_title_href }}"><span class="site-navbar-title-outline-word">Julie's</span> <span class="site-navbar-title-asterisk-word">Demiplane</span></a>
+            {% include 'components/ui/navbar_brand.html' %}
             {% include 'components/auth/auth_dropdown.html' %}
         </div>
     </nav>
@@ -260,6 +268,9 @@
                     aria-label="webDevLiam Website"><strong>webDevLiam</strong></a> <a href="https://github.com/liamoconnor87" target="_blank"
                     rel="noopener noreferrer" aria-label="My GitHub Page"><i class="fa-brands fa-github"
                         aria-hidden="true"></i></a></p>
+        </div>
+        <div class="site-footer-rune" aria-hidden="true">
+            {% include 'components/ui/rune_partition.html' %}
         </div>
         <div class="site-footer-left">
             <p><a href="https://buymeacoffee.com/webdevliam" target="_blank" rel="noopener noreferrer" aria-label="Buy Me a Coffee">Buy me a coffee :)</a></p>

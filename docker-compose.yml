@@ -5,7 +5,7 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ./misc/data:/app/misc/data
+      - ./db/data:/app/db/data
       - flask_session_data:/app/flask_session
     environment:
       - SECRET_KEY=${SECRET_KEY:?SECRET_KEY must be set}

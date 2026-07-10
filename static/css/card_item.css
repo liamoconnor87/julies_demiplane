@@ -73,6 +73,27 @@
     margin-bottom: 0.75rem;
 }
 
+.card-item-saved-row .card-item-description-field {
+    margin-bottom: 0;
+}
+
+.card-item-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--card-item-total-width);
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-top: 0;
+    padding: 0.5rem 0;
+    background: var(--field-bg-colour);
+}
+
+.card-item-footer svg {
+    height: 1rem;
+    width: auto;
+}
+
 .card-item-top-row {
     display: flex;
     flex-direction: row;
