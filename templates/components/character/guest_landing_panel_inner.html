@@ -10,7 +10,7 @@
         Sign up to save your character permanently, you can add more characters, add inventory, build trackers and customise the colours!
         {% else %}
         Go to your character:
-        <a class="guest-landing-link" href="/">"{{ guest_character_name or 'New Character' }}"</a>
+        <a class="guest-landing-link" href="/?character_id={{ character_id }}">"{{ guest_character_name or 'New Character' }}"</a>
         {% endif %}
     </p>
 </div>

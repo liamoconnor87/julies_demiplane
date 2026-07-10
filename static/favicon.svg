@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3 -2 142 116">
+  <defs>
+    <path id="rune-shape" fill-rule="evenodd" clip-rule="evenodd"
+      d="M -1.2 -0.5 L 98.46 -0.5 L 48.63 111.62 Z M 21.2 10.5 L 81.54 10.5 L 51.37 78.38 Z" />
+    <path id="rune-outer" d="M -1.2 -0.5 L 98.46 -0.5 L 48.63 111.62 Z" />
+    <clipPath id="green-outer-clip">
+      <use href="#rune-outer" />
+    </clipPath>
+    <clipPath id="purple-outer-clip">
+      <use href="#rune-outer" transform="translate(39,0)" />
+    </clipPath>
+  </defs>
+  <use href="#rune-shape" fill="#00bd5b" />
+  <use href="#rune-shape" fill="#4b0d72" transform="translate(39,0)" />
+  <g clip-path="url(#green-outer-clip)">
+    <use href="#rune-shape" fill="#ff00ea" transform="translate(39,0)" />
+  </g>
+  <g clip-path="url(#purple-outer-clip)">
+    <use href="#rune-shape" fill="#ff00ea" />
+  </g>
+</svg>

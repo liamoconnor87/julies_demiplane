@@ -15,6 +15,10 @@
     <div class="card-item-field card-item-description-field">
         <textarea id="feat_and_trait-description-{{ feat.id }}"
                   name="feat_and_trait-description-{{ feat.id }}" rows="1" class="field-input card-item-input card-item-description-input feat-description-input"
-                  data-feat-id="{{ feat.id }}">{{ feat.description }}</textarea>
+                  data-feat-id="{{ feat.id }}">{{ feat.description or '' }}</textarea>
+    </div>
+
+    <div class="card-item-footer" aria-hidden="true">
+        {% include 'components/ui/rune_partition.html' %}
     </div>
 </div>

@@ -386,7 +386,7 @@
     display: inline-block;
     width: var(--tracker-entry-height);
     height: var(--tracker-entry-height);
-    border: 1px solid var(--field-bg-colour);
+    border: 1px solid var(--title-colour);
     background: transparent;
     cursor: pointer;
     vertical-align: middle;

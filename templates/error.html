@@ -4,10 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ status_code }} | Julie's Demiplane</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tourney:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dnd_sheet.css') }}">
 
     <style id="user-theme-vars">
@@ -30,27 +32,12 @@
     </style>
 
     <style>
-        .error-page::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at 15% 0%, rgba(0, 0, 0, 0.22), transparent 55%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
         .error-page .site-navbar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-        }
-
-        .error-page main,
-        .error-page .site-footer {
-            position: relative;
-            z-index: 1;
         }
 
         .error-page .site-navbar .page-container {
@@ -201,12 +188,23 @@
     </style>
 </head>
 <body class="guest-page error-page">
+    <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;">
+        <defs>
+            <path id="rune-shape" fill-rule="evenodd" clip-rule="evenodd"
+                d="M -1.2 -0.5 L 98.46 -0.5 L 48.63 111.62 Z M 21.2 10.5 L 81.54 10.5 L 51.37 78.38 Z" />
+            <path id="rune-outer" d="M -1.2 -0.5 L 98.46 -0.5 L 48.63 111.62 Z" />
+            <clipPath id="green-outer-clip">
+                <use href="#rune-outer" />
+            </clipPath>
+            <clipPath id="purple-outer-clip">
+                <use href="#rune-outer" transform="translate(39,0)" />
+            </clipPath>
+        </defs>
+    </svg>
+
     <nav class="site-navbar" aria-label="Site navigation">
         <div class="page-container">
-            <a class="site-navbar-title" href="{{ url_for('character_sheet') }}">
-                <span class="site-navbar-title-outline-word">Julie's</span>
-                <span class="site-navbar-title-asterisk-word">Demiplane</span>
-            </a>
+            {% include 'components/ui/navbar_brand.html' %}
             <span class="error-navbar-right" aria-label="HTTP status">Error {{ status_code }}</span>
         </div>
     </nav>
@@ -227,13 +225,6 @@
         </section>
     </main>
 
-    <footer class="site-footer" aria-label="Site footer links">
-        <div class="site-footer-right">
-            <p>Created by <a class="liam-link" href="https://www.webdevliam.uk" target="_blank" rel="noopener noreferrer">webDevLiam</a></p>
-        </div>
-        <div class="site-footer-left">
-            <p><a href="https://buymeacoffee.com/webdevliam" target="_blank" rel="noopener noreferrer">Buy me a coffee :)</a></p>
-        </div>
-    </footer>
+    {% include 'components/ui/site_footer.html' %}
 </body>
 </html>

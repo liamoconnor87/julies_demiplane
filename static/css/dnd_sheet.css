@@ -68,6 +68,7 @@ body {
     padding-bottom: 0;
 }
 
+
 body.guest-page {
     padding-top: calc(var(--navbar-height) + env(safe-area-inset-top));
 }
@@ -101,15 +102,10 @@ body.guest-page {
     max-width: none;
 }
 
-/* ── Auth empty state ───────────────────────────────────────────────────── */
-.auth-empty-state {
-    text-align: center;
-    padding: 4rem 1rem;
-    color: var(--secondary-color-dark);
-    font-size: 1.1rem;
-}
-
 .site-navbar-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     color: var(--navbar-text-colour);
     font-family: "Tourney", sans-serif !important;
     font-optical-sizing: auto;
@@ -119,6 +115,12 @@ body.guest-page {
     font-size: 2rem;
     padding: 0;
     text-decoration: none;
+}
+
+.navbar-rune {
+    height: 3.4rem;
+    width: auto;
+    flex: 0 0 auto;
 }
 
 .site-navbar-title-outline-word {
@@ -164,6 +166,10 @@ body.guest-page {
 
 #guest-landing-panel:empty {
     margin-bottom: 0;
+}
+
+#auth-landing-panel {
+    margin-bottom: 0.85rem;
 }
 
 .guest-landing-panel-card {
@@ -538,13 +544,14 @@ h4 {
 
 
 .site-footer {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
     gap: 0.75rem;
-    padding: 0 0.5rem;
+    padding: 0.3rem 0.5rem;
     font-size: 0.78rem;
     margin-top: auto;
+    background: var(--field-bg-colour);
 }
 
 .site-footer p {
@@ -552,13 +559,14 @@ h4 {
 }
 
 .site-footer-right {
-    color: var(--title-colour);
+    justify-self: start;
+    color: var(--text-colour-three);
 }
 
 .site-footer-right a,
 .site-footer-right i,
 .site-footer-right .liam-link {
-    color: var(--title-colour);
+    color: var(--text-colour-three);
     text-decoration: none;
 }
 
@@ -579,15 +587,30 @@ h4 {
     color: var(--text-colour-one);
 }
 
+.site-footer-left {
+    justify-self: end;
+}
+
 .site-footer-left a {
-    color: var(--title-colour);
+    color: var(--text-colour-three);
     text-decoration: none;
     font-weight: 600;
 }
 
+.site-footer-rune {
+    justify-self: center;
+    display: flex;
+    align-items: center;
+}
+
+.site-footer-rune svg {
+    height: 1rem;
+    width: auto;
+}
+
 @media (max-width: 700px) {
     .site-footer {
-        padding: 0 0.35rem;
+        padding: 0.25rem 0.35rem;
         font-size: 0.72rem;
     }
 }

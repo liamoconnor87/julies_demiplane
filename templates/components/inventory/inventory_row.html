@@ -38,4 +38,8 @@
                   name="inventory-description-{{ item.id }}" rows="1" class="field-input card-item-input card-item-description-input inventory-description-input"
                   data-inventory-id="{{ item.id }}">{{ item.description or '' }}</textarea>
     </div>
+
+    <div class="card-item-footer" aria-hidden="true">
+        {% include 'components/ui/rune_partition.html' %}
+    </div>
 </div>

@@ -1,7 +1,11 @@
 {# Character Basic Information Component #}
 <div class="character-info-section">
     <h4>Character</h4>
+    {% if is_new_character %}
+    <p class="section-help-text">Enter your character's name to get started.</p>
+    {% else %}
     <p class="section-help-text">Set your core details and passive stats. Fields save automatically as you type.</p>
+    {% endif %}
     {# Hidden ID field #}
     <input type="hidden" id="character-id" name="character-id" value="{{ character.id or '' }}">
 
