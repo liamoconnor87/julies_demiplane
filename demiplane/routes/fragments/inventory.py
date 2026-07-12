@@ -56,12 +56,18 @@ def register_inventory_fragment_routes(app, db, limiter):
     def update_inventory_item(character_id: str, inventory_id: str):
         name = request.form.get(f'inventory-name-{inventory_id}', '')
         description = request.form.get(f'inventory-description-{inventory_id}', '')
+        quantity = request.form.get(f'inventory-quantity-{inventory_id}')
         if not User.owns_character(db, current_user.id, character_id):
             abort(403)
         sheet = CharacterSheet(character_id=character_id)
-        item = sheet.update_single_inventory_item(character_id, inventory_id, name, description)
+        item = sheet.update_single_inventory_item(character_id, inventory_id, name, description, quantity)
         if not item:
             abort(400)
+        if item.get('deleted'):
+            return ('', 200, {
+                'HX-Retarget': f'#inventory-row-{inventory_id}',
+                'HX-Reswap': 'outerHTML',
+            })
 
         custom_buffs = sheet.fetch_custom_buffs_data()
         buff_target_options = sheet.fetch_buff_target_options_data()
@@ -72,37 +78,6 @@ def register_inventory_fragment_routes(app, db, limiter):
             custom_buffs=custom_buffs,
             custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
             buff_target_options=buff_target_options,
-        )
-
-    @app.route('/characters/<character_id>/inventory/<inventory_id>/step', methods=['POST'])
-    @login_required
-    def step_inventory_item(character_id: str, inventory_id: str):
-        if not User.owns_character(db, current_user.id, character_id):
-            abort(403)
-
-        try:
-            step = int(request.form.get('inventory-step', '0'))
-        except (TypeError, ValueError):
-            step = 0
-
-        # Clamp step size defensively.
-        step = max(-100, min(100, step))
-        if step == 0:
-            abort(400)
-
-        sheet = CharacterSheet(character_id=character_id)
-        item = sheet.step_single_inventory_item(character_id, inventory_id, step)
-
-        if item is None:
-            return ('', 200, {
-                'HX-Retarget': f'#inventory-row-{inventory_id}',
-                'HX-Reswap': 'outerHTML',
-            })
-
-        return render_template(
-            'components/inventory/inventory_quantity_response.html',
-            item=item,
-            character_id=character_id,
         )
 
     @app.route('/characters/<character_id>/inventory/add', methods=['POST'])
