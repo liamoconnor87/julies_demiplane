@@ -4,9 +4,9 @@ import string
 from flask import Flask, redirect, session, url_for
 from flask_login import LoginManager, current_user
 
-from auth.models import User
-from auth.routes import auth_bp
-from auth.validators import generate_captcha_image
+from demiplane.auth.models import User
+from demiplane.auth.routes import auth_bp
+from demiplane.auth.validators import generate_captcha_image
 
 
 def setup_auth(app: Flask, db, limiter=None):

@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from typing import Optional
-from functions.functions import uuid
+from demiplane.functions.functions import uuid
 from db.seed import SEED, SEED_ROWS
 from go_get_it.tables import TABLES
 from db.config import DB_ROUTE

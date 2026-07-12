@@ -10,10 +10,8 @@
             {% include 'components/inventory/inventory_row.html' %}
         {% endfor %}
     {% endif %}
-    </div>
-
     {% if not inventory_at_capacity %}
-    <div class="card-item-row card-item-add-row">
+    <div class="card-item-row card-item-add-row" id="add-inventory-row">
         <div class="card-item-top-row">
             {% set btn_wrapper_class = 'card-item-field card-item-action-field' %}
             {% set btn_btn_class = 'card-item-btn' %}
@@ -36,8 +34,8 @@
             {% set btn_wrapper_id = 'add-inventory-submit-btn-wrapper' %}
             {% set btn_id = 'inventory-add' %}
             {% set btn_hx_post = '/characters/' ~ character_id ~ '/inventory/add' %}
-            {% set btn_hx_target = '#inventory-list' %}
-            {% set btn_hx_swap = 'beforeend' %}
+            {% set btn_hx_target = '#add-inventory-row' %}
+            {% set btn_hx_swap = 'beforebegin' %}
             {% set btn_hx_include = '#inventory-name, #inventory-description, #inventory-quantity' %}
             {% set btn_icon = '<i class="bi bi-check-lg"></i>' %}
             {% set btn_label = 'Add' %}
@@ -60,4 +58,5 @@
         </div>
     </div>
     {% endif %}
+    </div>
 </div>

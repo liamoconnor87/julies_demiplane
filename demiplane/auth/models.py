@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import sqlite3
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from functions.functions import uuid
+from demiplane.functions.functions import uuid
 
 
 class User(UserMixin):

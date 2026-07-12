@@ -1,8 +1,8 @@
 from flask import Blueprint, abort, render_template, request
 from flask_login import current_user, login_required
 
-from auth.models import UserTheme
-from auth.validators import is_valid_css_colour
+from demiplane.auth.models import UserTheme
+from demiplane.auth.validators import is_valid_css_colour
 
 
 def register_user_theme_routes(app, db):

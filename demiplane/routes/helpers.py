@@ -4,9 +4,9 @@ from urllib.parse import urlparse
 from flask import abort, request
 from flask_login import current_user
 
-from character_sheet.character_sheet import CharacterSheet
-from character_sheet.custom_buff import BuffProcessor
-from character_sheet import guest_character as guest
+from demiplane.services.character_sheet import CharacterSheet
+from demiplane.services.custom_buff import BuffProcessor
+from demiplane.services import guest_character as guest
 
 
 def guest_or_login_required(f):

@@ -1,8 +1,8 @@
 from flask import render_template
 from flask_login import current_user
 
-from auth.models import UserTheme
-from routes.helpers import is_htmx_request
+from demiplane.auth.models import UserTheme
+from demiplane.routes.helpers import is_htmx_request
 
 
 def register_error_handlers(app, db):

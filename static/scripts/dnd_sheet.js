@@ -178,7 +178,7 @@ window.addEventListener("load", () => {
             return;
         }
 
-        if (target.id === 'inventory-list') {
+        if (target.id === 'inventory-list' || target.id === 'add-inventory-row') {
             // Clear and close the add-inventory form after a successful add
             const nameInput = document.getElementById('inventory-name');
             const descInput = document.getElementById('inventory-description');

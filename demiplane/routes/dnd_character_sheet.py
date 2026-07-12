@@ -4,10 +4,10 @@ from xml.sax.saxutils import escape
 from flask import abort, make_response, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from auth.models import User
-from character_sheet.character_sheet import CharacterSheet
-from character_sheet import guest_character as guest
-from functions.functions import uuid as generate_uuid
+from demiplane.auth.models import User
+from demiplane.services.character_sheet import CharacterSheet
+from demiplane.services import guest_character as guest
+from demiplane.functions.functions import uuid as generate_uuid
 
 
 def register_dnd_character_sheet_routes(app, db, limiter):

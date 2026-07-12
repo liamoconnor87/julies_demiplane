@@ -11,7 +11,7 @@ from flask_limiter.util import get_remote_address
 from flask_talisman import Talisman
 
 from go_get_it.go_get_it import GoGetDB
-from auth import setup_auth
+from demiplane.auth import setup_auth
 from db.config import (
     DEBUG,
     FORCE_HTTPS,
@@ -24,12 +24,12 @@ from db.config import (
     RATE_LIMIT_STORAGE_URI,
 )
 from db.monitoring import register_monitoring
-from routes.admin import register_admin_routes
-from routes.dnd_character_sheet import register_dnd_character_sheet_routes
-from routes.errors import register_error_handlers
-from routes.fragments import register_fragment_routes
-from routes.main import register_main_routes
-from routes.user_theme import register_user_theme_routes
+from demiplane.routes.admin import register_admin_routes
+from demiplane.routes.dnd_character_sheet import register_dnd_character_sheet_routes
+from demiplane.routes.errors import register_error_handlers
+from demiplane.routes.fragments import register_fragment_routes
+from demiplane.routes.main import register_main_routes
+from demiplane.routes.user_theme import register_user_theme_routes
 
 # ── App creation ──────────────────────────────────────────────────────────────
 app = Flask(__name__)

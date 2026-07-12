@@ -4,8 +4,8 @@ from urllib.parse import urlparse
 from flask import abort, redirect, render_template, request
 from flask_login import current_user
 
-from functions.functions import uuid as generate_uuid
-from functions.validators import is_valid_uuid
+from demiplane.functions.functions import uuid as generate_uuid
+from demiplane.functions.validators import is_valid_uuid
 from go_get_it.tables import TABLES
 
 

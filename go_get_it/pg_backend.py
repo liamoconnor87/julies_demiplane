@@ -10,7 +10,7 @@ import psycopg2.extras
 import psycopg2.errors
 from psycopg2.pool import ThreadedConnectionPool
 
-from functions.functions import uuid
+from demiplane.functions.functions import uuid
 from db.seed import SEED, SEED_ROWS
 from go_get_it.tables import TABLES
 

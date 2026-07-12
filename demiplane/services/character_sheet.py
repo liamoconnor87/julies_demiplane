@@ -1,8 +1,8 @@
 from typing import Optional
 from go_get_it.go_get_it import GoGetDB
-from character_sheet import guest_character as guest_session
-from functions.functions import uuid
-from functions.validators import (
+from demiplane.services import guest_character as guest_session
+from demiplane.functions.functions import uuid
+from demiplane.functions.validators import (
     sanitize_str, sanitize_optional_str,
      clamp_int, parse_optional_int,
     is_valid_uuid,
@@ -48,7 +48,6 @@ class CharacterSheet:
         "charisma_skills": ["saving_throw", "deception", "intimidation", "performance", "persuasion"],
     }
 
-    # TODO: Add validation
     def __init__(self, character_id: Optional[str] = None, guest_character: bool = False):
         self.character_id = character_id
         self.guest_character = guest_character
@@ -73,7 +72,6 @@ class CharacterSheet:
     def create_form(self):
         """
         Returns structured data for the character sheet instead of HTML strings.
-        This data will be passed to Jinja2 templates for rendering.
         """
         # Get character data
         character = self.store.go_get_one('character', {'id': self.character_id}) if self.character_id else {}
