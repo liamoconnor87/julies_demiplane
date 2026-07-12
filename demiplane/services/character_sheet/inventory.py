@@ -5,6 +5,9 @@ from .constants import INVENTORY_MAX
 
 
 class InventoryMixin:
+    def fetch_inventory_data(self):
+        return self._rows('inventory', {'character_id': self.character_id})
+
     def save_inventory_values(self, character_id: str, request_form):
         table_name = 'inventory'
         name = sanitize_optional_str(request_form.get(f'{table_name}-name'), max_len=255)

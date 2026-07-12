@@ -5,6 +5,9 @@ from .constants import CUSTOM_STAT_MAX
 
 
 class CustomStatsMixin:
+    def fetch_custom_stats_data(self):
+        return self._rows('custom_stat', {'character_id': self.character_id})
+
     def save_custom_stat_values(self, character_id: str, request_form):
         table_name = 'custom_stat'
         name_prefix = f'{table_name}-name-'

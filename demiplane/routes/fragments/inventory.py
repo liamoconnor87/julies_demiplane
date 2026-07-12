@@ -2,8 +2,7 @@ from flask import abort, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from demiplane.auth.models import User
-from demiplane.services.character_sheet import CharacterSheet
-from demiplane.routes.helpers import build_character_sheet_data
+from demiplane.services.character_sheet import CharacterSheet, INVENTORY_MAX, CUSTOM_BUFF_MAX
 
 
 def register_inventory_fragment_routes(app, db, limiter):
@@ -15,14 +14,16 @@ def register_inventory_fragment_routes(app, db, limiter):
         sheet = CharacterSheet(character_id=character_id)
         sheet.save_inventory_values(character_id, request.form)
 
-        _, data = build_character_sheet_data(character_id)
+        inventory = sheet.fetch_inventory_data()
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        buff_target_options = sheet.fetch_buff_target_options_data(inventory=inventory)
         return render_template(
             'components/inventory/inventory_change_response.html',
-            inventory=data['inventory'],
-            inventory_at_capacity=data['inventory_at_capacity'],
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
+            inventory=inventory,
+            inventory_at_capacity=len(inventory) >= INVENTORY_MAX,
+            custom_buffs=custom_buffs,
+            custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
+            buff_target_options=buff_target_options,
             character_id=character_id,
         )
 
@@ -36,14 +37,17 @@ def register_inventory_fragment_routes(app, db, limiter):
 
         db.go_delete_it('inventory', {'id': inventory_id, 'character_id': character_id})
 
-        _, data = build_character_sheet_data(character_id)
+        sheet = CharacterSheet(character_id=character_id)
+        inventory = sheet.fetch_inventory_data()
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        buff_target_options = sheet.fetch_buff_target_options_data(inventory=inventory)
         return render_template(
             'components/inventory/inventory_change_response.html',
-            inventory=data['inventory'],
-            inventory_at_capacity=data['inventory_at_capacity'],
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
+            inventory=inventory,
+            inventory_at_capacity=len(inventory) >= INVENTORY_MAX,
+            custom_buffs=custom_buffs,
+            custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
+            buff_target_options=buff_target_options,
             character_id=character_id,
         )
 
@@ -59,15 +63,15 @@ def register_inventory_fragment_routes(app, db, limiter):
         if not item:
             abort(400)
 
-        _, data = build_character_sheet_data(character_id)
-        rendered_item = next((entry for entry in data['inventory'] if entry.get('id') == inventory_id), item)
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        buff_target_options = sheet.fetch_buff_target_options_data()
         return render_template(
             'components/inventory/inventory_row_change_response.html',
-            item=rendered_item,
+            item=item,
             character_id=character_id,
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
+            custom_buffs=custom_buffs,
+            custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
+            buff_target_options=buff_target_options,
         )
 
     @app.route('/characters/<character_id>/inventory/<inventory_id>/step', methods=['POST'])
@@ -95,12 +99,9 @@ def register_inventory_fragment_routes(app, db, limiter):
                 'HX-Reswap': 'outerHTML',
             })
 
-        _, data = build_character_sheet_data(character_id)
-        rendered_item = next((entry for entry in data['inventory'] if entry.get('id') == inventory_id), item)
-
         return render_template(
             'components/inventory/inventory_quantity_response.html',
-            item=rendered_item,
+            item=item,
             character_id=character_id,
         )
 
@@ -117,13 +118,13 @@ def register_inventory_fragment_routes(app, db, limiter):
         if not item:
             abort(400)
 
-        _, data = build_character_sheet_data(character_id)
-        rendered_item = next((entry for entry in data['inventory'] if entry.get('id') == item.get('id')), item)
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        buff_target_options = sheet.fetch_buff_target_options_data()
         return render_template(
             'components/inventory/inventory_row_change_response.html',
-            item=rendered_item,
+            item=item,
             character_id=character_id,
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
+            custom_buffs=custom_buffs,
+            custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
+            buff_target_options=buff_target_options,
         )

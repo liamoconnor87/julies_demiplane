@@ -5,6 +5,9 @@ from .constants import CUSTOM_BUFF_MAX
 
 
 class CustomBuffsMixin:
+    def fetch_custom_buffs_data(self):
+        return self._get_custom_buffs()
+
     def _get_custom_buffs(self):
         custom_buffs = self._rows('custom_buff', {'character_id': self.character_id})
         custom_buff_tables = self._rows('custom_buff_to_stat_table', {'character_id': self.character_id})

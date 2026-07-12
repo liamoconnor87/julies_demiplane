@@ -3,6 +3,27 @@ from demiplane.functions.validators import clamp_int, is_valid_uuid
 
 
 class ClassesMixin:
+    def fetch_classes_data(self, class_levels=None):
+        """Returns (classes, class_options) matching create_form()'s existing keys."""
+        all_classes = self.fetch_all_classes()
+        classes = [dict(c) for c in (class_levels if class_levels is not None else self.fetch_class_levels())]
+
+        assigned_class_ids = [char_class['class_id'] for char_class in classes]
+        class_options = [c for c in all_classes if c['id'] not in assigned_class_ids]
+
+        for char_class in classes:
+            matching_class = next((c for c in all_classes if c['id'] == char_class['class_id']), None)
+            if matching_class:
+                char_class['class_name'] = matching_class['name']
+
+        classes.sort(
+            key=lambda char_class: (
+                -(int(char_class.get('level') or 0)),
+                (char_class.get('class_name') or '')
+            )
+        )
+        return classes, class_options
+
     def save_class_to_character_values(self, character_id: str, request_form):
         table_name = 'class_to_character'
 

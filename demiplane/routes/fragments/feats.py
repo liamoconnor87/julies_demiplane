@@ -2,9 +2,9 @@ from flask import abort, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from demiplane.auth.models import User
-from demiplane.services.character_sheet import CharacterSheet
+from demiplane.services.character_sheet import CharacterSheet, FEAT_TRAIT_MAX, CUSTOM_BUFF_MAX
 from demiplane.services import guest_character as guest
-from demiplane.routes.helpers import guest_or_login_required, build_character_sheet_data, build_guest_character_sheet_data
+from demiplane.routes.helpers import guest_or_login_required, build_guest_character_sheet_data
 
 
 def register_feats_fragment_routes(app, db, limiter):
@@ -28,15 +28,17 @@ def register_feats_fragment_routes(app, db, limiter):
         sheet = CharacterSheet(character_id=character_id)
         sheet.save_feat_and_trait_values(character_id, request.form)
 
-        _, data = build_character_sheet_data(character_id)
+        feats_and_traits = sheet.fetch_feats_data()
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        buff_target_options = sheet.fetch_buff_target_options_data(feats_and_traits=feats_and_traits)
         return render_template(
             'components/feats/feats_traits_change_response.html',
             character_id=character_id,
-            feats_and_traits=data['feats_and_traits'],
-            feats_and_traits_at_capacity=data['feats_and_traits_at_capacity'],
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
+            feats_and_traits=feats_and_traits,
+            feats_and_traits_at_capacity=len(feats_and_traits) >= FEAT_TRAIT_MAX,
+            custom_buffs=custom_buffs,
+            custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
+            buff_target_options=buff_target_options,
             is_guest=False,
         )
 
@@ -63,15 +65,17 @@ def register_feats_fragment_routes(app, db, limiter):
         sheet = CharacterSheet(character_id=character_id)
         sheet.remove_feat_and_trait(character_id, feat_and_trait_id)
 
-        _, data = build_character_sheet_data(character_id)
+        feats_and_traits = sheet.fetch_feats_data()
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        buff_target_options = sheet.fetch_buff_target_options_data(feats_and_traits=feats_and_traits)
         return render_template(
             'components/feats/feats_traits_change_response.html',
             character_id=character_id,
-            feats_and_traits=data['feats_and_traits'],
-            feats_and_traits_at_capacity=data['feats_and_traits_at_capacity'],
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
+            feats_and_traits=feats_and_traits,
+            feats_and_traits_at_capacity=len(feats_and_traits) >= FEAT_TRAIT_MAX,
+            custom_buffs=custom_buffs,
+            custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
+            buff_target_options=buff_target_options,
             is_guest=False,
         )
 
@@ -94,15 +98,15 @@ def register_feats_fragment_routes(app, db, limiter):
         if not feat:
             abort(400)
 
-        _, data = build_character_sheet_data(character_id)
-        rendered_feat = next((entry for entry in data['feats_and_traits'] if entry.get('id') == feat_and_trait_id), feat)
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        buff_target_options = sheet.fetch_buff_target_options_data()
         return render_template(
             'components/feats/feat_row_change_response.html',
-            feat=rendered_feat,
+            feat=feat,
             character_id=character_id,
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
+            custom_buffs=custom_buffs,
+            custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
+            buff_target_options=buff_target_options,
         )
 
     @app.route('/characters/<character_id>/feat-and-trait/add', methods=['POST'])
@@ -124,13 +128,13 @@ def register_feats_fragment_routes(app, db, limiter):
         if not feat:
             abort(400)
 
-        _, data = build_character_sheet_data(character_id)
-        rendered_feat = next((entry for entry in data['feats_and_traits'] if entry.get('id') == feat.get('id')), feat)
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        buff_target_options = sheet.fetch_buff_target_options_data()
         return render_template(
             'components/feats/feat_row_change_response.html',
-            feat=rendered_feat,
+            feat=feat,
             character_id=character_id,
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
+            custom_buffs=custom_buffs,
+            custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
+            buff_target_options=buff_target_options,
         )

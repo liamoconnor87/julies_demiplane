@@ -22,8 +22,10 @@ from db.config import (
     SESSION_LIFETIME_DAYS,
     SESSION_FILE_THRESHOLD,
     RATE_LIMIT_STORAGE_URI,
+    QUERY_DEBUG,
 )
 from db.monitoring import register_monitoring
+from db.query_counter import register_query_counting
 from demiplane.routes.admin import register_admin_routes
 from demiplane.routes.dnd_character_sheet import register_dnd_character_sheet_routes
 from demiplane.routes.errors import register_error_handlers
@@ -60,6 +62,8 @@ app.config['SESSION_COOKIE_SECURE'] = SESSION_COOKIE_SECURE
 Session(app)
 
 register_monitoring(app)
+if QUERY_DEBUG:
+    register_query_counting(app)
 
 # ── CSRF ──────────────────────────────────────────────────────────────────────
 CSRFProtect(app)

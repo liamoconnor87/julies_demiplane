@@ -2,10 +2,10 @@ from flask import abort, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from demiplane.auth.models import User
-from demiplane.services.character_sheet import CharacterSheet
+from demiplane.services.character_sheet import CharacterSheet, CUSTOM_STAT_MAX, CUSTOM_BUFF_MAX
 from demiplane.services.custom_buff import BuffProcessor
 from demiplane.services import guest_character as guest
-from demiplane.routes.helpers import guest_or_login_required, build_character_sheet_data, build_guest_character_sheet_data
+from demiplane.routes.helpers import guest_or_login_required, build_guest_character_sheet_data
 
 
 def register_custom_stats_fragment_routes(app, db, limiter):
@@ -24,8 +24,6 @@ def register_custom_stats_fragment_routes(app, db, limiter):
                 custom_buffs=data['custom_buffs'],
                 custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
                 buff_target_options=data['buff_target_options'],
-                class_options=data['class_options'],
-                classes=data['classes'],
                 character_id=character_id,
                 is_guest=True,
             )
@@ -34,16 +32,18 @@ def register_custom_stats_fragment_routes(app, db, limiter):
         sheet = CharacterSheet(character_id=character_id)
         sheet.save_custom_stat_values(character_id, request.form)
 
-        _, data = build_character_sheet_data(character_id)
+        custom_stats = sheet.fetch_custom_stats_data()
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        buff_target_options = sheet.fetch_buff_target_options_data(custom_stats=custom_stats)
+        BuffProcessor(character_id).transform_out({'custom_stats': custom_stats, 'custom_buffs': custom_buffs})
+
         return render_template(
             'components/stats/custom_stats_change_response.html',
-            custom_stats=data['custom_stats'],
-            custom_stats_at_capacity=data['custom_stats_at_capacity'],
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
-            class_options=data['class_options'],
-            classes=data['classes'],
+            custom_stats=custom_stats,
+            custom_stats_at_capacity=len(custom_stats) >= CUSTOM_STAT_MAX,
+            custom_buffs=custom_buffs,
+            custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
+            buff_target_options=buff_target_options,
             character_id=character_id,
             is_guest=False,
         )
@@ -81,12 +81,10 @@ def register_custom_stats_fragment_routes(app, db, limiter):
         if not updated_stat:
             abort(400)
 
-        _, data = build_character_sheet_data(character_id)
-        rendered_stat = next((s for s in data['custom_stats'] if s.get('id') == custom_stat_id), None)
-        if not rendered_stat:
-            abort(404)
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        BuffProcessor(character_id).transform_out({'custom_stats': [updated_stat], 'custom_buffs': custom_buffs})
 
-        return render_template('components/stats/custom_stat_row.html', stat=rendered_stat, character_id=character_id)
+        return render_template('components/stats/custom_stat_row.html', stat=updated_stat, character_id=character_id)
 
     @app.route('/characters/<character_id>/custom-stat/<custom_stat_id>/remove', methods=['POST'])
     @guest_or_login_required
@@ -104,8 +102,6 @@ def register_custom_stats_fragment_routes(app, db, limiter):
                 custom_buffs=data['custom_buffs'],
                 custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
                 buff_target_options=data['buff_target_options'],
-                class_options=data['class_options'],
-                classes=data['classes'],
                 is_guest=True,
             )
         if not User.owns_character(db, current_user.id, character_id):
@@ -116,16 +112,18 @@ def register_custom_stats_fragment_routes(app, db, limiter):
         sheet = CharacterSheet(character_id=character_id)
         sheet.remove_custom_stat(character_id, custom_stat_id)
 
-        _, data = build_character_sheet_data(character_id)
+        custom_stats = sheet.fetch_custom_stats_data()
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        buff_target_options = sheet.fetch_buff_target_options_data(custom_stats=custom_stats)
+        BuffProcessor(character_id).transform_out({'custom_stats': custom_stats, 'custom_buffs': custom_buffs})
+
         return render_template(
             'components/stats/custom_stats_change_response.html',
             character_id=character_id,
-            custom_stats=data['custom_stats'],
-            custom_stats_at_capacity=data['custom_stats_at_capacity'],
-            custom_buffs=data['custom_buffs'],
-            custom_buffs_at_capacity=data['custom_buffs_at_capacity'],
-            buff_target_options=data['buff_target_options'],
-            class_options=data['class_options'],
-            classes=data['classes'],
+            custom_stats=custom_stats,
+            custom_stats_at_capacity=len(custom_stats) >= CUSTOM_STAT_MAX,
+            custom_buffs=custom_buffs,
+            custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
+            buff_target_options=buff_target_options,
             is_guest=False,
         )

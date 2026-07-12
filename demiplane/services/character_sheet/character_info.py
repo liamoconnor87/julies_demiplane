@@ -3,7 +3,34 @@ from demiplane.functions.validators import sanitize_optional_str, parse_optional
 from demiplane.services import guest_character as guest_session
 
 
+def _to_int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
+
+
 class CharacterInfoMixin:
+    def fetch_character_info_data(self, class_levels=None):
+        """Character row + computed 'level' + 'current_health_points'."""
+        character = self.fetch_character_row()
+        if character:
+            if class_levels is None:
+                class_levels = self.fetch_class_levels()
+            character_level = character.get('level', 0)
+            for char_class in class_levels or []:
+                character_level += char_class.get('level', 0)
+            character['level'] = character_level
+            character['current_health_points'] = _to_int(character.get('health_points')) + _to_int(character.get('temporary_hit_points'))
+        return character
+
+    def fetch_combat_stats_data(self, character_row=None):
+        """Character row + 'current_health_points' only — no class_to_character query, no level."""
+        character = character_row if character_row is not None else self.fetch_character_row()
+        if character:
+            character['current_health_points'] = _to_int(character.get('health_points')) + _to_int(character.get('temporary_hit_points'))
+        return character
+
     def save_character_values(self, request_form) -> str:
         table_name = 'character'
         submitted_character_id = request_form.get(f'{table_name}-id')

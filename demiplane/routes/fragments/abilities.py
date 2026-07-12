@@ -5,7 +5,7 @@ from demiplane.auth.models import User
 from demiplane.services.character_sheet import CharacterSheet
 from demiplane.services.custom_buff import BuffProcessor
 from demiplane.services import guest_character as guest
-from demiplane.routes.helpers import guest_or_login_required, build_character_sheet_data, build_guest_character_sheet_data
+from demiplane.routes.helpers import guest_or_login_required, build_guest_character_sheet_data
 
 
 def register_abilities_fragment_routes(app, db, limiter):
@@ -29,10 +29,14 @@ def register_abilities_fragment_routes(app, db, limiter):
         transformed_form = BuffProcessor(character_id).transform_in(request.form)
         sheet.save_ability_values(character_id, transformed_form)
 
-        _, data = build_character_sheet_data(character_id)
+        abilities = sheet.fetch_abilities_data()
+        character = sheet.fetch_character_row()
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        BuffProcessor(character_id).transform_out({'character': character, 'abilities': abilities, 'custom_buffs': custom_buffs})
+
         return render_template(
             'components/abilities/abilities_section.html',
-            abilities=data['abilities'],
+            abilities=abilities,
             character_id=character_id,
             is_guest=False,
         )
@@ -69,10 +73,13 @@ def register_abilities_fragment_routes(app, db, limiter):
         transformed_form = BuffProcessor(character_id).transform_in(request.form)
         sheet.save_ability_values(character_id, transformed_form)
 
-        _, data = build_character_sheet_data(character_id)
-        ability_data = next((row for row in data['abilities'] if row.get('ability_name') == normalized_ability_name), None)
+        ability_data = sheet.fetch_single_ability_data(normalized_ability_name)
         if not ability_data:
             abort(404)
+
+        character = sheet.fetch_character_row()
+        custom_buffs = sheet.fetch_custom_buffs_data()
+        BuffProcessor(character_id).transform_out({'character': character, 'abilities': [ability_data], 'custom_buffs': custom_buffs})
 
         return render_template(
             'components/abilities/ability_row.html',

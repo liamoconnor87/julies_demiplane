@@ -5,6 +5,9 @@ from .constants import FEAT_TRAIT_MAX
 
 
 class FeatsMixin:
+    def fetch_feats_data(self):
+        return self._rows('feat_and_trait', {'character_id': self.character_id})
+
     def save_feat_and_trait_values(self, character_id: str, request_form):
         table_name = 'feat_and_trait'
 

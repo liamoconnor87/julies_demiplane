@@ -3,6 +3,29 @@ from demiplane.functions.validators import clamp_int, parse_optional_int, is_val
 
 
 class AbilitiesMixin:
+    def _build_ability_row(self, ability_name):
+        ability = self.store.go_get_one(ability_name, {"character_id": self.character_id}) or {}
+        skills = {}
+        if ability.get('id'):
+            skills = self.store.go_get_one(f"{ability_name}_skills", {f"{ability_name}_id": ability['id']}) or {}
+        skill_list = self.ABILITY_TO_SKILL_MAPPING[ability_name]
+        return {
+            'ability_name': ability_name,
+            'ability': ability,
+            'skills': skills,
+            'skill_list': skill_list,
+        }
+
+    def fetch_abilities_data(self):
+        """Fetch all 6 abilities + their skills."""
+        return [self._build_ability_row(ability_name) for ability_name in self.ABILITY_TO_SKILL_MAPPING]
+
+    def fetch_single_ability_data(self, ability_name):
+        """Fetch just one ability + its skills, or None if the name is unknown."""
+        if ability_name not in self.ABILITY_TO_SKILL_MAPPING:
+            return None
+        return self._build_ability_row(ability_name)
+
     def save_ability_values(self, character_id: str, request_form):
         import math
         character = self.store.go_get_one('character', {'id': character_id})

@@ -62,85 +62,46 @@ class CharacterSheetBase:
             return count_value
         return 0
 
+    def fetch_character_row(self):
+        """Fetch the bare character row, or {} if there's no character_id."""
+        return self.store.go_get_one('character', {'id': self.character_id}) if self.character_id else {}
+
+    def fetch_class_levels(self):
+        """Fetch this character's class_to_character rows (raw, unsorted, no class names attached)."""
+        return self._rows('class_to_character', {'character_id': self.character_id})
+
+    def fetch_all_classes(self):
+        """Fetch every class in the reference 'class' table."""
+        return self._rows('class')
+
+    def fetch_buff_target_options_data(self, custom_stats=None, feats_and_traits=None, inventory=None):
+        """Thin wrapper around _get_buff_target_options that fetches any missing piece itself."""
+        if custom_stats is None:
+            custom_stats = self.fetch_custom_stats_data()
+        if feats_and_traits is None:
+            feats_and_traits = self.fetch_feats_data()
+        if inventory is None:
+            inventory = self.fetch_inventory_data()
+        return self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
+
     def create_form(self):
         """
         Returns structured data for the character sheet instead of HTML strings.
         This data will be passed to Jinja2 templates for rendering.
         """
-        # Get character data
-        character = self.store.go_get_one('character', {'id': self.character_id}) if self.character_id else {}
+        # class_levels is shared between the character-level calc and the classes list
+        # so it's only ever queried once per call — do not let a future edit deep-copy
+        # this away "for safety"; fetch_classes_data already defends its own mutation.
+        class_levels = self.fetch_class_levels() if self.character_id else []
 
-        def _to_int(value):
-            try:
-                return int(value)
-            except (TypeError, ValueError):
-                return 0
-
-        # Calculate total character level from base + class levels
-        if character:
-            characters_class_levels = self.store.go_get_all('class_to_character', {'character_id': character.get('id')})
-            character_level = character.get('level', 0)
-
-            for char_class in characters_class_levels or []:
-                character_level += char_class.get('level', 0)
-
-            character['level'] = character_level
-            character['current_health_points'] = _to_int(character.get('health_points')) + _to_int(character.get('temporary_hit_points'))
-
-        # Get abilities and skills data
-        abilities_data = []
-        for ability_name in self.ABILITY_TO_SKILL_MAPPING:
-            ability = self.store.go_get_one(ability_name, {"character_id": self.character_id}) or {}
-
-            # Get skills for this ability
-            skills = {}
-            if ability.get('id'):
-                skills = self.store.go_get_one(f"{ability_name}_skills", {f"{ability_name}_id": ability['id']}) or {}
-
-            # Get skill list for this ability
-            skill_list = self.ABILITY_TO_SKILL_MAPPING[ability_name]
-
-            abilities_data.append({
-                'ability_name': ability_name,
-                'ability': ability,
-                'skills': skills,
-                'skill_list': skill_list
-            })
-
-        # Classes
-        all_classes = self._rows('class')
-        classes = self._rows('class_to_character', {'character_id': self.character_id})
-
-        # Get IDs of classes already assigned to this character
-        assigned_class_ids = [char_class['class_id'] for char_class in classes]
-
-        # Filter out classes that are already assigned
-        class_options = [c for c in all_classes if c['id'] not in assigned_class_ids]
-
-        # Match class IDs to class names
-        for char_class in classes:
-            matching_class = next((c for c in all_classes if c['id'] == char_class['class_id']), None)
-            if matching_class:
-                char_class['class_name'] = matching_class['name']
-
-        classes.sort(
-            key=lambda char_class: (
-                -(int(char_class.get('level') or 0)),
-                (char_class.get('class_name') or '')
-            )
-        )
-
-        # Feats & Traits
-        feats_and_traits = self._rows('feat_and_trait', {'character_id': self.character_id})
-
-        # Inventory
-        inventory = self._rows('inventory', {'character_id': self.character_id})
-
-        # Custom Stats
-        custom_stats = self._rows('custom_stat', {'character_id': self.character_id})
-
-        buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
-        custom_buffs = self._get_custom_buffs()
+        character = self.fetch_character_info_data(class_levels=class_levels)
+        abilities_data = self.fetch_abilities_data()
+        classes, class_options = self.fetch_classes_data(class_levels=class_levels)
+        feats_and_traits = self.fetch_feats_data()
+        inventory = self.fetch_inventory_data()
+        custom_stats = self.fetch_custom_stats_data()
+        buff_target_options = self.fetch_buff_target_options_data(custom_stats, feats_and_traits, inventory)
+        custom_buffs = self.fetch_custom_buffs_data()
 
         return {
             'character': character,

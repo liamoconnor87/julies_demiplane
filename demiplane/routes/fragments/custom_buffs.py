@@ -29,7 +29,6 @@ def register_custom_buffs_fragment_routes(app, db, limiter):
             abilities=data['abilities'],
             custom_stats=data['custom_stats'],
             custom_stats_at_capacity=data['custom_stats_at_capacity'],
-            classes=data['classes'],
         )
 
     @app.route('/characters/<character_id>/custom-buff/<custom_buff_id>/update', methods=['POST'])
@@ -53,7 +52,6 @@ def register_custom_buffs_fragment_routes(app, db, limiter):
             abilities=data['abilities'],
             custom_stats=data['custom_stats'],
             custom_stats_at_capacity=data['custom_stats_at_capacity'],
-            classes=data['classes'],
         )
 
     @app.route('/characters/<character_id>/custom-buff/<custom_buff_id>/remove', methods=['POST'])
@@ -89,5 +87,4 @@ def register_custom_buffs_fragment_routes(app, db, limiter):
             abilities=data['abilities'],
             custom_stats=data['custom_stats'],
             custom_stats_at_capacity=data['custom_stats_at_capacity'],
-            classes=data['classes'],
         )

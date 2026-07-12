@@ -46,6 +46,8 @@ def register_character_info_fragment_routes(app, db, limiter):
         if not User.owns_character(db, current_user.id, character_id):
             abort(403)
 
+        existing_before = db.go_get_one('character', {'id': character_id}) or {}
+
         sheet = CharacterSheet(character_id=character_id)
         request_form = BuffProcessor(character_id).transform_in(request.form)
         try:
@@ -56,13 +58,29 @@ def register_character_info_fragment_routes(app, db, limiter):
             app.logger.exception('Character info save failed for user_id=%s character_id=%s', current_user.id, character_id)
             feedback = error_feedback()
 
-        _, data = build_character_sheet_data(character_id)
+        # Abilities only need refreshing when proficiency changed — that's the only
+        # field on this form that cascades into ability/skill recalculation.
+        character = sheet.fetch_character_info_data()
+        proficiency_changed = character.get('proficiency') != existing_before.get('proficiency')
+
+        if proficiency_changed:
+            _, data = build_character_sheet_data(character_id)
+            character = data['character']
+            abilities = data['abilities']
+            skip_abilities_oob = False
+        else:
+            custom_buffs = sheet.fetch_custom_buffs_data()
+            BuffProcessor(character_id).transform_out({'character': character, 'custom_buffs': custom_buffs})
+            abilities = []
+            skip_abilities_oob = True
+
         return render_template(
             'components/character/character_info_change_response.html',
             character_id=character_id,
-            character=data['character'],
-            abilities=data['abilities'],
+            character=character,
+            abilities=abilities,
             is_guest=False,
+            skip_abilities_oob=skip_abilities_oob,
             **feedback_template_context('character_info', feedback),
         )
 
@@ -86,5 +104,5 @@ def register_character_info_fragment_routes(app, db, limiter):
         sheet = CharacterSheet(character_id=character_id)
         sheet.save_combat_values(character_id, request.form)
 
-        _, data = build_character_sheet_data(character_id)
-        return render_template('components/combat/combat_stats.html', character_id=character_id, character=data['character'])
+        character = sheet.fetch_combat_stats_data()
+        return render_template('components/combat/combat_stats.html', character_id=character_id, character=character)
