@@ -6,12 +6,7 @@
 
     {# Ability Value #}
     <div class="abilities-section-name-field">
-        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="field-input abilities-section-name-input"
-            hx-post="/characters/{{ character_id }}/abilities-skills/{{ ability_name }}/update"
-            hx-target="#ability-row-{{ ability_name }}"
-            hx-swap="outerHTML"
-            hx-include="closest .abilities-section-row"
-            hx-trigger="input changed delay:500ms, change">
+        <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="field-input abilities-section-name-input">
         <label for="{{ ability_name }}-value" class="field-label abilities-section-name-label">{{ ability_name | title }}</label>
     </div>
 

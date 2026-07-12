@@ -153,6 +153,7 @@ window.addEventListener("load", () => {
         }
 
         if (target.id === 'abilities-section-container') {
+            bindAbilityAutoSave();
             bindProficiencyToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
@@ -161,6 +162,7 @@ window.addEventListener("load", () => {
         }
 
         if (target.id && target.id.startsWith('ability-row-')) {
+            bindAbilityAutoSave();
             bindProficiencyToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
@@ -688,8 +690,14 @@ function initializeUiBindings() {
     bindCharacterInfoAutoSave();
     bindFeatAutoSave();
     bindInventoryAutoSave();
+    bindAbilityAutoSave();
     bindFeatsContainerSettle();
     bindInventoryContainerSettle();
+    bindAbilitiesContainerSettle();
+    bindCharacterInfoContainerSettle();
+    bindClassesContainerSettle();
+    bindCustomStatsContainerSettle();
+    bindCombatContainerSettle();
     bindGlobalLockToggle();
     bindTrackerAutoSave();
     bindTrackerToggles();
@@ -854,7 +862,21 @@ function bindFeatAutoSave() {
     });
 }
 
-let characterInfoAutoSaveTimer = null;
+const characterInfoAutoSave = createDebouncedSaver(1000);
+
+function saveCharacterInfo() {
+    const section = document.querySelector('.character-info-section');
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!section || !characterId) return;
+    const form = section.closest('form');
+    if (!form) return;
+    htmx.ajax('POST', `/characters/${characterId}/character-info/fragment`, {
+        source: form,
+        target: '#character-info-section-container',
+        swap: 'innerHTML'
+    });
+}
 
 function bindCharacterInfoAutoSave() {
     const section = document.querySelector('.character-info-section');
@@ -868,35 +890,51 @@ function bindCharacterInfoAutoSave() {
         return;
     }
 
-    const form = section.closest('form');
-    if (!form) {
-        return;
-    }
-
     const inputs = section.querySelectorAll('input:not([type="hidden"]):not([disabled])');
-
-    const triggerAutoSave = () => {
-        if (characterInfoAutoSaveTimer) {
-            clearTimeout(characterInfoAutoSaveTimer);
-        }
-        characterInfoAutoSaveTimer = setTimeout(() => {
-            characterInfoAutoSaveTimer = null;
-            htmx.ajax('POST', `/characters/${characterId}/character-info/fragment`, {
-                source: form,
-                target: '#character-info-section-container',
-                swap: 'innerHTML'
-            });
-        }, 1000);
-    };
 
     inputs.forEach((input) => {
         if (input.dataset.autoSaveBound === 'true') return;
         input.dataset.autoSaveBound = 'true';
-        input.addEventListener('input', triggerAutoSave);
+        input.addEventListener('input', () => characterInfoAutoSave.schedule('character-info', saveCharacterInfo));
     });
 }
 
-let classLevelAutoSaveTimer = null;
+function bindCharacterInfoContainerSettle() {
+    const container = document.getElementById('character-info-section-container');
+    if (!container || container.dataset.settleBound === 'true') {
+        return;
+    }
+    container.dataset.settleBound = 'true';
+
+    container.addEventListener('focusout', (event) => {
+        const section = event.target.closest('.character-info-section');
+        if (!section) return;
+        const stillInSection = event.relatedTarget && section.contains(event.relatedTarget);
+        if (stillInSection) return;
+        characterInfoAutoSave.flush('character-info', saveCharacterInfo);
+    });
+
+    container.addEventListener('htmx:beforeSwap', (event) => {
+        if (event.detail.target !== container) return;
+        characterInfoAutoSave.flush('character-info', saveCharacterInfo);
+    });
+}
+
+const classLevelAutoSave = createDebouncedSaver(1000);
+
+function saveClassLevels() {
+    const classesSection = document.querySelector('.classes-section');
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!classesSection || !characterId) return;
+    const form = classesSection.closest('form');
+    if (!form) return;
+    htmx.ajax('POST', `/characters/${characterId}/classes/fragment`, {
+        source: form,
+        target: '#classes-section-container',
+        swap: 'innerHTML'
+    });
+}
 
 function bindClassLevelAutoSave() {
     const characterIdField = document.getElementById('character-id');
@@ -910,35 +948,54 @@ function bindClassLevelAutoSave() {
         return;
     }
 
-    const form = classesSection.closest('form');
-    if (!form) {
-        return;
-    }
-
     const inputs = classesSection.querySelectorAll('.class-level-input');
-
-    const triggerAutoSave = () => {
-        if (classLevelAutoSaveTimer) {
-            clearTimeout(classLevelAutoSaveTimer);
-        }
-        classLevelAutoSaveTimer = setTimeout(() => {
-            classLevelAutoSaveTimer = null;
-            htmx.ajax('POST', `/characters/${characterId}/classes/fragment`, {
-                source: form,
-                target: '#classes-section-container',
-                swap: 'innerHTML'
-            });
-        }, 1000);
-    };
 
     inputs.forEach((input) => {
         if (input.dataset.autoSaveBound === 'true') return;
         input.dataset.autoSaveBound = 'true';
-        input.addEventListener('input', triggerAutoSave);
+        input.addEventListener('input', () => classLevelAutoSave.schedule('class-level', saveClassLevels));
     });
 }
 
-let customStatAutoSaveTimers = {};
+function bindClassesContainerSettle() {
+    const container = document.getElementById('classes-section-container');
+    if (!container || container.dataset.settleBound === 'true') {
+        return;
+    }
+    container.dataset.settleBound = 'true';
+
+    container.addEventListener('focusout', (event) => {
+        const section = event.target.closest('.classes-section');
+        if (!section) return;
+        const stillInSection = event.relatedTarget && section.contains(event.relatedTarget);
+        if (stillInSection) return;
+        classLevelAutoSave.flush('class-level', saveClassLevels);
+    });
+
+    container.addEventListener('htmx:beforeSwap', (event) => {
+        if (event.detail.target !== container) return;
+        classLevelAutoSave.flush('class-level', saveClassLevels);
+    });
+}
+
+const customStatAutoSave = createDebouncedSaver(1000);
+
+function saveCustomStatRow(statId) {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) return;
+    const valueInput = document.getElementById(`custom_stat-value-${statId}`);
+    const nameInput = document.getElementById(`custom_stat-name-${statId}`);
+    if (!valueInput) return;
+    htmx.ajax('POST', `/characters/${characterId}/custom-stat/${statId}/update`, {
+        target: `#custom-stat-row-${statId}`,
+        swap: 'outerHTML',
+        values: {
+            [`custom_stat-value-${statId}`]: valueInput.value,
+            [`custom_stat-name-${statId}`]: nameInput ? nameInput.value : '',
+        }
+    });
+}
 
 function bindCustomStatAutoSave() {
     const characterIdField = document.getElementById('character-id');
@@ -960,32 +1017,34 @@ function bindCustomStatAutoSave() {
             return;
         }
 
-        const triggerAutoSave = () => {
-            if (customStatAutoSaveTimers[statId]) {
-                clearTimeout(customStatAutoSaveTimers[statId]);
-            }
-
-            customStatAutoSaveTimers[statId] = setTimeout(() => {
-                customStatAutoSaveTimers[statId] = null;
-
-                const valueFieldName = `custom_stat-value-${statId}`;
-                const nameFieldName = `custom_stat-name-${statId}`;
-                const nameInput = document.getElementById(nameFieldName);
-
-                htmx.ajax('POST', `/characters/${characterId}/custom-stat/${statId}/update`, {
-                    target: `#custom-stat-row-${statId}`,
-                    swap: 'outerHTML',
-                    values: {
-                        [valueFieldName]: input.value,
-                        [nameFieldName]: nameInput ? nameInput.value : '',
-                    }
-                });
-            }, 1000);
-        };
-
         if (input.dataset.autoSaveBound === 'true') return;
         input.dataset.autoSaveBound = 'true';
-        input.addEventListener('input', triggerAutoSave);
+        input.addEventListener('input', () => customStatAutoSave.schedule(statId, () => saveCustomStatRow(statId)));
+    });
+}
+
+function bindCustomStatsContainerSettle() {
+    const container = document.getElementById('custom-stats-section-container');
+    if (!container || container.dataset.settleBound === 'true') {
+        return;
+    }
+    container.dataset.settleBound = 'true';
+
+    container.addEventListener('focusout', (event) => {
+        const row = event.target.closest('.custom-stats-section-row');
+        if (!row) return;
+        const stillInRow = event.relatedTarget && row.contains(event.relatedTarget);
+        if (stillInRow) return;
+        const statId = row.querySelector('.custom-stats-section-input')?.dataset.customStatId;
+        if (statId) customStatAutoSave.flush(statId, () => saveCustomStatRow(statId));
+    });
+
+    container.addEventListener('htmx:beforeSwap', (event) => {
+        if (event.detail.target !== container) return;
+        container.querySelectorAll('.custom-stats-section-row').forEach((row) => {
+            const statId = row.querySelector('.custom-stats-section-input')?.dataset.customStatId;
+            if (statId) customStatAutoSave.flush(statId, () => saveCustomStatRow(statId));
+        });
     });
 }
 
@@ -2047,7 +2106,21 @@ function bindCurrentHpCalculation() {
     calculateCurrentHp();
 }
 
-let combatAutoSaveTimer = null;
+const combatAutoSave = createDebouncedSaver(1000);
+
+function saveCombatFields() {
+    const healthPointsField = document.getElementById('character-health_points');
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!healthPointsField || !characterId) return;
+    const form = healthPointsField.closest('form');
+    if (!form) return;
+    htmx.ajax('POST', `/characters/${characterId}/combat/fragment`, {
+        source: form,
+        target: '#combat-stats-section-container',
+        swap: 'innerHTML'
+    });
+}
 
 function bindCombatFieldAutoSave() {
     const healthPointsField = document.getElementById('character-health_points');
@@ -2059,30 +2132,178 @@ function bindCombatFieldAutoSave() {
         return;
     }
 
-    const characterId = characterIdField.value;
-    const form = healthPointsField.closest('form');
-    if (!form || !characterId) {
-        return;
-    }
-
-    const triggerAutoSave = () => {
-        if (combatAutoSaveTimer) {
-            clearTimeout(combatAutoSaveTimer);
-        }
-        combatAutoSaveTimer = setTimeout(() => {
-            combatAutoSaveTimer = null;
-            htmx.ajax('POST', `/characters/${characterId}/combat/fragment`, {
-                source: form,
-                target: '#combat-stats-section-container',
-                swap: 'innerHTML'
-            });
-        }, 1000);
-    };
-
     [healthPointsField, tempHpField, hitDiceField].forEach((field) => {
         if (field.dataset.autoSaveBound === 'true') return;
         field.dataset.autoSaveBound = 'true';
-        field.addEventListener('input', triggerAutoSave);
+        field.addEventListener('input', () => combatAutoSave.schedule('combat', saveCombatFields));
+    });
+}
+
+function bindCombatContainerSettle() {
+    const container = document.getElementById('combat-stats-section-container');
+    if (!container || container.dataset.settleBound === 'true') {
+        return;
+    }
+    container.dataset.settleBound = 'true';
+
+    container.addEventListener('focusout', (event) => {
+        const section = event.target.closest('.combat-section');
+        if (!section) return;
+        const stillInSection = event.relatedTarget && section.contains(event.relatedTarget);
+        if (stillInSection) return;
+        combatAutoSave.flush('combat', saveCombatFields);
+    });
+
+    container.addEventListener('htmx:beforeSwap', (event) => {
+        if (event.detail.target !== container) return;
+        combatAutoSave.flush('combat', saveCombatFields);
+    });
+}
+
+function getCharacterProficiencyBonus() {
+    const field = document.getElementById('character-proficiency');
+    const parsed = field ? parseInt(field.value, 10) : NaN;
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getAbilityBuffDelta(table, stat) {
+    const dataEl = document.getElementById('buff-fields-data');
+    if (!dataEl) return 0;
+    let buffFields;
+    try {
+        buffFields = JSON.parse(dataEl.textContent);
+    } catch (e) {
+        return 0;
+    }
+    if (!Array.isArray(buffFields)) return 0;
+    return buffFields.reduce((total, field) => {
+        if (field.table !== table || field.stat !== stat) return total;
+        const value = Number.parseInt(field.buff_value, 10);
+        return Number.isNaN(value) ? total : total + value;
+    }, 0);
+}
+
+function recomputeAbilityRowDisplay(row) {
+    const abilityName = row.id.replace('ability-row-', '');
+    if (!abilityName) return;
+    const skillsTable = `${abilityName}_skills`;
+
+    const valueInput = document.getElementById(`${abilityName}-value`);
+    const rawValue = valueInput ? parseInt(valueInput.value, 10) : NaN;
+    const abilityValue = Number.isFinite(rawValue) ? Math.min(30, Math.max(1, rawValue)) : 10;
+    const modifier = Math.floor((abilityValue - 10) / 2);
+
+    const modifierDisplay = document.getElementById(`${abilityName}-modifier`);
+    if (modifierDisplay) {
+        modifierDisplay.textContent = String(modifier + getAbilityBuffDelta(abilityName, 'modifier'));
+    }
+
+    const proficiencyBonus = getCharacterProficiencyBonus();
+
+    const savingCheckbox = document.getElementById(`${abilityName}-proficient`);
+    const savingDisplay = document.getElementById(`${abilityName}_skills-saving_throw`);
+    if (savingDisplay) {
+        const savingBuff = getAbilityBuffDelta(skillsTable, 'saving_throw');
+        savingDisplay.textContent = String(modifier + (savingCheckbox && savingCheckbox.checked ? proficiencyBonus : 0) + savingBuff);
+    }
+
+    row.querySelectorAll('.abilities-section-skills-item .hidden-proficiency-checkbox').forEach((checkbox) => {
+        const item = checkbox.closest('.abilities-section-skills-item');
+        const valueDisplay = item ? item.querySelector('.abilities-section-display-value') : null;
+        if (!valueDisplay) return;
+        const skillName = checkbox.id.replace(`${skillsTable}-`, '').replace('_proficient', '');
+        const skillBuff = getAbilityBuffDelta(skillsTable, skillName);
+        valueDisplay.textContent = String(modifier + (checkbox.checked ? proficiencyBonus : 0) + skillBuff);
+    });
+}
+
+const abilityAutoSave = createDebouncedSaver();
+
+function saveAbilityRow(abilityName) {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) return;
+
+    const row = document.getElementById(`ability-row-${abilityName}`);
+    if (!row) return;
+    const valueInput = document.getElementById(`${abilityName}-value`);
+    if (!valueInput) return;
+
+    const values = { [`${abilityName}-value`]: valueInput.value };
+    row.querySelectorAll('.hidden-proficiency-checkbox').forEach((checkbox) => {
+        if (checkbox.checked && checkbox.name) values[checkbox.name] = '1';
+    });
+
+    htmx.ajax('POST', `/characters/${characterId}/abilities-skills/${abilityName}/update`, {
+        target: `#ability-row-${abilityName}`,
+        swap: 'outerHTML',
+        values,
+    });
+}
+
+function bindAbilityAutoSave() {
+    const abilitiesSection = document.querySelector('.abilities-section');
+    if (!abilitiesSection) return;
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) return;
+
+    abilitiesSection.querySelectorAll('.abilities-section-row').forEach((row) => {
+        const abilityName = row.id.replace('ability-row-', '');
+        if (!abilityName) return;
+        const scheduleSave = () => abilityAutoSave.schedule(abilityName, () => saveAbilityRow(abilityName));
+
+        const valueInput = row.querySelector('.abilities-section-name-input');
+        if (valueInput && valueInput.dataset.autoSaveBound !== 'true') {
+            valueInput.dataset.autoSaveBound = 'true';
+            valueInput.addEventListener('input', () => {
+                recomputeAbilityRowDisplay(row);
+                scheduleSave();
+            });
+        }
+
+        row.querySelectorAll('.hidden-proficiency-checkbox').forEach((checkbox) => {
+            if (checkbox.dataset.autoSaveBound === 'true') return;
+            checkbox.dataset.autoSaveBound = 'true';
+            checkbox.addEventListener('change', () => {
+                recomputeAbilityRowDisplay(row);
+                scheduleSave();
+            });
+        });
+    });
+}
+
+function bindAbilitiesContainerSettle() {
+    const container = document.getElementById('abilities-section-container');
+    if (!container || container.dataset.settleBound === 'true') {
+        return;
+    }
+    container.dataset.settleBound = 'true';
+
+    container.addEventListener('htmx:afterSettle', () => {
+        setTimeout(() => {
+            bindAbilityAutoSave();
+            bindProficiencyToggles();
+            syncGlobalLockState();
+            decorateBuffedLabels();
+        }, 0);
+    });
+
+    container.addEventListener('focusout', (event) => {
+        const row = event.target.closest('.abilities-section-row');
+        if (!row) return;
+        const stillInRow = event.relatedTarget && row.contains(event.relatedTarget);
+        if (stillInRow) return;
+        const abilityName = row.id.replace('ability-row-', '');
+        if (abilityName) abilityAutoSave.flush(abilityName, () => saveAbilityRow(abilityName));
+    });
+
+    container.addEventListener('htmx:beforeSwap', (event) => {
+        if (event.detail.target !== container) return;
+        container.querySelectorAll('.abilities-section-row').forEach((row) => {
+            const abilityName = row.id.replace('ability-row-', '');
+            if (abilityName) abilityAutoSave.flush(abilityName, () => saveAbilityRow(abilityName));
+        });
     });
 }
 
