@@ -165,10 +165,8 @@ def register_tracker_fragment_routes(app, db, limiter):
         if not User.owns_character(db, current_user.id, character_id):
             abort(403)
 
-        entry = db.go_get_one('tracker_entry', {'id': entry_id, 'tracker_id': tracker_id})
-        if entry:
-            tracker = db.go_get_one('tracker', {'id': tracker_id, 'character_id': character_id})
-            if tracker:
-                db.go_delete_it('tracker_entry', {'id': entry_id, 'tracker_id': tracker_id})
+        tracker = db.go_get_one('tracker', {'id': tracker_id, 'character_id': character_id})
+        if tracker:
+            db.go_delete_it('tracker_entry', {'id': entry_id, 'tracker_id': tracker_id})
 
         return _render_tracker_page(character_id)
