@@ -9,8 +9,8 @@ from typing import Dict, Optional
 
 from flask import session
 
-from functions.functions import uuid
-from functions.validators import clamp_int, is_valid_uuid, parse_optional_int, sanitize_optional_str
+from demiplane.functions.functions import uuid
+from demiplane.functions.validators import clamp_int, is_valid_uuid, parse_optional_int, sanitize_optional_str
 from go_get_it.go_get_it import GoGetDB
 
 ggi = GoGetDB()

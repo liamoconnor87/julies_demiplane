@@ -178,7 +178,7 @@ window.addEventListener("load", () => {
             return;
         }
 
-        if (target.id === 'inventory-list') {
+        if (target.id === 'inventory-list' || target.id === 'add-inventory-row') {
             // Clear and close the add-inventory form after a successful add
             const nameInput = document.getElementById('inventory-name');
             const descInput = document.getElementById('inventory-description');
@@ -1344,18 +1344,12 @@ function getBuffedLabelElement(table, stat) {
 
     if (table === 'feat_and_trait') {
         const input = document.querySelector(`.feats-section .feat-name-input[data-feat-id="${normalizedStat}"]`);
-        if (input && input.id) {
-            return document.querySelector(`label[for="${input.id}"]`);
-        }
-        return null;
+        return input ? input.closest('.card-item-name-wrapper') : null;
     }
 
     if (table === 'inventory') {
         const input = document.getElementById(`inventory-name-${normalizedStat}`);
-        if (input && input.id) {
-            return document.querySelector(`label[for="${input.id}"]`);
-        }
-        return null;
+        return input ? input.closest('.card-item-name-wrapper') : null;
     }
 
     const key = `${table}-${normalizedStat}`;

@@ -1,11 +1,11 @@
 from flask import abort, render_template, request
 from flask_login import current_user
 
-from auth.models import User, UserTheme
-from character_sheet.character_sheet import TRACKER_MAX, TRACKER_ENTRY_MAX
-from character_sheet import guest_character as guest
-from routes.fragments import get_trackers_for_character
-from routes.helpers import build_character_sheet_data, build_guest_character_sheet_data
+from demiplane.auth.models import User, UserTheme
+from demiplane.services.character_sheet import TRACKER_MAX, TRACKER_ENTRY_MAX
+from demiplane.services import guest_character as guest
+from demiplane.routes.fragments import get_trackers_for_character
+from demiplane.routes.helpers import build_character_sheet_data, build_guest_character_sheet_data
 
 
 def register_main_routes(app, db):

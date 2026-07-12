@@ -288,7 +288,8 @@
 
 /* Add-entry "+" button inline on last entry row */
 .tracker-add-entry-inline-btn {
-    align-self: center;
+    height: var(--tracker-entry-height);
+    justify-content: center;
     margin-left: 0.25rem;
 }
 
@@ -354,7 +355,7 @@
     align-items: stretch;
     margin-right: 0.25rem;
     margin-bottom: 0.25rem;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-width: 0;
 }
 

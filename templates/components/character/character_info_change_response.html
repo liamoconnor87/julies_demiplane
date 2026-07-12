@@ -1,8 +1,10 @@
 {% include 'components/character/character_info.html' %}
 
+{% if not (skip_abilities_oob is defined and skip_abilities_oob) %}
 <div id="abilities-section-container" hx-swap-oob="innerHTML">
     {% include 'components/abilities/abilities_section.html' %}
 </div>
+{% endif %}
 
 {% if is_guest is defined and is_guest %}
 <div id="guest-landing-panel" hx-swap-oob="innerHTML">

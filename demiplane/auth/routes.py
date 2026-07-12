@@ -3,9 +3,9 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from typing import Optional
 
-from auth.models import User
-from auth.validators import validate_username, validate_password, validate_passwords_match
-from character_sheet import guest_character as guest
+from demiplane.auth.models import User
+from demiplane.auth.validators import validate_username, validate_password, validate_passwords_match
+from demiplane.services import guest_character as guest
 
 auth_bp = Blueprint('auth', __name__)
 
