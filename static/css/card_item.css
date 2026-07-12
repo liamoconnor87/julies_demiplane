@@ -147,6 +147,16 @@
     min-height: var(--card-item-field-input-height);
 }
 
+.card-item-name-wrapper .buff-indicator {
+    position: absolute;
+    top: 0.15rem;
+    left: 0.5rem;
+}
+
+.card-item-name-wrapper:has(.buff-indicator) .card-item-input {
+    padding-left: 1.25rem;
+}
+
 /* ── Action field — fixed width ────────────────────────────────────────────── */
 
 .card-item-action-field {
@@ -354,12 +364,6 @@
     .card-item-label,
     .card-item-action-field .card-item-label {
         width: 100%;
-    }
-
-    .card-item-saved-row .card-item-quantity-field .card-item-label {
-        width: var(--card-item-quantity-control-width);
-        min-width: var(--card-item-quantity-control-width);
-        max-width: var(--card-item-quantity-control-width);
     }
 }
 
