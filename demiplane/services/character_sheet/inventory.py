@@ -123,13 +123,23 @@ class InventoryMixin:
                 continue
             update_inventory_by_id(inventory_id)
 
-    def update_single_inventory_item(self, character_id: str, inventory_id: str, name: str, description: str):
-        """Update a single inventory item's name/description and return the updated record, or None."""
+    def update_single_inventory_item(self, character_id: str, inventory_id: str, name: str, description: str, quantity):
+        """Update a single inventory item's name/description/quantity.
+
+        Returns the updated record, `{'deleted': True}` if quantity dropped to zero or
+        below, or None if the item doesn't exist / inventory_id is invalid.
+        """
         if not is_valid_uuid(inventory_id):
             return None
         existing = self.store.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
         if not existing:
             return None
+
+        parsed_quantity = parse_optional_int(quantity, fallback=existing.get('quantity', 1))
+        if parsed_quantity is None or parsed_quantity <= 0:
+            self.store.go_delete_it('inventory', {'id': inventory_id, 'character_id': character_id})
+            return {'deleted': True}
+
         clean_name = sanitize_optional_str(name, max_len=255)
         clean_desc = sanitize_optional_str(description, max_len=2000)
         if not clean_name:
@@ -138,10 +148,10 @@ class InventoryMixin:
             'id': inventory_id,
             'name': clean_name,
             'description': clean_desc,
-            'quantity': existing.get('quantity', 1),
+            'quantity': parsed_quantity,
             'character_id': character_id,
         })
-        return {'id': inventory_id, 'name': clean_name, 'description': clean_desc, 'quantity': existing.get('quantity', 1), 'character_id': character_id}
+        return {'id': inventory_id, 'name': clean_name, 'description': clean_desc, 'quantity': parsed_quantity, 'character_id': character_id}
 
     def add_single_inventory_item(self, character_id: str, name: str, description: str, quantity):
         """Add a new inventory item and return the new record, or None if at capacity or invalid."""
@@ -162,43 +172,3 @@ class InventoryMixin:
         }
         self.store.go_add_new('inventory', item)
         return item
-
-    def step_single_inventory_item(self, character_id: str, inventory_id: str, step: int):
-        """Apply +/- quantity to a single inventory item.
-
-        Returns the updated row dict. Returns None when the item is deleted or invalid.
-        """
-        if not is_valid_uuid(inventory_id):
-            return None
-
-        existing = self.store.go_get_one('inventory', {'id': inventory_id, 'character_id': character_id})
-        if not existing:
-            return None
-
-        current_quantity = parse_optional_int(existing.get('quantity'), fallback=1)
-        if current_quantity is None:
-            current_quantity = 1
-
-        next_quantity = current_quantity + int(step)
-        if next_quantity <= 0:
-            self.store.go_delete_it('inventory', {
-                'id': inventory_id,
-                'character_id': character_id,
-            })
-            return None
-
-        self.store.go_update('inventory', {
-            'id': inventory_id,
-            'name': existing.get('name'),
-            'description': existing.get('description'),
-            'quantity': next_quantity,
-            'character_id': character_id,
-        })
-
-        return {
-            'id': inventory_id,
-            'name': existing.get('name'),
-            'description': existing.get('description'),
-            'quantity': next_quantity,
-            'character_id': character_id,
-        }

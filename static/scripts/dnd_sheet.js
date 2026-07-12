@@ -310,6 +310,44 @@ const GLOBAL_FEEDBACK_HIDE_MS = 3000;
 const GLOBAL_ERROR_FEEDBACK_TEXT = 'Please try again';
 const feedbackHideTimers = new Map();
 
+// ── Debounced auto-save helper ───────────────────────────────────────────────
+const AUTO_SAVE_DEBOUNCE_MS = 1500;
+
+function createDebouncedSaver(delayMs = AUTO_SAVE_DEBOUNCE_MS) {
+    const timers = new Map();
+
+    function cancel(key) {
+        const existing = timers.get(key);
+        if (existing) {
+            clearTimeout(existing);
+        }
+        timers.delete(key);
+    }
+
+    function schedule(key, fn) {
+        cancel(key);
+        timers.set(key, setTimeout(() => {
+            timers.delete(key);
+            fn();
+        }, delayMs));
+    }
+
+    function flush(key, fn) {
+        if (!timers.has(key)) {
+            return false;
+        }
+        cancel(key);
+        fn();
+        return true;
+    }
+
+    function hasPending(key) {
+        return timers.has(key);
+    }
+
+    return { schedule, flush, cancel, hasPending };
+}
+
 function getCharacterInfoFeedbackElement() {
     return document.getElementById('character-info-feedback');
 }
@@ -707,6 +745,21 @@ function bindFeatsContainerSettle() {
             decorateBuffedLabels();
         }, 0);
     });
+    container.addEventListener('focusout', (event) => {
+        const row = event.target.closest('.card-item-saved-row');
+        if (!row) return;
+        const stillInRow = event.relatedTarget && row.contains(event.relatedTarget);
+        if (stillInRow) return;
+        const featId = row.querySelector('.feat-name-input')?.dataset.featId;
+        if (featId) featAutoSave.flush(featId, () => saveFeatRow(featId));
+    });
+    container.addEventListener('htmx:beforeSwap', (event) => {
+        if (event.detail.target !== container) return;
+        container.querySelectorAll('.card-item-saved-row').forEach((row) => {
+            const featId = row.querySelector('.feat-name-input')?.dataset.featId;
+            if (featId) featAutoSave.flush(featId, () => saveFeatRow(featId));
+        });
+    });
 }
 
 function bindInventoryContainerSettle() {
@@ -723,9 +776,51 @@ function bindInventoryContainerSettle() {
             decorateBuffedLabels();
         }, 0);
     });
+    container.addEventListener('focusout', (event) => {
+        const row = event.target.closest('.card-item-saved-row');
+        if (!row) return;
+        const stillInRow = event.relatedTarget && row.contains(event.relatedTarget);
+        if (stillInRow) return;
+        const inventoryId = row.querySelector('.inventory-name-input')?.dataset.inventoryId;
+        if (inventoryId) inventoryAutoSave.flush(inventoryId, () => saveInventoryRow(inventoryId));
+    });
+    container.addEventListener('htmx:beforeSwap', (event) => {
+        if (event.detail.target !== container) return;
+        container.querySelectorAll('.card-item-saved-row').forEach((row) => {
+            const inventoryId = row.querySelector('.inventory-name-input')?.dataset.inventoryId;
+            if (inventoryId) inventoryAutoSave.flush(inventoryId, () => saveInventoryRow(inventoryId));
+        });
+    });
 }
 
-let featAutoSaveTimers = {};
+const featAutoSave = createDebouncedSaver();
+
+function saveFeatRow(featId) {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return;
+    }
+
+    const row = document.getElementById(`feat-row-${featId}`);
+    if (!row) {
+        return;
+    }
+    const nameInput = row.querySelector('.feat-name-input');
+    const descInput = row.querySelector('.feat-description-input');
+    if (!nameInput) {
+        return;
+    }
+
+    htmx.ajax('POST', `/characters/${characterId}/feat-and-trait/${featId}/update`, {
+        target: `#feat-row-${featId}`,
+        swap: 'outerHTML',
+        values: {
+            [`feat_and_trait-name-${featId}`]: nameInput.value,
+            [`feat_and_trait-description-${featId}`]: descInput ? descInput.value : '',
+        }
+    });
+}
 
 function bindFeatAutoSave() {
     const featsSection = document.querySelector('.feats-section');
@@ -749,25 +844,7 @@ function bindFeatAutoSave() {
         const featId = nameInput.dataset.featId;
         if (!featId) return;
 
-        const triggerAutoSave = () => {
-            if (featAutoSaveTimers[featId]) {
-                clearTimeout(featAutoSaveTimers[featId]);
-            }
-            featAutoSaveTimers[featId] = setTimeout(() => {
-                featAutoSaveTimers[featId] = null;
-                if (!document.contains(nameInput) || (descInput && !document.contains(descInput))) {
-                    return;
-                }
-                htmx.ajax('POST', `/characters/${characterId}/feat-and-trait/${featId}/update`, {
-                    target: `#feat-row-${featId}`,
-                    swap: 'outerHTML',
-                    values: {
-                        [`feat_and_trait-name-${featId}`]: nameInput.value,
-                        [`feat_and_trait-description-${featId}`]: descInput ? descInput.value : '',
-                    }
-                });
-            }, 1000);
-        };
+        const triggerAutoSave = () => featAutoSave.schedule(featId, () => saveFeatRow(featId));
 
         [nameInput, descInput].forEach((input) => {
             if (!input || input.dataset.autoSaveBound === 'true') return;
@@ -1689,7 +1766,36 @@ function resizeInventoryDescriptionField(field) {
     field.style.height = `${field.scrollHeight}px`;
 }
 
-let inventoryAutoSaveTimers = {};
+const inventoryAutoSave = createDebouncedSaver();
+
+function saveInventoryRow(inventoryId) {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) {
+        return;
+    }
+
+    const row = document.getElementById(`inventory-row-${inventoryId}`);
+    if (!row) {
+        return;
+    }
+    const nameInput = row.querySelector('.inventory-name-input');
+    const descInput = row.querySelector('.inventory-description-input');
+    const qtyInput = row.querySelector('.inventory-quantity-input');
+    if (!nameInput) {
+        return;
+    }
+
+    htmx.ajax('POST', `/characters/${characterId}/inventory/${inventoryId}/update`, {
+        target: `#inventory-row-${inventoryId}`,
+        swap: 'outerHTML',
+        values: {
+            [`inventory-name-${inventoryId}`]: nameInput.value,
+            [`inventory-description-${inventoryId}`]: descInput ? descInput.value : '',
+            [`inventory-quantity-${inventoryId}`]: qtyInput ? qtyInput.value : '',
+        }
+    });
+}
 
 function bindInventoryAutoSave() {
     const inventorySection = document.querySelector('.inventory-section');
@@ -1713,30 +1819,41 @@ function bindInventoryAutoSave() {
         const inventoryId = nameInput.dataset.inventoryId;
         if (!inventoryId) return;
 
-        const triggerAutoSave = () => {
-            if (inventoryAutoSaveTimers[inventoryId]) {
-                clearTimeout(inventoryAutoSaveTimers[inventoryId]);
-            }
-            inventoryAutoSaveTimers[inventoryId] = setTimeout(() => {
-                inventoryAutoSaveTimers[inventoryId] = null;
-                if (!document.contains(nameInput) || (descInput && !document.contains(descInput))) {
-                    return;
-                }
-                htmx.ajax('POST', `/characters/${characterId}/inventory/${inventoryId}/update`, {
-                    target: `#inventory-row-${inventoryId}`,
-                    swap: 'outerHTML',
-                    values: {
-                        [`inventory-name-${inventoryId}`]: nameInput.value,
-                        [`inventory-description-${inventoryId}`]: descInput ? descInput.value : '',
-                    }
-                });
-            }, 1000);
-        };
+        const triggerAutoSave = () => inventoryAutoSave.schedule(inventoryId, () => saveInventoryRow(inventoryId));
 
         [nameInput, descInput].forEach((input) => {
             if (!input || input.dataset.autoSaveBound === 'true') return;
             input.dataset.autoSaveBound = 'true';
             input.addEventListener('input', triggerAutoSave);
+        });
+
+        row.querySelectorAll('[data-inventory-step]').forEach((button) => {
+            if (button.dataset.stepBound === 'true') return;
+            button.dataset.stepBound = 'true';
+            button.addEventListener('click', () => {
+                const qtyInput = row.querySelector('.inventory-quantity-input');
+                if (!qtyInput) return;
+
+                const step = parseInt(button.dataset.inventoryStep, 10) || 0;
+                const current = parseInt(qtyInput.value, 10) || 0;
+                const next = Math.max(0, current + step);
+                qtyInput.value = next;
+
+                // Keep the decrease button's lock/trash-icon state in sync without a server round trip.
+                const decreaseBtn = row.querySelector('[data-inventory-remove="true"]');
+                if (decreaseBtn) {
+                    decreaseBtn.dataset.itemQuantity = String(next);
+                }
+                syncGlobalLockState();
+
+                if (next <= 0) {
+                    // Reaching zero deletes the item — destructive, so save immediately rather than waiting out the debounce.
+                    inventoryAutoSave.cancel(inventoryId);
+                    saveInventoryRow(inventoryId);
+                } else {
+                    inventoryAutoSave.schedule(inventoryId, () => saveInventoryRow(inventoryId));
+                }
+            });
         });
     });
 }
