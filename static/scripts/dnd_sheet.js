@@ -300,6 +300,7 @@ window.addEventListener("load", () => {
     // without emitting user input events, so re-apply state classes here.
     document.body.addEventListener('htmx:afterSettle', () => {
         applyCombatStateColours();
+        bindAllOptimisticRemoveButtons();
     });
 })
 
@@ -348,6 +349,35 @@ function createDebouncedSaver(delayMs = AUTO_SAVE_DEBOUNCE_MS) {
     }
 
     return { schedule, flush, cancel, hasPending };
+}
+
+// ── Optimistic remove (× buttons) ────────────────────────────────────────────
+// Every remove button in this app swaps its *whole* section container via
+// hx-swap="innerHTML" once the server responds — so hiding the clicked row's
+// DOM node immediately, then letting the existing hx-post fire as normal, is
+// enough: whatever lands from the server (success or failure) replaces the
+// entire container's children wholesale, discarding the temporarily-hidden
+// node either way. No reconciliation or rollback state needed.
+function bindOptimisticRemoveButtons(container, buttonSelector, rowSelector) {
+    if (!container) return;
+    container.querySelectorAll(buttonSelector).forEach((button) => {
+        if (button.dataset.optimisticRemoveBound === 'true') return;
+        button.dataset.optimisticRemoveBound = 'true';
+        button.addEventListener('click', () => {
+            const row = button.closest(rowSelector);
+            if (row) row.style.display = 'none';
+        });
+    });
+}
+
+function bindAllOptimisticRemoveButtons() {
+    bindOptimisticRemoveButtons(document.getElementById('feats-section-container'), '[data-feat-remove="true"]', '.card-item-saved-row');
+    bindOptimisticRemoveButtons(document.getElementById('inventory-section-container'), '[data-inventory-delete="true"]', '.card-item-saved-row');
+    bindOptimisticRemoveButtons(document.getElementById('custom-stats-section-container'), '[data-custom-stat-remove="true"]', '.custom-stats-section-row');
+    bindOptimisticRemoveButtons(document.getElementById('classes-section-container'), '[data-class-remove="true"]', '.classes-section-row');
+    bindOptimisticRemoveButtons(document.getElementById('custom-buffs-section-container'), '[data-buff-remove="true"]', '.custom-buffs-card');
+    bindOptimisticRemoveButtons(document.getElementById('tracker-page-container'), '[data-tracker-remove="true"]', '.tracker-item');
+    bindOptimisticRemoveButtons(document.getElementById('tracker-page-container'), '[data-tracker-entry-remove="true"]', '.tracker-entry-row');
 }
 
 function getCharacterInfoFeedbackElement() {
@@ -701,6 +731,7 @@ function initializeUiBindings() {
     bindGlobalLockToggle();
     bindTrackerAutoSave();
     bindTrackerToggles();
+    bindAllOptimisticRemoveButtons();
     bindMobileCharacterSelect();
 }
 
@@ -763,10 +794,16 @@ function bindFeatsContainerSettle() {
     });
     container.addEventListener('htmx:beforeSwap', (event) => {
         if (event.detail.target !== container) return;
-        container.querySelectorAll('.card-item-saved-row').forEach((row) => {
-            const featId = row.querySelector('.feat-name-input')?.dataset.featId;
-            if (featId) featAutoSave.flush(featId, () => saveFeatRow(featId));
-        });
+        flushAllPendingFeats();
+    });
+}
+
+function flushAllPendingFeats() {
+    const container = document.getElementById('feats-section-container');
+    if (!container) return;
+    container.querySelectorAll('.card-item-saved-row').forEach((row) => {
+        const featId = row.querySelector('.feat-name-input')?.dataset.featId;
+        if (featId) featAutoSave.flush(featId, () => saveFeatRow(featId));
     });
 }
 
@@ -794,10 +831,16 @@ function bindInventoryContainerSettle() {
     });
     container.addEventListener('htmx:beforeSwap', (event) => {
         if (event.detail.target !== container) return;
-        container.querySelectorAll('.card-item-saved-row').forEach((row) => {
-            const inventoryId = row.querySelector('.inventory-name-input')?.dataset.inventoryId;
-            if (inventoryId) inventoryAutoSave.flush(inventoryId, () => saveInventoryRow(inventoryId));
-        });
+        flushAllPendingInventory();
+    });
+}
+
+function flushAllPendingInventory() {
+    const container = document.getElementById('inventory-section-container');
+    if (!container) return;
+    container.querySelectorAll('.card-item-saved-row').forEach((row) => {
+        const inventoryId = row.querySelector('.inventory-name-input')?.dataset.inventoryId;
+        if (inventoryId) inventoryAutoSave.flush(inventoryId, () => saveInventoryRow(inventoryId));
     });
 }
 
@@ -916,8 +959,12 @@ function bindCharacterInfoContainerSettle() {
 
     container.addEventListener('htmx:beforeSwap', (event) => {
         if (event.detail.target !== container) return;
-        characterInfoAutoSave.flush('character-info', saveCharacterInfo);
+        flushPendingCharacterInfo();
     });
+}
+
+function flushPendingCharacterInfo() {
+    characterInfoAutoSave.flush('character-info', saveCharacterInfo);
 }
 
 const classLevelAutoSave = createDebouncedSaver(1000);
@@ -974,8 +1021,12 @@ function bindClassesContainerSettle() {
 
     container.addEventListener('htmx:beforeSwap', (event) => {
         if (event.detail.target !== container) return;
-        classLevelAutoSave.flush('class-level', saveClassLevels);
+        flushPendingClassLevels();
     });
+}
+
+function flushPendingClassLevels() {
+    classLevelAutoSave.flush('class-level', saveClassLevels);
 }
 
 const customStatAutoSave = createDebouncedSaver(1000);
@@ -1041,10 +1092,16 @@ function bindCustomStatsContainerSettle() {
 
     container.addEventListener('htmx:beforeSwap', (event) => {
         if (event.detail.target !== container) return;
-        container.querySelectorAll('.custom-stats-section-row').forEach((row) => {
-            const statId = row.querySelector('.custom-stats-section-input')?.dataset.customStatId;
-            if (statId) customStatAutoSave.flush(statId, () => saveCustomStatRow(statId));
-        });
+        flushAllPendingCustomStats();
+    });
+}
+
+function flushAllPendingCustomStats() {
+    const container = document.getElementById('custom-stats-section-container');
+    if (!container) return;
+    container.querySelectorAll('.custom-stats-section-row').forEach((row) => {
+        const statId = row.querySelector('.custom-stats-section-input')?.dataset.customStatId;
+        if (statId) customStatAutoSave.flush(statId, () => saveCustomStatRow(statId));
     });
 }
 
@@ -2156,8 +2213,12 @@ function bindCombatContainerSettle() {
 
     container.addEventListener('htmx:beforeSwap', (event) => {
         if (event.detail.target !== container) return;
-        combatAutoSave.flush('combat', saveCombatFields);
+        flushPendingCombat();
     });
+}
+
+function flushPendingCombat() {
+    combatAutoSave.flush('combat', saveCombatFields);
 }
 
 function getCharacterProficiencyBonus() {
@@ -2251,14 +2312,13 @@ function bindAbilityAutoSave() {
     abilitiesSection.querySelectorAll('.abilities-section-row').forEach((row) => {
         const abilityName = row.id.replace('ability-row-', '');
         if (!abilityName) return;
-        const scheduleSave = () => abilityAutoSave.schedule(abilityName, () => saveAbilityRow(abilityName));
 
         const valueInput = row.querySelector('.abilities-section-name-input');
         if (valueInput && valueInput.dataset.autoSaveBound !== 'true') {
             valueInput.dataset.autoSaveBound = 'true';
             valueInput.addEventListener('input', () => {
                 recomputeAbilityRowDisplay(row);
-                scheduleSave();
+                abilityAutoSave.schedule(`${abilityName}-value`, () => saveAbilityRow(abilityName));
             });
         }
 
@@ -2267,10 +2327,29 @@ function bindAbilityAutoSave() {
             checkbox.dataset.autoSaveBound = 'true';
             checkbox.addEventListener('change', () => {
                 recomputeAbilityRowDisplay(row);
-                scheduleSave();
+                abilityAutoSave.schedule(`${abilityName}-toggles`, () => saveAbilityRow(abilityName));
             });
         });
     });
+}
+
+// An ability row has two independently-debounced groups sharing one save call:
+// the score field (continuous typing) and the proficiency toggles (discrete
+// clicks, all coalesced together since the backend always saves the whole
+// row's checkbox state in one request regardless of which toggle changed).
+// Flushing a row means flushing both groups, but only saving once if both
+// happened to be pending together.
+function flushAbilityRow(abilityName) {
+    let shouldSave = false;
+    if (abilityAutoSave.hasPending(`${abilityName}-value`)) {
+        abilityAutoSave.cancel(`${abilityName}-value`);
+        shouldSave = true;
+    }
+    if (abilityAutoSave.hasPending(`${abilityName}-toggles`)) {
+        abilityAutoSave.cancel(`${abilityName}-toggles`);
+        shouldSave = true;
+    }
+    if (shouldSave) saveAbilityRow(abilityName);
 }
 
 function bindAbilitiesContainerSettle() {
@@ -2295,15 +2374,21 @@ function bindAbilitiesContainerSettle() {
         const stillInRow = event.relatedTarget && row.contains(event.relatedTarget);
         if (stillInRow) return;
         const abilityName = row.id.replace('ability-row-', '');
-        if (abilityName) abilityAutoSave.flush(abilityName, () => saveAbilityRow(abilityName));
+        if (abilityName) flushAbilityRow(abilityName);
     });
 
     container.addEventListener('htmx:beforeSwap', (event) => {
         if (event.detail.target !== container) return;
-        container.querySelectorAll('.abilities-section-row').forEach((row) => {
-            const abilityName = row.id.replace('ability-row-', '');
-            if (abilityName) abilityAutoSave.flush(abilityName, () => saveAbilityRow(abilityName));
-        });
+        flushAllPendingAbilities();
+    });
+}
+
+function flushAllPendingAbilities() {
+    const container = document.getElementById('abilities-section-container');
+    if (!container) return;
+    container.querySelectorAll('.abilities-section-row').forEach((row) => {
+        const abilityName = row.id.replace('ability-row-', '');
+        if (abilityName) flushAbilityRow(abilityName);
     });
 }
 
@@ -2712,6 +2797,17 @@ function bindSubBarTabs() {
     const initialTab = (savedTab && validTabs.includes(savedTab)) ? savedTab : 'info';
 
     const switchTo = (tabName) => {
+        // Flush every section's pending autosaves before hiding the current tab's
+        // content — don't rely on display:none forcing a blur to trigger this.
+        // Harmless no-op for any section with nothing pending.
+        flushAllPendingFeats();
+        flushAllPendingInventory();
+        flushAllPendingAbilities();
+        flushPendingCharacterInfo();
+        flushPendingClassLevels();
+        flushAllPendingCustomStats();
+        flushPendingCombat();
+
         // Update active class on tab buttons
         tabs.forEach((btn) => {
             btn.classList.toggle('active', btn.dataset.tab === tabName);
