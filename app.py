@@ -15,6 +15,7 @@ from demiplane.auth import setup_auth
 from db.config import (
     DEBUG,
     FORCE_HTTPS,
+    CANONICAL_URL,
     secret_key,
     SESSION_COOKIE_NAME,
     SESSION_COOKIE_SECURE,
@@ -114,6 +115,13 @@ def inject_static_version():
     js_path = os.path.join(app.static_folder, 'scripts', 'dnd_sheet.js')
     version = int(os.path.getmtime(js_path)) if os.path.exists(js_path) else 1
     return {'static_version': version}
+
+# ── Canonical URL (fixed, not derived from the request's host — a page must
+# always declare the one true preferred URL regardless of which host/scheme
+# variant it was actually reached through, e.g. www vs bare domain) ──────────
+@app.context_processor
+def inject_canonical_url():
+    return {'canonical_url': f'{CANONICAL_URL}/'}
 
 @app.after_request
 def no_cache_html(response):

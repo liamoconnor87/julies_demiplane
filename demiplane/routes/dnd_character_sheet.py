@@ -8,6 +8,7 @@ from demiplane.auth.models import User
 from demiplane.services.character_sheet import CharacterSheet
 from demiplane.services import guest_character as guest
 from demiplane.functions.functions import uuid as generate_uuid
+from db.config import CANONICAL_URL
 
 
 def register_dnd_character_sheet_routes(app, db, limiter):
@@ -24,19 +25,18 @@ def register_dnd_character_sheet_routes(app, db, limiter):
 
     @app.route('/robots.txt', methods=['GET'])
     def robots_txt():
-        sitemap_url = url_for('sitemap_xml', _external=True)
         content = [
             'User-agent: *',
             'Allow: /',
             'Disallow: /admin',
             'Disallow: /characters/',
-            f'Sitemap: {sitemap_url}',
+            f'Sitemap: {CANONICAL_URL}/sitemap.xml',
         ]
         return app.response_class('\n'.join(content) + '\n', mimetype='text/plain')
 
     @app.route('/sitemap.xml', methods=['GET'])
     def sitemap_xml():
-        homepage = url_for('character_sheet', _external=True)
+        homepage = f'{CANONICAL_URL}/'
         lastmod = datetime.utcnow().date().isoformat()
         xml = (
             '<?xml version="1.0" encoding="UTF-8"?>\n'

@@ -4,29 +4,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Julie's Demiplane</title>
+    <title>Julie's Demiplane — Free Online D&D 5e Character Sheet</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
-        {% set canonical_url = request.url_root.rstrip('/') ~ '/' %}
-        <meta name="description" content="Julie's Demiplane is a browser-based D&D 5e character sheet with live trackers, buffs, inventory management, and quick autosave editing.">
+        <meta name="description" content="Free online D&D 5e character sheet (2014 & 2024 rules) with autosave, live trackers, buffs, and inventory management — no signup required to try it.">
         <link rel="canonical" href="{{ canonical_url }}">
         <meta name="robots" content="index, follow">
 
         <meta property="og:type" content="website">
         <meta property="og:site_name" content="Julie's Demiplane">
-        <meta property="og:title" content="Julie's Demiplane">
-        <meta property="og:description" content="A browser-based D&D 5e character sheet with trackers, buffs, and autosave editing.">
+        <meta property="og:title" content="Julie's Demiplane — Free Online D&D 5e Character Sheet">
+        <meta property="og:description" content="Free online D&D 5e character sheet (2014 & 2024 rules) with autosave, live trackers, buffs, and inventory management — no signup required to try it.">
         <meta property="og:url" content="{{ canonical_url }}">
 
         <meta name="twitter:card" content="summary">
-        <meta name="twitter:title" content="Julie's Demiplane">
-        <meta name="twitter:description" content="A browser-based D&D 5e character sheet with trackers, buffs, and autosave editing.">
+        <meta name="twitter:title" content="Julie's Demiplane — Free Online D&D 5e Character Sheet">
+        <meta name="twitter:description" content="Free online D&D 5e character sheet (2014 & 2024 rules) with autosave, live trackers, buffs, and inventory management — no signup required to try it.">
 
         <script type="application/ld+json">
         {
             "@context": "https://schema.org",
-            "@type": "WebSite",
+            "@type": "WebApplication",
             "name": "Julie's Demiplane",
-            "url": {{ canonical_url | tojson }}
+            "description": "Free online D&D 5e character sheet (2014 & 2024 rules) with autosave, live trackers, buffs, and inventory management.",
+            "url": {{ canonical_url | tojson }},
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Any (Web Browser)",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            }
         }
         </script>
 
@@ -129,7 +136,7 @@
     {% endif %}
 
     <main class="page-container sheet-page-content">
-    <h1 class="visually-hidden">Julie's Demiplane D&D 5e Character Sheet</h1>
+    <h1 class="visually-hidden">Julie's Demiplane D&D 5e Character Sheet (2014 &amp; 2024 rules)</h1>
     {% if is_guest and character %}
 
         <div id="guest-landing-panel">
