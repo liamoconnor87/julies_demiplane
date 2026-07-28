@@ -3,16 +3,22 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 0 1rem;
+    /* Without this, the help text's own unwrapped line width (its
+       max-content size) gets used to size this flex column, stretching the
+       whole section far wider than the fixed-width field row actually
+       needs — capping it here forces the help text to wrap instead. */
+    max-width: 21rem;
 }
 
 .combat-section-layout-row {
     display: flex;
     flex-direction: row;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: stretch;
     --combat-col-field-width: 100px;
     --combat-col-input-height: 2.58rem;
     --combat-col-label-height: 1.1rem;
+    --combat-col-label-padding-v: 0.25rem;
     --combat-col-gap: 0.25rem;
 }
 
@@ -20,6 +26,7 @@
     display: flex;
     flex-direction: column;
     margin-right: 0.3rem;
+    margin-bottom: 0.3rem;
 }
 
 .combat-section-col-one-field {
@@ -43,7 +50,8 @@
     border-color: var(--success-colour);
 }
 
-.combat-section-input.combat-critical-state {
+.combat-section-input.combat-critical-state,
+.current-hp-value-input.combat-critical-state {
     color: var(--critical-colour);
     border-color: var(--critical-colour);
 }
@@ -69,7 +77,7 @@
     min-height: var(--combat-col-label-height);
     line-height: 1;
     text-align: center;
-    padding: 0.25rem 0;
+    padding: var(--combat-col-label-padding-v) 0;
 }
 
 .combat-section-col-one-field input[type="number"] {
@@ -87,54 +95,120 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: 10.4rem;
-    max-width: 10.4rem;
-    min-width: 10.4rem;
+    width: 12.5rem;
+    max-width: 12.5rem;
+    min-width: 12.5rem;
+    margin-right: 0.3rem;
+    margin-bottom: 0.3rem;
 }
 
-.combat-section-col-two-field .combat-section-input,
-.combat-section-col-two-field .combat-section-label {
-    width: 10.4rem;
+.combat-section-col-two-field.hp-not-set,
+.combat-section-col-one-field.hp-not-set {
+    display: none;
 }
 
 .combat-section-col-two-field .combat-section-input {
-    height: 8.4rem;
+    width: 12.5rem;
+    /* Two stacked col-one fields' worth of height (Temp HP + Damage/Health),
+       so the Current HP box lines up with them: two input heights, one
+       label-row height (each stacked field's label-row is the same height),
+       and the gap between the two stacked fields. */
+    height: calc((2 * var(--combat-col-input-height)) + var(--combat-col-label-height) + (var(--combat-col-label-padding-v) * 2) + var(--combat-col-gap) - 0.2rem);
     font-size: 4rem;
     text-align: center;
     padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+}
+
+/* The actual editable Current HP number, sized to match the old input, plus
+   a smaller muted suffix showing the Health Points total for reference —
+   the suffix only ever changes when Health Points itself changes. */
+.current-hp-value-input {
+    width: auto;
+    max-width: 7.5rem;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    text-align: right;
     appearance: textfield;
     -moz-appearance: textfield;
 }
 
-.combat-section-col-two-field .combat-section-input::-webkit-outer-spin-button,
-.combat-section-col-two-field .combat-section-input::-webkit-inner-spin-button {
+.current-hp-value-input::-webkit-outer-spin-button,
+.current-hp-value-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
+.current-hp-max-suffix {
+    font-size: 1.4rem;
+    color: var(--text-colour-three);
+    opacity: 0.5;
+    line-height: 1;
+    white-space: nowrap;
+}
+
 .combat-section-col-two-field .combat-section-label {
+    width: 12.5rem;
+    min-height: var(--combat-col-label-height);
+    line-height: 1;
+    font-size: 0.7rem;
     text-align: center;
-    padding: 0.25rem 0;
-    padding-left: 0;
+    /* Extra bottom padding (vs. the shared var used elsewhere) lifts the
+       text away from the bottom edge without a gap from the field above —
+       label stays flush against it, just taller. Countered by the same
+       amount subtracted from the field's height above, so the two still
+       add up to the sibling column's combined height. */
+    padding: var(--combat-col-label-padding-v) 0 calc(var(--combat-col-label-padding-v) + 0.2rem) 0;
 }
 
-.combat-section-current-hp-controls {
+/* Damage/Health split label — replaces the Damage/Health calc field's plain
+   label with two click targets that apply the typed amount (or 1) to
+   Current HP; each word is its own click target. */
+.damage-health-split-controls {
+    order: 2;
     display: flex;
-    width: 10.4rem;
-}
-
-.combat-section-btn {
-    cursor: pointer;
-    text-align: center;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: var(--combat-col-field-width);
+    min-height: var(--combat-col-label-height);
+    padding: var(--combat-col-label-padding-v) 0.2rem;
     background: var(--field-bg-colour);
-    color: var(--button-icon-colour);
-    border: none;
 }
 
-.combat-section-current-hp-btn {
-    flex: 1 1 50%;
-    height: 2rem;
-    font-size: 1.35rem;
+.current-hp-split-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    font-weight: bold;
+    font-size: 0.6rem;
+    padding: 0.05rem 0.15rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.current-hp-damage-btn {
+    color: var(--critical-colour);
+}
+
+.current-hp-health-btn {
+    color: var(--success-colour);
+}
+
+.current-hp-damage-btn:hover {
+    border-color: var(--critical-colour);
+}
+
+.current-hp-health-btn:hover {
+    border-color: var(--success-colour);
 }
 
 @media (max-width: 499px) {
@@ -151,6 +225,6 @@
 
     .combat-section-col-one {
         margin-right: 0.3rem;
-        margin-bottom: 0;
+        margin-bottom: 0.3rem;
     }
 }

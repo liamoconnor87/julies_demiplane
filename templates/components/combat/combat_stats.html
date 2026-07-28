@@ -1,33 +1,30 @@
 <div class="combat-section">
     <h4>Combat</h4>
-    <p class="section-help-text">Manage HP, Temp HP, and Hit Dice. Use +/− to adjust Current HP during encounters.</p>
+    <p class="section-help-text">Click Damage or Health to adjust Current HP by 1, or type an amount first to apply that instead.</p>
     <div class="combat-section-layout-row">
-        {# Column 1: Health Points, Temp HP, Hit Dice #}
-        <div class="combat-section-col-one">
-            <div class="combat-section-col-one-field">
-                <label for="character-health_points" class="field-label combat-section-label">Health Points</label>
-                <input type="number" id="character-health_points" name="character-health_points" value="{{ character.health_points or '' }}" class="field-input combat-section-input">
-            </div>
-
-            <div class="combat-section-col-one-field">
-                <label for="character-temporary_hit_points" class="field-label combat-section-label">Temp HP</label>
-                <input type="text" id="character-temporary_hit_points" name="character-temporary_hit_points" value="{{ character.temporary_hit_points if character.temporary_hit_points else '--' }}" class="field-input combat-section-input">
-            </div>
-
-            <div class="combat-section-col-one-field">
-                <label for="character-hit_dice" class="field-label combat-section-label">Hit Dice</label>
-                <input type="text" id="character-hit_dice" name="character-hit_dice" value="{{ character.hit_dice or '' }}" class="field-input combat-section-input">
-            </div>
-        </div>
-
-        {# Column 2: Current Health Points square #}
-        <div class="combat-section-col-two-field">
-            <input type="number" id="character-current_health_points" name="character-current_health_points" value="{{ character.current_health_points or '' }}" class="field-input combat-section-input">
-            <div class="combat-section-current-hp-controls" aria-label="Adjust current HP">
-                <button type="button" id="decrease-current-hp-btn" class="combat-section-btn combat-section-current-hp-btn" aria-label="Decrease current HP">-</button>
-                <button type="button" id="increase-current-hp-btn" class="combat-section-btn combat-section-current-hp-btn" aria-label="Increase current HP">+</button>
+        {# Column 1: Current Health Points square #}
+        <div class="combat-section-col-two-field{% if not character.health_points %} hp-not-set{% endif %}">
+            <div class="field-input combat-section-input">
+                <input type="number" id="character-current_health_points" value="{{ character.current_health_points or '' }}" class="current-hp-value-input">
+                <span class="current-hp-max-suffix" id="current-hp-max-suffix">/{{ character.health_points if character.health_points else '--' }}</span>
             </div>
             <label for="character-current_health_points" class="field-label combat-section-label">Current HP</label>
+        </div>
+
+        {# Column 2: Temp HP and Damage/Health calculator, stacked together #}
+        <div class="combat-section-col-one">
+            <div class="combat-section-col-one-field{% if not character.health_points %} hp-not-set{% endif %}">
+                <label for="character-temporary_hit_points" class="field-label combat-section-label">Temp HP</label>
+                <input type="text" id="character-temporary_hit_points" class="field-input combat-section-input" placeholder="--">
+            </div>
+
+            <div class="combat-section-col-one-field{% if not character.health_points %} hp-not-set{% endif %}">
+                <input type="number" id="damage-health-calc" class="field-input combat-section-input" min="0" placeholder="--">
+                <div class="damage-health-split-controls" aria-label="Apply Damage/Health amount to Current HP">
+                    <button type="button" id="decrease-current-hp-btn" class="current-hp-split-btn current-hp-damage-btn" title="Apply damage to Current HP">Damage</button>
+                    <button type="button" id="increase-current-hp-btn" class="current-hp-split-btn current-hp-health-btn" title="Apply healing to Current HP">Health</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>

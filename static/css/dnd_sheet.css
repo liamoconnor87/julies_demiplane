@@ -346,6 +346,16 @@ h4 {
     color: var(--error-colour);
 }
 
+.global-feedback.is-loading .global-feedback-icon {
+    color: var(--label-colour);
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .global-feedback-icon {
     flex: 0 0 auto;
     font-size: 0.84rem;
@@ -395,6 +405,12 @@ h4 {
     font-size: 0.8rem;
     transition: background 0.2s;
     display: block;
+    cursor: text;
+}
+
+.field-input[readonly],
+.field-input:disabled {
+    cursor: default;
 }
 
 .field-label {

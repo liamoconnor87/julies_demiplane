@@ -10,7 +10,9 @@
     tabindex="0"
     aria-pressed="{% if display_checkbox_checked %}true{% else %}false{% endif %}"
     {% endif %}>
-    <div id="{{ display_value_id }}" class="{{ display_value_classes }}">{{ display_value if display_value is not none and display_value != '' else 0 }}</div>
+    {% set display_value_safe = display_value | default(0) %}
+    {% set display_value_resolved = (display_value_safe if display_value_safe is not none and display_value_safe != '' else 0) | int %}
+    <div id="{{ display_value_id }}" class="{{ display_value_classes }}">{% if display_value_resolved > 0 %}+{% endif %}{{ display_value_resolved }}</div>
     <div class="{{ display_label_classes }}">{{ display_label_text }}</div>
     {% if display_checkbox_name %}
     <input type="checkbox" id="{{ display_checkbox_id }}" name="{{ display_checkbox_name }}" value="1" {% if display_checkbox_checked %}checked{% endif %} class="hidden-proficiency-checkbox">

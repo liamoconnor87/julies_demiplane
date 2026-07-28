@@ -83,26 +83,3 @@ def register_character_info_fragment_routes(app, db, limiter):
             skip_abilities_oob=skip_abilities_oob,
             **feedback_template_context('character_info', feedback),
         )
-
-    @app.route('/characters/<character_id>/combat/fragment', methods=['POST'])
-    @guest_or_login_required
-    @limiter.limit('30/minute', exempt_when=lambda: current_user.is_authenticated)
-    def combat_fragment(character_id: str):
-        if guest.is_guest() and not current_user.is_authenticated:
-            sheet, data = build_guest_character_sheet_data(character_id)
-            sheet.save_combat_values(character_id, request.form)
-            data = sheet.create_form()
-            return render_template(
-                'components/combat/guest_combat_stats.html',
-                character_id=character_id,
-                character=data['character'],
-                is_guest=True,
-            )
-
-        if not User.owns_character(db, current_user.id, character_id):
-            abort(403)
-        sheet = CharacterSheet(character_id=character_id)
-        sheet.save_combat_values(character_id, request.form)
-
-        character = sheet.fetch_combat_stats_data()
-        return render_template('components/combat/combat_stats.html', character_id=character_id, character=character)

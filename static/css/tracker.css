@@ -188,6 +188,15 @@
     min-width: 0;
 }
 
+.tracker-top-row-secondary-column {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    width: 100%;
+    min-width: 0;
+    gap: 0.75rem;
+}
+
 /* ── Tracker section (full-page) ───────────────────────────────────────────── */
 
 .tracker-section {
@@ -340,6 +349,9 @@
     margin-bottom: 1.5rem;
 }
 
+/* Hit Dice now lives in the Combat section (static/css/combat.css) — moved
+   there alongside the rest of the combat boxes, styled to match Temp HP. */
+
 /* × remove button — uses shared .section-remove-x from section_action_buttons.css */
 
 .tracker-name-field,
@@ -463,15 +475,19 @@
     }
 }
 
+@media (max-width: 499px) {
+    /* Matches the padding reduction every other section applies at this
+       breakpoint (Combat, Buffs, Hit Dice). */
+    .tracker-section {
+        padding: 0 0.25rem;
+    }
+}
+
 @media (max-width: 400px) {
     /* Constrain toggle row width so squares wrap in rows of 3 */
     .tracker-entry-row .tracker-toggles-row,
     .tracker-entry-row .tracker-toggles-row-no-label {
         max-width: calc(var(--tracker-entry-height) * 3 + 0.5rem);
-    }
-
-    .tracker-section {
-        padding: 0 0.25rem;
     }
 }
 

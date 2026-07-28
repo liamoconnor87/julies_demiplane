@@ -1,5 +1,5 @@
 <div id="custom-stat-row-{{ stat.id }}" class="custom-stats-section-row custom-stats-section-saved-row custom-stats-stat-card">
-    <div class="custom-stats-section-field custom-stats-section-value-field custom-stats-square-field custom-stats-saved-field">
+    <div id="custom-stat-wrapper-{{ stat.id }}" class="custom-stats-section-field custom-stats-section-value-field custom-stats-square-field custom-stats-saved-field section-row-indicator" hx-indicator="#custom-stat-wrapper-{{ stat.id }}">
         <input type="number" id="custom_stat-value-{{ stat.id }}"
             name="custom_stat-value-{{ stat.id }}" value="{{ stat.value }}" class="field-input custom-stats-section-input"
             data-custom-stat-id="{{ stat.id }}">
@@ -10,6 +10,7 @@
             hx-swap="innerHTML"
             hx-include="closest form"
             aria-label="Remove {{ stat.name }}">×</button>
+        <i class="bi bi-arrow-repeat section-row-spinner" aria-hidden="true"></i>
     </div>
 
     <input type="hidden" id="custom_stat-name-{{ stat.id }}" name="custom_stat-name-{{ stat.id }}" value="{{ stat.name }}">

@@ -83,6 +83,47 @@
     padding-left: 0;
 }
 
+/* ── +/- stepper flanking the ability label — same slot the label always
+   occupied, so the field's overall width/height are unaffected ──────────── */
+
+.abilities-section-stepper-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 7rem;
+    gap: 0.05rem;
+    background: var(--field-bg-colour);
+}
+
+.abilities-section-stepper-row .abilities-section-name-label {
+    /* Grow to fill the fixed remaining space (not shrink-to-content) so the
+       label box is the same width for every ability regardless of name
+       length — otherwise longer names (e.g. "Intelligence") push the buttons
+       further apart than shorter ones (e.g. "Wisdom"), making the +/-
+       position inconsistent row to row. */
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    background: transparent;
+}
+
+.abilities-section-step-btn {
+    flex: 0 0 auto;
+    align-items: center;
+    background: transparent;
+    color: var(--button-icon-colour);
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.abilities-section-step-btn:disabled {
+    color: transparent;
+    cursor: default;
+    pointer-events: none;
+}
+
 .abilities-section-secondary-column {
     display: flex;
     flex-direction: column;

@@ -2,9 +2,10 @@ from flask import abort, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from demiplane.auth.models import User
-from demiplane.services.character_sheet import CharacterSheet, CUSTOM_STAT_MAX
+from demiplane.services.character_sheet import CharacterSheet, CUSTOM_STAT_MAX, TRACKER_MAX
 from demiplane.services.custom_buff import BuffProcessor
 from demiplane.services import guest_character as guest
+from demiplane.routes.fragments.trackers import get_trackers_for_character
 from demiplane.routes.helpers import guest_or_login_required, build_guest_character_sheet_data
 
 
@@ -38,6 +39,7 @@ def register_classes_fragment_routes(app, db, limiter):
         custom_stats = sheet.fetch_custom_stats_data()
         custom_buffs = sheet.fetch_custom_buffs_data()
         BuffProcessor(character_id).transform_out({'custom_stats': custom_stats, 'custom_buffs': custom_buffs})
+        trackers = get_trackers_for_character(db, character_id)
 
         return render_template(
             'components/classes/classes_fragment_response.html',
@@ -47,6 +49,8 @@ def register_classes_fragment_routes(app, db, limiter):
             character=character,
             custom_stats=custom_stats,
             custom_stats_at_capacity=len(custom_stats) >= CUSTOM_STAT_MAX,
+            trackers=trackers,
+            trackers_at_capacity=len(trackers) >= TRACKER_MAX,
             is_guest=False,
         )
 
@@ -82,6 +86,7 @@ def register_classes_fragment_routes(app, db, limiter):
         custom_stats = sheet.fetch_custom_stats_data()
         custom_buffs = sheet.fetch_custom_buffs_data()
         BuffProcessor(character_id).transform_out({'custom_stats': custom_stats, 'custom_buffs': custom_buffs})
+        trackers = get_trackers_for_character(db, character_id)
 
         return render_template(
             'components/classes/classes_fragment_response.html',
@@ -91,5 +96,7 @@ def register_classes_fragment_routes(app, db, limiter):
             character=character,
             custom_stats=custom_stats,
             custom_stats_at_capacity=len(custom_stats) >= CUSTOM_STAT_MAX,
+            trackers=trackers,
+            trackers_at_capacity=len(trackers) >= TRACKER_MAX,
             is_guest=False,
         )

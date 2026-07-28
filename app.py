@@ -12,6 +12,7 @@ from flask_talisman import Talisman
 
 from go_get_it.go_get_it import GoGetDB
 from demiplane.auth import setup_auth
+from demiplane.services.dnd_mappings import CLASS_HIT_DIE_MAPPING
 from db.config import (
     DEBUG,
     FORCE_HTTPS,
@@ -31,6 +32,7 @@ from demiplane.routes.admin import register_admin_routes
 from demiplane.routes.dnd_character_sheet import register_dnd_character_sheet_routes
 from demiplane.routes.errors import register_error_handlers
 from demiplane.routes.fragments import register_fragment_routes
+from demiplane.routes.health import register_health_routes
 from demiplane.routes.main import register_main_routes
 from demiplane.routes.user_theme import register_user_theme_routes
 
@@ -102,7 +104,7 @@ csp = {
     ],
     'img-src': "'self' data:",
 }
-Talisman(
+talisman = Talisman(
     app,
     force_https=FORCE_HTTPS,
     content_security_policy=csp,
@@ -123,6 +125,12 @@ def inject_static_version():
 def inject_canonical_url():
     return {'canonical_url': f'{CANONICAL_URL}/'}
 
+# ── Class → hit die size (d6, d8, d10, d12), for the automatic per-class Hit
+# Dice tracker rows ───────────────────────────────────────────────────────────
+@app.context_processor
+def inject_hit_die_mapping():
+    return {'hit_die_mapping': CLASS_HIT_DIE_MAPPING}
+
 @app.after_request
 def no_cache_html(response):
     if 'text/html' in response.content_type:
@@ -135,6 +143,7 @@ db = GoGetDB()
 db.go_create_db()
 setup_auth(app, db, limiter)
 register_error_handlers(app, db)
+register_health_routes(app, limiter, talisman)
 register_user_theme_routes(app, db)
 register_dnd_character_sheet_routes(app, db, limiter)
 register_admin_routes(app, db)

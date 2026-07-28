@@ -51,6 +51,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/character_info.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classes.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/combat.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hit_dice.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/abilities_skills.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/card_item.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_stats.css') }}">
@@ -249,7 +250,7 @@
         <div id="sheet-page-inventory" class="sub-page d-none"></div>
         {% endif %}
 
-        {# ── Trackers tab ──────────────────────────────────────────────────── #}
+        {# ── Combat tab (formerly "Trackers") ───────────────────────────────── #}
         {% if current_user.is_authenticated and active_character_id %}
         <div id="sheet-page-trackers" class="sub-page d-none">
             <form id="combat-buffs-form" action="/" method="POST">
@@ -258,8 +259,13 @@
                     <div id="combat-stats-section-container">
                         {% include 'components/combat/combat_stats.html' %}
                     </div>
-                    <div id="custom-buffs-section-container">
-                        {% include 'components/buffs/custom_buffs_section.html' %}
+                    <div class="tracker-top-row-secondary-column">
+                        <div id="hit-dice-section-container">
+                            {% include 'components/combat/hit_dice_section.html' %}
+                        </div>
+                        <div id="custom-buffs-section-container">
+                            {% include 'components/buffs/custom_buffs_section.html' %}
+                        </div>
                     </div>
                 </div>
             </form>

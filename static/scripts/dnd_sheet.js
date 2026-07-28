@@ -31,6 +31,13 @@ window.addEventListener("load", () => {
         }
     });
 
+    // Show a loading spinner in the global toast the instant any htmx request
+    // starts, so add/save actions get immediate feedback instead of appearing
+    // to do nothing until the response swaps in.
+    document.body.addEventListener('htmx:beforeRequest', () => {
+        showGlobalFeedback('', 'loading');
+    });
+
     // Keep capacity controls in sync after HTMX swaps settle.
     document.body.addEventListener('htmx:afterSettle', (event) => {
         if (event.detail.successful === false) {
@@ -79,6 +86,7 @@ window.addEventListener("load", () => {
             syncGlobalLockState();
             decorateBuffedLabels();
             bindCharacterInfoAutoSave();
+            recomputePassiveStats();
 
             // When a new character is saved for the first time, reveal the
             // rest of the sheet sections that were hidden during creation.
@@ -101,6 +109,9 @@ window.addEventListener("load", () => {
         if (target.id === 'classes-section-container') {
             bindAddClassButton();
             bindClassLevelAutoSave();
+            bindTrackerToggles();
+            bindTrackerAddEntryToggles();
+            bindHitDiceSteppers();
             syncGlobalLockState();
             showGlobalFeedback('', 'success');
             return;
@@ -157,6 +168,7 @@ window.addEventListener("load", () => {
             bindProficiencyToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
+            recomputePassiveStats();
             showGlobalFeedback('', 'success');
             return;
         }
@@ -166,6 +178,7 @@ window.addEventListener("load", () => {
             bindProficiencyToggles();
             syncGlobalLockState();
             decorateBuffedLabels();
+            recomputePassiveStats();
             showGlobalFeedback('', 'success');
             return;
         }
@@ -272,7 +285,6 @@ window.addEventListener("load", () => {
             bindProficiencyToggles();
             syncGlobalLockState();
             bindCurrentHpCalculation();
-            bindCombatFieldAutoSave();
             bindBuffCardEdit();
             decorateBuffedLabels();
             showGlobalFeedback('', 'success');
@@ -281,7 +293,13 @@ window.addEventListener("load", () => {
 
         if (target.id === 'combat-stats-section-container') {
             bindCurrentHpCalculation();
-            bindCombatFieldAutoSave();
+            syncGlobalLockState();
+            showGlobalFeedback('', 'success');
+            return;
+        }
+
+        if (target.id === 'hit-dice-section-container') {
+            bindHitDiceSteppers();
             syncGlobalLockState();
             showGlobalFeedback('', 'success');
             return;
@@ -298,9 +316,17 @@ window.addEventListener("load", () => {
 
     // Combat values can be changed by HTMX swaps (including OOB fragments)
     // without emitting user input events, so re-apply state classes here.
-    document.body.addEventListener('htmx:afterSettle', () => {
+    document.body.addEventListener('htmx:afterSettle', (event) => {
         applyCombatStateColours();
         bindAllOptimisticRemoveButtons();
+
+        // Safety net: a few afterSwap targets (auth dropdown, delete-character
+        // dropdown, character info) drive their own feedback UI and never call
+        // showGlobalFeedback, so the loading spinner would otherwise be stuck.
+        const feedback = getGlobalFeedbackElement();
+        if (feedback && feedback.classList.contains('is-loading')) {
+            showGlobalFeedback('', event.detail.successful === false ? 'error' : 'success');
+        }
     });
 })
 
@@ -407,7 +433,7 @@ function resetFeedbackElement(feedback, { resetDataset = false } = {}) {
 
     clearFeedbackHideTimer(feedback.id);
     feedback.replaceChildren();
-    feedback.classList.remove('is-visible', 'is-success', 'is-error');
+    feedback.classList.remove('is-visible', 'is-success', 'is-error', 'is-loading');
     feedback.removeAttribute('aria-label');
 
     if (resetDataset) {
@@ -437,8 +463,10 @@ function renderFeedbackElement(feedback, {
     message = '',
     successIconClass = '',
     errorIconClass = successIconClass,
+    loadingIconClass = successIconClass,
     textClass = '',
     successAriaLabel = 'Saved',
+    loadingAriaLabel = 'Saving',
     errorMessageOverride = '',
     updateDataset = false,
 } = {}) {
@@ -451,6 +479,7 @@ function renderFeedbackElement(feedback, {
     }
 
     const isError = kind === 'error';
+    const isLoading = kind === 'loading';
     const safeMessage = String(message || '').trim();
     const overrideMessage = String(errorMessageOverride || '').trim();
     const renderedMessage = isError ? (overrideMessage || safeMessage) : safeMessage;
@@ -464,11 +493,13 @@ function renderFeedbackElement(feedback, {
     const icon = document.createElement('i');
     icon.className = isError
         ? `bi bi-exclamation-circle-fill ${errorIconClass}`.trim()
-        : `bi bi-check-circle-fill ${successIconClass}`.trim();
+        : isLoading
+            ? `bi bi-arrow-repeat ${loadingIconClass}`.trim()
+            : `bi bi-check-circle-fill ${successIconClass}`.trim();
     icon.setAttribute('aria-hidden', 'true');
     feedback.appendChild(icon);
 
-    feedback.setAttribute('aria-label', isError ? renderedMessage : successAriaLabel);
+    feedback.setAttribute('aria-label', isError ? renderedMessage : (isLoading ? loadingAriaLabel : successAriaLabel));
 
     if (renderedMessage) {
         const messageNode = document.createElement('span');
@@ -478,13 +509,13 @@ function renderFeedbackElement(feedback, {
     }
 
     if (updateDataset) {
-        feedback.dataset.feedbackKind = isError ? 'error' : 'success';
+        feedback.dataset.feedbackKind = isError ? 'error' : (isLoading ? 'loading' : 'success');
         feedback.dataset.feedbackMessage = safeMessage;
     }
 
     feedback.classList.add('is-visible');
-    feedback.classList.remove('is-success', 'is-error');
-    feedback.classList.add(isError ? 'is-error' : 'is-success');
+    feedback.classList.remove('is-success', 'is-error', 'is-loading');
+    feedback.classList.add(isError ? 'is-error' : (isLoading ? 'is-loading' : 'is-success'));
 
     return { isError, safeMessage, renderedMessage };
 }
@@ -511,12 +542,17 @@ function showGlobalFeedback(message, kind = 'success') {
         message,
         successIconClass: 'global-feedback-icon feedback-message-icon',
         errorIconClass: 'global-feedback-icon feedback-message-icon',
+        loadingIconClass: 'global-feedback-icon feedback-message-icon',
         textClass: 'global-feedback-text feedback-message-text',
         successAriaLabel: 'Saved',
+        loadingAriaLabel: 'Saving',
         errorMessageOverride: GLOBAL_ERROR_FEEDBACK_TEXT,
     });
 
-    armGlobalFeedbackAutoHide();
+    // Loading persists until a real completion event replaces it — don't auto-hide it.
+    if (kind !== 'loading') {
+        armGlobalFeedbackAutoHide();
+    }
 }
 
 function clearCharacterInfoFeedback() {
@@ -712,7 +748,6 @@ function initializeUiBindings() {
     bindCustomStatAutoSave();
     bindProficiencyToggles();
     bindCurrentHpCalculation();
-    bindCombatFieldAutoSave();
     bindBuffCardEdit();
     bindFeatDescriptionDisplayAutoHeight();
     bindInventoryDescriptionDisplayAutoHeight();
@@ -721,18 +756,20 @@ function initializeUiBindings() {
     bindFeatAutoSave();
     bindInventoryAutoSave();
     bindAbilityAutoSave();
+    recomputePassiveStats();
     bindFeatsContainerSettle();
     bindInventoryContainerSettle();
     bindAbilitiesContainerSettle();
     bindCharacterInfoContainerSettle();
     bindClassesContainerSettle();
     bindCustomStatsContainerSettle();
-    bindCombatContainerSettle();
     bindGlobalLockToggle();
     bindTrackerAutoSave();
     bindTrackerToggles();
     bindAllOptimisticRemoveButtons();
     bindMobileCharacterSelect();
+    bindAbilityStepButtons();
+    bindHitDiceSteppers();
 }
 
 function bindMobileCharacterSelect() {
@@ -864,6 +901,7 @@ function saveFeatRow(featId) {
     }
 
     htmx.ajax('POST', `/characters/${characterId}/feat-and-trait/${featId}/update`, {
+        source: nameInput,
         target: `#feat-row-${featId}`,
         swap: 'outerHTML',
         values: {
@@ -1039,6 +1077,7 @@ function saveCustomStatRow(statId) {
     const nameInput = document.getElementById(`custom_stat-name-${statId}`);
     if (!valueInput) return;
     htmx.ajax('POST', `/characters/${characterId}/custom-stat/${statId}/update`, {
+        source: valueInput,
         target: `#custom-stat-row-${statId}`,
         swap: 'outerHTML',
         values: {
@@ -1276,6 +1315,17 @@ function syncGlobalLockState() {
     if (abilitiesSection) {
         abilitiesSection.dataset.locked = String(isLocked);
     }
+    document.querySelectorAll('.abilities-section-name-input').forEach((input) => {
+        if (isLocked) {
+            input.setAttribute('readonly', '');
+        } else {
+            input.removeAttribute('readonly');
+        }
+    });
+    document.querySelectorAll('.abilities-section-step-btn').forEach((button) => {
+        button.disabled = isLocked;
+        button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+    });
 
     // ── Character + Combat sections ──
     const characterInfoSection = document.querySelector('.character-info-section');
@@ -1286,6 +1336,9 @@ function syncGlobalLockState() {
     if (combatSection) {
         combatSection.dataset.locked = String(isLocked);
     }
+    // The whole Combat section (Temp HP, Current HP, Damage/Health) and the
+    // Hit Dice section are combat-tracking, not build fields — none of it
+    // respects the lock.
 
     // ── Classes & custom stats section ──
     const statsSection = document.querySelector('.custom-stats-section');
@@ -1295,6 +1348,13 @@ function syncGlobalLockState() {
     document.querySelectorAll('[data-custom-stat-remove="true"]').forEach((button) => {
         button.disabled = isLocked;
         button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
+    });
+    document.querySelectorAll('.custom-stats-section-input').forEach((input) => {
+        if (isLocked) {
+            input.setAttribute('readonly', '');
+        } else {
+            input.removeAttribute('readonly');
+        }
     });
     document.querySelectorAll('[data-class-remove="true"]').forEach((button) => {
         button.disabled = isLocked;
@@ -1409,6 +1469,22 @@ function syncGlobalLockState() {
         button.setAttribute('aria-disabled', isLocked ? 'true' : 'false');
     });
 
+    // ── Add Buff action (lock-gated) ──
+    const addBuffContainer = document.getElementById('add-buff-action-container');
+    if (addBuffContainer) {
+        addBuffContainer.style.display = isLocked ? 'none' : '';
+        if (isLocked) {
+            const w = document.getElementById('add-custom-buff-btn-wrapper');
+            const f = document.getElementById('add-custom-buff-fields-wrapper');
+            const s = document.getElementById('add-custom-buff-submit-btn-wrapper');
+            const c = document.getElementById('close-custom-buff-btn-wrapper');
+            if (w) w.style.display = '';
+            if (f) f.style.display = 'none';
+            if (s) s.style.display = 'none';
+            if (c) c.style.display = 'none';
+        }
+    }
+
     // ── Tracker section ──
     const trackerSection = document.querySelector('.tracker-section');
     if (trackerSection) {
@@ -1431,6 +1507,15 @@ function syncGlobalLockState() {
     document.querySelectorAll('.tracker-add-entry-inline-btn').forEach((el) => {
         el.style.display = isLocked ? 'none' : 'flex';
     });
+    // Hit Dice tracking is combat-tracking, not a build field — always usable
+    // regardless of lock state (see bindHitDiceSteppers). It still gets
+    // data-locked set purely so its help text hides on lock like every
+    // other section's, via the generic [data-locked='true'] .section-help-text
+    // rule — this does not gate any Hit Dice control.
+    const hitDiceSection = document.querySelector('.hit-dice-section');
+    if (hitDiceSection) {
+        hitDiceSection.dataset.locked = String(isLocked);
+    }
 }
 
 function bindGlobalLockToggle() {
@@ -1903,6 +1988,7 @@ function saveInventoryRow(inventoryId) {
     }
 
     htmx.ajax('POST', `/characters/${characterId}/inventory/${inventoryId}/update`, {
+        source: nameInput,
         target: `#inventory-row-${inventoryId}`,
         swap: 'outerHTML',
         values: {
@@ -1975,23 +2061,16 @@ function bindInventoryAutoSave() {
 }
 
 function bindCurrentHpCalculation() {
-    const healthPointsField = document.getElementById('character-health_points');
     const tempHpField = document.getElementById('character-temporary_hit_points');
     const currentHpField = document.getElementById('character-current_health_points');
     const decreaseCurrentHpBtn = document.getElementById('decrease-current-hp-btn');
     const increaseCurrentHpBtn = document.getElementById('increase-current-hp-btn');
+    const damageHealthField = document.getElementById('damage-health-calc');
+    const currentHpMaxSuffix = document.getElementById('current-hp-max-suffix');
 
-    if (!healthPointsField || !tempHpField || !currentHpField) {
+    if (!tempHpField || !currentHpField) {
         return;
     }
-
-    // Guard against duplicate listener binding — combat fields survive
-    // across character-info and custom-buffs swaps, so listeners accumulate
-    // without this check.
-    if (currentHpField.dataset.hpCalcBound === 'true') {
-        return;
-    }
-    currentHpField.dataset.hpCalcBound = 'true';
 
     const getCharacterId = () => {
         const characterIdField = document.getElementById('character-id');
@@ -2007,6 +2086,19 @@ function bindCurrentHpCalculation() {
         const cookieKey = getCurrentHpCookieKey();
         if (cookieKey && currentHpField.value !== '') {
             setCookieValue(cookieKey, currentHpField.value, CURRENT_HP_COOKIE_MAX_AGE_SECONDS);
+        }
+    };
+
+    // Temp HP is cookie-only now too — no DB field, never autosaved.
+    const getTempHpCookieKey = () => {
+        const characterId = getCharacterId();
+        return characterId ? `temp_hp_${characterId}` : null;
+    };
+
+    const saveTempHpToCookie = () => {
+        const cookieKey = getTempHpCookieKey();
+        if (cookieKey) {
+            setCookieValue(cookieKey, tempHpField.value, CURRENT_HP_COOKIE_MAX_AGE_SECONDS);
         }
     };
 
@@ -2036,11 +2128,19 @@ function bindCurrentHpCalculation() {
 
     const displayTempHp = (numericValue) => {
         const normalizedTempHp = Math.max(0, parseNumberOrZero(numericValue));
-        tempHpField.value = normalizedTempHp > 0 ? normalizedTempHp : '--';
+        tempHpField.value = normalizedTempHp > 0 ? normalizedTempHp : '';
     };
 
+    // Health Points now lives in the Character Info section — a container
+    // that can re-render independently of this one (the Trackers tab). Look
+    // it up fresh every time instead of closing over a single node, so this
+    // logic keeps working correctly even after that section swaps in a new
+    // node out from under an already-bound Temp HP/Current HP closure.
+    const getHealthPointsField = () => document.getElementById('character-health_points');
+
     const getHealthPoints = () => {
-        return Math.max(0, parseNumberOrZero(healthPointsField.value));
+        const healthPointsField = getHealthPointsField();
+        return healthPointsField ? Math.max(0, parseNumberOrZero(healthPointsField.value)) : 0;
     };
 
     const getTempHp = () => {
@@ -2052,16 +2152,44 @@ function bindCurrentHpCalculation() {
     };
 
     const syncCombatStateColours = () => {
-        applyCombatStateColours({ healthPointsField, tempHpField, currentHpField });
+        applyCombatStateColours({ healthPointsField: getHealthPointsField(), tempHpField, currentHpField });
     };
 
-    // Restore from cookie on initial bind
-    const cookieKey = getCurrentHpCookieKey();
-    const savedHp = cookieKey ? getCookieValue(cookieKey) : null;
-    if (savedHp !== null && savedHp !== '') {
-        const maxCurrentHp = getMaxCurrentHp();
-        const restoredHp = Math.min(maxCurrentHp, Math.max(0, parseNumberOrZero(savedHp)));
-        currentHpField.value = restoredHp;
+    const syncCurrentHpVisibility = () => {
+        const healthPointsField = getHealthPointsField();
+        if (!healthPointsField) return;
+        const isEmpty = isEmptyLikeValue(healthPointsField.value);
+
+        const currentHpWrapper = currentHpField.closest('.combat-section-col-two-field');
+        if (currentHpWrapper) currentHpWrapper.classList.toggle('hp-not-set', isEmpty);
+
+        // Only these two specific fields — not the whole column, since Hit
+        // Dice fields now share it too and must stay visible regardless.
+        const tempHpWrapper = tempHpField.closest('.combat-section-col-one-field');
+        if (tempHpWrapper) tempHpWrapper.classList.toggle('hp-not-set', isEmpty);
+
+        const damageHealthWrapper = damageHealthField ? damageHealthField.closest('.combat-section-col-one-field') : null;
+        if (damageHealthWrapper) damageHealthWrapper.classList.toggle('hp-not-set', isEmpty);
+    };
+
+    // Static reference to the character's Health Points total — only ever
+    // changes when the Health Points field itself changes, never when Temp
+    // HP or Current HP fluctuate.
+    const syncMaxHpSuffix = () => {
+        if (!currentHpMaxSuffix) return;
+        const healthPointsField = getHealthPointsField();
+        const isSet = healthPointsField && !isEmptyLikeValue(healthPointsField.value);
+        currentHpMaxSuffix.textContent = isSet ? `/${healthPointsField.value}` : '/--';
+    };
+
+    // Restore Temp HP from its cookie on first bind, before the initial max
+    // baseline below is computed, so it correctly includes the restored value.
+    if (currentHpField.dataset.hpCalcBound !== 'true') {
+        const tempHpCookieKey = getTempHpCookieKey();
+        const savedTempHp = tempHpCookieKey ? getCookieValue(tempHpCookieKey) : null;
+        if (savedTempHp !== null && savedTempHp !== '') {
+            tempHpField.value = savedTempHp;
+        }
     }
 
     let previousMaxCurrentHp = getMaxCurrentHp();
@@ -2078,6 +2206,7 @@ function bindCurrentHpCalculation() {
         }
 
         if (delta < 0) {
+            const damage = Math.abs(delta);
             if (currentHp <= 0) {
                 currentHpField.value = 0;
                 saveCurrentHpToCookie();
@@ -2085,20 +2214,34 @@ function bindCurrentHpCalculation() {
                 return;
             }
 
+            // Temp HP absorbs damage first, up to however much it has — not a
+            // flat 1 per click, so this stays correct for arbitrary amounts
+            // (the Damage/Health calculator), not just the ±1 buttons. This is
+            // bookkeeping only — it doesn't dispatch a synthetic input event,
+            // since that would trigger a nested calculateCurrentHp() recalculation
+            // whose result the line below would then stomp with a stale currentHp.
             const tempHp = getTempHp();
-            if (tempHp > 0) {
-                displayTempHp(tempHp - 1);
-                tempHpField.dispatchEvent(new Event('input', { bubbles: true }));
+            const absorbed = Math.min(tempHp, damage);
+            if (absorbed > 0) {
+                displayTempHp(tempHp - absorbed);
+                saveTempHpToCookie();
             }
 
-            currentHpField.value = Math.max(0, currentHp + delta);
+            currentHpField.value = Math.max(0, currentHp - damage);
             saveCurrentHpToCookie();
             syncCombatStateColours();
         }
     };
 
     const calculateCurrentHp = () => {
-        if (isEmptyLikeValue(healthPointsField.value) && isEmptyLikeValue(tempHpField.value)) {
+        syncCurrentHpVisibility();
+        saveTempHpToCookie();
+        syncMaxHpSuffix();
+
+        const healthPointsField = getHealthPointsField();
+        const healthPointsEmpty = !healthPointsField || isEmptyLikeValue(healthPointsField.value);
+
+        if (healthPointsEmpty && isEmptyLikeValue(tempHpField.value)) {
             currentHpField.value = '';
             previousMaxCurrentHp = 0;
             clearCurrentHpCookie();
@@ -2126,99 +2269,66 @@ function bindCurrentHpCalculation() {
         syncCombatStateColours();
     };
 
-    healthPointsField.addEventListener('input', calculateCurrentHp);
-    tempHpField.addEventListener('input', calculateCurrentHp);
+    // ── Combat-section side (Temp HP, Current HP, buttons, Damage/Health
+    // calc) — these all live together and swap together, so one shared guard
+    // covers this half. ──
+    if (currentHpField.dataset.hpCalcBound !== 'true') {
+        currentHpField.dataset.hpCalcBound = 'true';
 
-    tempHpField.addEventListener('focus', () => {
-        if (tempHpField.value === '--') {
-            tempHpField.value = '';
+        // Restore from cookie on initial bind
+        const cookieKey = getCurrentHpCookieKey();
+        const savedHp = cookieKey ? getCookieValue(cookieKey) : null;
+        if (savedHp !== null && savedHp !== '') {
+            const maxCurrentHp = getMaxCurrentHp();
+            const restoredHp = Math.min(maxCurrentHp, Math.max(0, parseNumberOrZero(savedHp)));
+            currentHpField.value = restoredHp;
         }
-    });
 
-    tempHpField.addEventListener('blur', () => {
-        displayTempHp(parseTempHp(tempHpField.value));
-        calculateCurrentHp();
-    });
+        tempHpField.addEventListener('input', calculateCurrentHp);
 
-    if (decreaseCurrentHpBtn) {
-        decreaseCurrentHpBtn.addEventListener('click', () => {
-            adjustCurrentHp(-1);
+        tempHpField.addEventListener('blur', () => {
+            displayTempHp(parseTempHp(tempHpField.value));
+            calculateCurrentHp();
+        });
+
+        // Steps by 1 by default; if an amount is typed into the Damage/Health
+        // calculator first, these same buttons step by that amount instead
+        // (and clear it afterward) — one reusable control rather than two.
+        const stepCurrentHp = (sign) => {
+            const typedAmount = damageHealthField ? parseInt(damageHealthField.value, 10) : NaN;
+            const hasTypedAmount = Number.isFinite(typedAmount) && typedAmount > 0;
+            adjustCurrentHp(sign * (hasTypedAmount ? typedAmount : 1));
+            if (hasTypedAmount) {
+                damageHealthField.value = '';
+            }
+        };
+
+        if (decreaseCurrentHpBtn) {
+            decreaseCurrentHpBtn.addEventListener('click', () => stepCurrentHp(-1));
+        }
+
+        if (increaseCurrentHpBtn) {
+            increaseCurrentHpBtn.addEventListener('click', () => stepCurrentHp(1));
+        }
+
+        currentHpField.addEventListener('input', () => {
+            const currentHp = parseNumberOrZero(currentHpField.value);
+            const maxCurrentHp = getMaxCurrentHp();
+            currentHpField.value = Math.min(maxCurrentHp, Math.max(0, currentHp));
+            saveCurrentHpToCookie();
+            syncCombatStateColours();
         });
     }
 
-    if (increaseCurrentHpBtn) {
-        increaseCurrentHpBtn.addEventListener('click', () => {
-            adjustCurrentHp(1);
-        });
+    // ── Health Points side — independent guard, since it now lives in a
+    // different container (Character Info) that can swap on its own. ──
+    const healthPointsField = getHealthPointsField();
+    if (healthPointsField && healthPointsField.dataset.hpCalcBound !== 'true') {
+        healthPointsField.dataset.hpCalcBound = 'true';
+        healthPointsField.addEventListener('input', calculateCurrentHp);
     }
-
-    currentHpField.addEventListener('input', () => {
-        const currentHp = parseNumberOrZero(currentHpField.value);
-        const maxCurrentHp = getMaxCurrentHp();
-        currentHpField.value = Math.min(maxCurrentHp, Math.max(0, currentHp));
-        saveCurrentHpToCookie();
-        syncCombatStateColours();
-    });
 
     calculateCurrentHp();
-}
-
-const combatAutoSave = createDebouncedSaver(1000);
-
-function saveCombatFields() {
-    const healthPointsField = document.getElementById('character-health_points');
-    const characterIdField = document.getElementById('character-id');
-    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
-    if (!healthPointsField || !characterId) return;
-    const form = healthPointsField.closest('form');
-    if (!form) return;
-    htmx.ajax('POST', `/characters/${characterId}/combat/fragment`, {
-        source: form,
-        target: '#combat-stats-section-container',
-        swap: 'innerHTML'
-    });
-}
-
-function bindCombatFieldAutoSave() {
-    const healthPointsField = document.getElementById('character-health_points');
-    const tempHpField = document.getElementById('character-temporary_hit_points');
-    const hitDiceField = document.getElementById('character-hit_dice');
-    const characterIdField = document.getElementById('character-id');
-
-    if (!healthPointsField || !tempHpField || !hitDiceField || !characterIdField) {
-        return;
-    }
-
-    [healthPointsField, tempHpField, hitDiceField].forEach((field) => {
-        if (field.dataset.autoSaveBound === 'true') return;
-        field.dataset.autoSaveBound = 'true';
-        field.addEventListener('input', () => combatAutoSave.schedule('combat', saveCombatFields));
-    });
-}
-
-function bindCombatContainerSettle() {
-    const container = document.getElementById('combat-stats-section-container');
-    if (!container || container.dataset.settleBound === 'true') {
-        return;
-    }
-    container.dataset.settleBound = 'true';
-
-    container.addEventListener('focusout', (event) => {
-        const section = event.target.closest('.combat-section');
-        if (!section) return;
-        const stillInSection = event.relatedTarget && section.contains(event.relatedTarget);
-        if (stillInSection) return;
-        combatAutoSave.flush('combat', saveCombatFields);
-    });
-
-    container.addEventListener('htmx:beforeSwap', (event) => {
-        if (event.detail.target !== container) return;
-        flushPendingCombat();
-    });
-}
-
-function flushPendingCombat() {
-    combatAutoSave.flush('combat', saveCombatFields);
 }
 
 function getCharacterProficiencyBonus() {
@@ -2244,6 +2354,10 @@ function getAbilityBuffDelta(table, stat) {
     }, 0);
 }
 
+function formatSignedNumber(value) {
+    return value > 0 ? `+${value}` : String(value);
+}
+
 function recomputeAbilityRowDisplay(row) {
     const abilityName = row.id.replace('ability-row-', '');
     if (!abilityName) return;
@@ -2256,7 +2370,7 @@ function recomputeAbilityRowDisplay(row) {
 
     const modifierDisplay = document.getElementById(`${abilityName}-modifier`);
     if (modifierDisplay) {
-        modifierDisplay.textContent = String(modifier + getAbilityBuffDelta(abilityName, 'modifier'));
+        modifierDisplay.textContent = formatSignedNumber(modifier + getAbilityBuffDelta(abilityName, 'modifier'));
     }
 
     const proficiencyBonus = getCharacterProficiencyBonus();
@@ -2265,7 +2379,7 @@ function recomputeAbilityRowDisplay(row) {
     const savingDisplay = document.getElementById(`${abilityName}_skills-saving_throw`);
     if (savingDisplay) {
         const savingBuff = getAbilityBuffDelta(skillsTable, 'saving_throw');
-        savingDisplay.textContent = String(modifier + (savingCheckbox && savingCheckbox.checked ? proficiencyBonus : 0) + savingBuff);
+        savingDisplay.textContent = formatSignedNumber(modifier + (savingCheckbox && savingCheckbox.checked ? proficiencyBonus : 0) + savingBuff);
     }
 
     row.querySelectorAll('.abilities-section-skills-item .hidden-proficiency-checkbox').forEach((checkbox) => {
@@ -2274,7 +2388,19 @@ function recomputeAbilityRowDisplay(row) {
         if (!valueDisplay) return;
         const skillName = checkbox.id.replace(`${skillsTable}-`, '').replace('_proficient', '');
         const skillBuff = getAbilityBuffDelta(skillsTable, skillName);
-        valueDisplay.textContent = String(modifier + (checkbox.checked ? proficiencyBonus : 0) + skillBuff);
+        valueDisplay.textContent = formatSignedNumber(modifier + (checkbox.checked ? proficiencyBonus : 0) + skillBuff);
+    });
+
+    recomputePassiveStats();
+}
+
+function recomputePassiveStats() {
+    document.querySelectorAll('.character-info-passive-value[data-skill-source]').forEach((el) => {
+        const sourceId = el.dataset.skillSource;
+        const source = sourceId ? document.getElementById(sourceId) : null;
+        const rawValue = source ? parseInt(source.textContent, 10) : NaN;
+        const skillValue = Number.isFinite(rawValue) ? rawValue : 0;
+        el.textContent = String(10 + skillValue);
     });
 }
 
@@ -2330,6 +2456,29 @@ function bindAbilityAutoSave() {
                 abilityAutoSave.schedule(`${abilityName}-toggles`, () => saveAbilityRow(abilityName));
             });
         });
+    });
+}
+
+function bindAbilityStepButtons() {
+    const abilitiesSection = document.querySelector('.abilities-section');
+    if (!abilitiesSection || abilitiesSection.dataset.stepBound === 'true') return;
+    abilitiesSection.dataset.stepBound = 'true';
+
+    abilitiesSection.addEventListener('click', (event) => {
+        const button = event.target.closest('.abilities-section-step-btn');
+        if (!button || button.disabled) return;
+
+        const abilityName = button.dataset.abilityName;
+        const step = parseInt(button.dataset.abilityStep, 10) || 0;
+        const valueInput = abilityName ? document.getElementById(`${abilityName}-value`) : null;
+        if (!valueInput) return;
+
+        const current = parseInt(valueInput.value, 10) || 0;
+        const next = Math.min(30, Math.max(1, current + step));
+        if (next === current) return;
+
+        valueInput.value = next;
+        valueInput.dispatchEvent(new Event('input', { bubbles: true }));
     });
 }
 
@@ -2596,6 +2745,65 @@ function bindTrackerToggles() {
     });
 }
 
+// ── Hit Dice (auto per-class counter) ───────────────────────────────────────
+// Count and die size are server-computed (level + CLASS_HIT_DIE_MAPPING); only
+// the "used" count is tracked here, client-side only, the same way tracker
+// toggles are — no DB field for it.
+
+function getHitDiceUsedCookieKey(characterId, classId) {
+    return `hit_dice_used_${characterId}_${classId}`;
+}
+
+function getHitDiceCharacterId() {
+    const characterIdField = document.getElementById('character-id');
+    return characterIdField ? String(characterIdField.value || '').trim() : '';
+}
+
+function renderHitDiceRemaining(item) {
+    const classId = item.dataset.classId;
+    const max = parseInt(item.dataset.hitDiceMax, 10) || 0;
+    const remainingEl = document.getElementById(`hit-dice-remaining-${classId}`);
+    if (!remainingEl) return;
+
+    const characterId = getHitDiceCharacterId();
+    if (!characterId || !classId) {
+        remainingEl.textContent = max;
+        return;
+    }
+
+    const used = Math.min(max, Math.max(0, parseInt(getCookieValue(getHitDiceUsedCookieKey(characterId, classId)), 10) || 0));
+    remainingEl.textContent = Math.max(0, max - used);
+}
+
+function adjustHitDiceUsed(item, usedDelta) {
+    const classId = item.dataset.classId;
+    const max = parseInt(item.dataset.hitDiceMax, 10) || 0;
+    const characterId = getHitDiceCharacterId();
+    if (!characterId || !classId) return;
+
+    const cookieKey = getHitDiceUsedCookieKey(characterId, classId);
+    const current = Math.min(max, Math.max(0, parseInt(getCookieValue(cookieKey), 10) || 0));
+    const next = Math.min(max, Math.max(0, current + usedDelta));
+    setCookieValue(cookieKey, String(next), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+    renderHitDiceRemaining(item);
+}
+
+function bindHitDiceSteppers() {
+    document.querySelectorAll('.hit-dice-tracker-item').forEach((item) => {
+        renderHitDiceRemaining(item);
+
+        item.querySelectorAll('.hit-dice-step-btn').forEach((button) => {
+            if (button.dataset.bound === 'true') return;
+            button.dataset.bound = 'true';
+            button.addEventListener('click', () => {
+                // The "-" button spends a die (remaining down, used up); "+" regains one.
+                const step = parseInt(button.dataset.hitDiceStep, 10) || 0;
+                adjustHitDiceUsed(item, -step);
+            });
+        });
+    });
+}
+
 function performFullRest() {
     const characterIdField = document.getElementById('character-id');
     const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
@@ -2622,13 +2830,14 @@ function performFullRest() {
         toggle.setAttribute('aria-checked', 'false');
     });
 
-    // 2. Reset temp HP to '--' and current HP to health points total
+    // 2. Reset temp HP to empty (shows the "--" placeholder) and current HP
+    // to health points total
     const healthPointsField = document.getElementById('character-health_points');
     const tempHpField = document.getElementById('character-temporary_hit_points');
     const currentHpField = document.getElementById('character-current_health_points');
 
     if (tempHpField) {
-        tempHpField.value = '--';
+        tempHpField.value = '';
         tempHpField.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
@@ -2643,6 +2852,15 @@ function performFullRest() {
             setCookieValue(cookieKey, currentHpField.value, CURRENT_HP_COOKIE_MAX_AGE_SECONDS);
         }
     }
+
+    // 3. Reset all Hit Dice counters back to full
+    document.querySelectorAll('.hit-dice-tracker-item').forEach((item) => {
+        const classId = item.dataset.classId;
+        if (characterId && classId) {
+            setCookieValue(getHitDiceUsedCookieKey(characterId, classId), '0', ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+        }
+        renderHitDiceRemaining(item);
+    });
 }
 
 function bindTrackerAddEntryToggles() {
@@ -2759,6 +2977,7 @@ function bindTrackerAutoSave() {
                 });
 
                 htmx.ajax('POST', `/characters/${characterId}/tracker/${trackerId}/update`, {
+                    source: liveNameInput || liveItem,
                     target: `#tracker-item-${trackerId}`,
                     swap: 'outerHTML',
                     values: values,
@@ -2806,7 +3025,6 @@ function bindSubBarTabs() {
         flushPendingCharacterInfo();
         flushPendingClassLevels();
         flushAllPendingCustomStats();
-        flushPendingCombat();
 
         // Update active class on tab buttons
         tabs.forEach((btn) => {
@@ -2837,10 +3055,10 @@ function bindSubBarTabs() {
         if (tabName === 'trackers') {
             bindTrackerToggles();
             bindTrackerAddEntryToggles();
+            bindHitDiceSteppers();
             syncGlobalLockState();
             bindTrackerAutoSave();
             bindCurrentHpCalculation();
-            bindCombatFieldAutoSave();
             selectCustomBuffField();
             bindBuffCardEdit();
             decorateBuffedLabels();

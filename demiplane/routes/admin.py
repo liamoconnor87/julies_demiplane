@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from flask import abort, redirect, render_template, request
 from flask_login import current_user
 
+from demiplane.auth.models import UserTheme
 from demiplane.functions.functions import uuid as generate_uuid
 from demiplane.functions.validators import is_valid_uuid
 from go_get_it.tables import TABLES
@@ -143,6 +144,14 @@ def register_admin_routes(app, db):
             links['user_id'] = '/admin/user/'
         return links
 
+    def _render_admin(**kwargs):
+        try:
+            user_theme = UserTheme.get_by_user_id(db, current_user.id)
+        except Exception:
+            app.logger.exception('Could not load user theme for admin page')
+            user_theme = None
+        return render_template('admin.html', user_theme=user_theme, **kwargs)
+
     @app.route('/admin')
     @admin_required
     def admin_home():
@@ -153,8 +162,7 @@ def register_admin_routes(app, db):
 
         orphan_count = _count_orphans()
 
-        return render_template(
-            'admin.html',
+        return _render_admin(
             view='users',
             users=users,
             all_tables=list(TABLES.keys()),
@@ -169,8 +177,7 @@ def register_admin_routes(app, db):
         grouped = {}
         for orphan in orphans:
             grouped.setdefault(orphan['table'], []).append(orphan)
-        return render_template(
-            'admin.html',
+        return _render_admin(
             view='orphans',
             orphan_groups=grouped,
             orphan_count=len(orphans),
@@ -194,8 +201,7 @@ def register_admin_routes(app, db):
             if char:
                 characters.append(char)
 
-        return render_template(
-            'admin.html',
+        return _render_admin(
             view='user_detail',
             user=user,
             characters=characters,
@@ -251,8 +257,7 @@ def register_admin_routes(app, db):
             breadcrumbs.append({'label': user['username'], 'url': f'/admin/user/{user["id"]}'})
         breadcrumbs.append({'label': character.get('name') or '(unnamed)', 'url': f'/admin/character/{character_id}'})
 
-        return render_template(
-            'admin.html',
+        return _render_admin(
             view='character_detail',
             character=character,
             child_links=child_links,
@@ -339,8 +344,7 @@ def register_admin_routes(app, db):
                         breadcrumbs.append({'label': char.get('name') or '(unnamed)', 'url': f'/admin/character/{character_id}'})
         breadcrumbs.append({'label': table_name.replace('_', ' ').title(), 'url': current_url})
 
-        return render_template(
-            'admin.html',
+        return _render_admin(
             view='table',
             table_name=table_name,
             rows=rows,

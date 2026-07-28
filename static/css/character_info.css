@@ -21,7 +21,8 @@
     flex-direction: column;
 }
 
-.character-info-stats-row {
+.character-info-stats-row,
+.character-info-passive-stats-row {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;

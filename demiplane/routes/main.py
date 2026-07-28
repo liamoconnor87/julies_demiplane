@@ -81,9 +81,8 @@ def register_main_routes(app, db):
                 'id': None, 'name': None, 'level': 0,
                 'race': None, 'background': None, 'alignment': None,
                 'armour_class': None, 'initiative': None, 'speed': None,
-                'proficiency': None, 'passive_wisdom': None, 'xp': None,
-                'health_points': None, 'hit_dice': None,
-                'temporary_hit_points': None,
+                'proficiency': None, 'xp': None,
+                'health_points': None,
             }
             return render_template(
                 'index.html',

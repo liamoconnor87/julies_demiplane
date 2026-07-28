@@ -7,7 +7,11 @@
     {# Ability Value #}
     <div class="abilities-section-name-field">
         <input type="number" id="{{ ability_name }}-value" name="{{ ability_name }}-value" value="{% if ability.value is not none %}{{ ability.value }}{% endif %}" class="field-input abilities-section-name-input">
-        <label for="{{ ability_name }}-value" class="field-label abilities-section-name-label">{{ ability_name | title }}</label>
+        <div class="abilities-section-stepper-row">
+            <button type="button" class="abilities-section-step-btn" data-ability-name="{{ ability_name }}" data-ability-step="-1" aria-label="Decrease {{ ability_name | title }}">&minus;</button>
+            <label for="{{ ability_name }}-value" class="field-label abilities-section-name-label">{{ ability_name | title }}</label>
+            <button type="button" class="abilities-section-step-btn" data-ability-name="{{ ability_name }}" data-ability-step="1" aria-label="Increase {{ ability_name | title }}">+</button>
+        </div>
     </div>
 
     <div class="abilities-section-secondary-column">
