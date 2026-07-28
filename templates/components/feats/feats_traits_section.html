@@ -3,7 +3,7 @@
         Feats & Traits
     </h4>
     <p class="section-help-text">Keep quick references for your feats and traits. Note any effects by adding a passive stat or buffs/debuffs in the Trackers tab.</p>
-    <div id="feats-list">
+    <div id="feats-list"{% if feats_and_traits|length == 0 %} class="feats-list-empty"{% endif %}>
     {% if feats_and_traits|length > 0 %}
         {% for feat in feats_and_traits %}
             {% include 'components/feats/feat_row.html' %}

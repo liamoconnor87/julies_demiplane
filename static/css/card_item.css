@@ -59,6 +59,13 @@
     width: 100%;
 }
 
+/* Without this, the multi-column layout above spreads the empty-state text
+   and the Add Feat row into separate columns side by side instead of
+   stacking them, since each is short enough to fit its own column. */
+#feats-list.feats-list-empty {
+    columns: 1;
+}
+
 #inventory-list > .card-item-row,
 #feats-list > .card-item-row {
     break-inside: avoid;

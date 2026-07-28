@@ -21,6 +21,13 @@
     flex-direction: column;
 }
 
+.character-info-passive-stats-row {
+    /* Passive fields reuse custom_stats.css's square-field style — that
+       file only defines this var scoped to .custom-stats-section, so it
+       needs redeclaring here for the width to resolve outside that section. */
+    --custom-stats-value-width: 8rem;
+}
+
 .character-info-stats-row,
 .character-info-passive-stats-row {
     display: flex;
