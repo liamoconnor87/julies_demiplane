@@ -1,0 +1,80 @@
+.hit-dice-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 1rem;
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 0;
+}
+
+.hit-dice-grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+/* ── One box per class: the remaining count + die size in the top slot
+   (order:1), a stepper flanking the class-name label below it (order:2) ── */
+
+.hit-dice-tracker-item {
+    display: flex;
+    flex-direction: column;
+    width: 100px;
+}
+
+.hit-dice-display {
+    order: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 2.58rem;
+    font-size: 1.55rem;
+    box-sizing: border-box;
+    padding: 0.3rem;
+    text-align: center;
+}
+
+.hit-dice-stepper-row {
+    order: 2;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 1.1rem;
+    gap: 0.15rem;
+    background: var(--field-bg-colour);
+}
+
+.hit-dice-label {
+    display: block;
+    flex: 0 1 auto;
+    min-width: 0;
+    background: transparent;
+    font-size: 0.55rem;
+    font-weight: bold;
+    color: var(--label-colour);
+    text-align: center;
+    line-height: 1;
+    overflow-wrap: break-word;
+}
+
+.hit-dice-step-btn {
+    flex: 0 0 auto;
+    width: 1.1rem;
+    background: transparent;
+    color: var(--button-icon-colour);
+    border: none;
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+@media (max-width: 499px) {
+    .hit-dice-section {
+        padding: 0 0.25rem;
+    }
+}

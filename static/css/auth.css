@@ -3,7 +3,7 @@
 .auth-dropdown-toggle {
     color: var(--label-colour);
     border: 1px solid var(--label-colour);
-    background: var(--navbar-bg-colour);
+    background: var(--field-bg-colour);
     font-weight: 600;
     font-size: 0.85rem;
     padding: 0.25rem 0.7rem;
@@ -17,7 +17,7 @@
 .auth-dropdown-toggle:hover,
 .auth-dropdown-toggle:focus,
 .auth-dropdown-toggle.show {
-    background: var(--navbar-bg-colour);
+    background: var(--field-bg-colour);
     color: var(--text-colour-one);
     border-color: var(--text-colour-one);
     box-shadow: 0 0 0 1px var(--text-colour-one);
@@ -146,19 +146,17 @@
 }
 
 .auth-btn-logout:hover {
-    background: var(--primary-color-transparent);
-    color: var(--text-colour-one);
-    border-color: var(--text-colour-one);
+    color: var(--label-colour);
+    border-color: var(--label-colour);
 }
 
 .auth-btn-admin {
     background: var(--field-bg-colour);
-    color: var(--label-colour);
+    color: var(--secondary-color-dark);
     border: 1px solid var(--secondary-color-dark);
 }
 
 .auth-btn-admin:hover {
-    background: var(--primary-color-transparent);
     color: var(--label-colour);
     border-color: var(--label-colour);
 }

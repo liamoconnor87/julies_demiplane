@@ -11,21 +11,13 @@ from flask import session
 
 from demiplane.functions.functions import uuid
 from demiplane.functions.validators import clamp_int, is_valid_uuid, parse_optional_int, sanitize_optional_str
+from demiplane.services.dnd_mappings import ABILITY_TO_SKILL_MAPPING
 from go_get_it.go_get_it import GoGetDB
 
 ggi = GoGetDB()
 
 _SESSION_KEY = 'guest_character'
 _SCHEMA_VERSION = 2
-
-ABILITY_TO_SKILL_MAPPING = {
-    'strength': ['athletics'],
-    'dexterity': ['acrobatics', 'sleight_of_hand', 'stealth'],
-    'constitution': [],
-    'intelligence': ['arcana', 'history', 'investigation', 'nature', 'religion'],
-    'wisdom': ['animal_handling', 'insight', 'medicine', 'perception', 'survival'],
-    'charisma': ['deception', 'intimidation', 'performance', 'persuasion'],
-}
 
 _ABILITY_TABLES = tuple(ABILITY_TO_SKILL_MAPPING.keys())
 _SKILL_TABLES = tuple(f'{ability}_skills' for ability in _ABILITY_TABLES)
@@ -77,11 +69,8 @@ def _default_character_row(character_id: str) -> dict:
         'initiative': None,
         'speed': None,
         'proficiency': None,
-        'passive_wisdom': None,
         'xp': None,
         'health_points': None,
-        'hit_dice': None,
-        'temporary_hit_points': None,
     }
 
 
@@ -509,11 +498,8 @@ def persist_guest_to_db(db, user_id: str) -> Optional[str]:
         'initiative': parse_optional_int(character.get('initiative')),
         'speed': parse_optional_int(character.get('speed')),
         'proficiency': parse_optional_int(character.get('proficiency')),
-        'passive_wisdom': parse_optional_int(character.get('passive_wisdom')),
         'xp': parse_optional_int(character.get('xp')),
         'health_points': parse_optional_int(character.get('health_points')),
-        'hit_dice': sanitize_optional_str(character.get('hit_dice'), max_len=255),
-        'temporary_hit_points': parse_optional_int(character.get('temporary_hit_points')),
     })
 
     db.go_add_new('user_to_character', {

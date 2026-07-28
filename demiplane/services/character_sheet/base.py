@@ -2,6 +2,7 @@ from typing import Optional
 
 from go_get_it.go_get_it import GoGetDB
 from demiplane.services import guest_character as guest_session
+from demiplane.services.dnd_mappings import ABILITY_TO_SKILL_MAPPING, CLASS_HIT_DIE_MAPPING
 
 from .constants import FEAT_TRAIT_MAX, INVENTORY_MAX, CUSTOM_STAT_MAX, CUSTOM_BUFF_MAX
 
@@ -9,14 +10,8 @@ ggi = GoGetDB()
 
 
 class CharacterSheetBase:
-    ABILITY_TO_SKILL_MAPPING = {
-        "strength": ["athletics"],
-        "dexterity": ["acrobatics", "sleight_of_hand", "stealth"],
-        "constitution": [],
-        "intelligence": ["arcana", "history", "investigation", "nature", "religion"],
-        "wisdom": ["animal_handling", "insight", "medicine", "perception", "survival"],
-        "charisma": ["deception", "intimidation", "performance", "persuasion"],
-    }
+    ABILITY_TO_SKILL_MAPPING = ABILITY_TO_SKILL_MAPPING
+    CLASS_HIT_DIE_MAPPING = CLASS_HIT_DIE_MAPPING
 
     BUFF_TARGET_TABLE_COLUMNS = {
         "character": [
@@ -24,7 +19,6 @@ class CharacterSheetBase:
             "initiative",
             "speed",
             "proficiency",
-            "passive_wisdom",
         ],
         "strength": ["value", "modifier"],
         "dexterity": ["value", "modifier"],

@@ -38,3 +38,34 @@
     pointer-events: none;
     cursor: default;
 }
+
+/* ── Row-saving spinner — shares the × button's corner slot ────────────────── */
+
+.section-row-spinner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: var(--button-icon-colour);
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0.1rem 0.25rem;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.section-row-indicator.htmx-request .section-remove-x {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.section-row-indicator.htmx-request .section-row-spinner {
+    opacity: 1;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Belt-and-suspenders: never show the row spinner in a locked section, even if
+   a given field's own readonly-on-lock wiring is incomplete — a locked field
+   should never visibly appear to be saving. */
+[data-locked='true'] .section-row-spinner {
+    display: none !important;
+}

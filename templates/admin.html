@@ -10,16 +10,28 @@
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <style>
         :root {
-            --admin-bg: #b8a8cd;
-            --admin-surface: rgba(0, 0, 0, 0.85);
-            --admin-surface-strong: rgba(0, 0, 0, 0.92);
-            --admin-title: rgb(0, 0, 0);
-            --admin-text: rgb(255, 255, 255);
-            --admin-accent: rgb(0, 189, 91);
-            --admin-border: rgb(0, 189, 91);
-            --admin-meta: rgb(255, 0, 234);
-            --admin-danger: rgb(214, 69, 69);
+            --admin-bg: var(--primary-color, #ffffff);
+            --admin-surface: var(--field-bg-colour, rgba(0, 0, 0, 0.85));
+            --admin-surface-strong: var(--field-bg-colour, rgba(0, 0, 0, 0.85));
+            --admin-title: var(--title-colour, rgb(0, 0, 0));
+            --admin-text: var(--text-colour-three, rgb(255, 255, 255));
+            --admin-accent: var(--secondary-color-dark, rgb(0, 189, 91));
+            --admin-border: var(--secondary-color-dark, rgb(0, 189, 91));
+            --admin-meta: var(--text-colour-one, rgb(255, 0, 234));
+            --admin-danger: var(--critical-colour, rgb(220, 50, 50));
         }
+
+        {% if user_theme is defined and user_theme %}
+        :root {
+            {% if user_theme.background_colour %}--primary-color: {{ user_theme.background_colour | e }};{% endif %}
+            {% if user_theme.border_colour %}--secondary-color-dark: {{ user_theme.border_colour | e }};{% endif %}
+            {% if user_theme.critical_colour %}--critical-colour: {{ user_theme.critical_colour | e }};{% endif %}
+            {% if user_theme.asterisk_colour %}--text-colour-one: {{ user_theme.asterisk_colour | e }};{% endif %}
+            {% if user_theme.field_text_colour %}--text-colour-three: {{ user_theme.field_text_colour | e }};{% endif %}
+            {% if user_theme.title_colour %}--title-colour: {{ user_theme.title_colour | e }};{% endif %}
+            {% if user_theme.field_bg_colour %}--field-bg-colour: {{ user_theme.field_bg_colour | e }};{% endif %}
+        }
+        {% endif %}
 
         * { box-sizing: border-box; }
         body { font-family: monospace; background: var(--admin-bg); color: var(--admin-title); margin: 0; padding: 1rem; }

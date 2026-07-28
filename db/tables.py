@@ -29,11 +29,8 @@ APP_TABLES = {
         "initiative": _integer,
         "speed": _integer,
         "proficiency": _integer,
-        "passive_wisdom": _integer,
         "xp": _integer,
         "health_points": _integer,
-        "hit_dice": _text(),
-        "temporary_hit_points": _integer,
     },
     "inventory": {
         "id": _id,

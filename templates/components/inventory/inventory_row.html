@@ -1,6 +1,6 @@
 <div id="inventory-row-{{ item.id }}" class="card-item-row card-item-saved-row">
     <div class="card-item-top-row">
-        <div class="card-item-field card-item-name-field card-item-name-wrapper">
+        <div id="inventory-name-wrapper-{{ item.id }}" class="card-item-field card-item-name-field card-item-name-wrapper section-row-indicator" hx-indicator="#inventory-name-wrapper-{{ item.id }}">
             <input type="text" id="inventory-name-{{ item.id }}"
                 name="inventory-name-{{ item.id }}" value="{{ item.name }}" class="field-input card-item-input inventory-name-input"
                 data-inventory-id="{{ item.id }}">
@@ -10,6 +10,7 @@
                 hx-swap="innerHTML"
                 hx-include="closest form"
                 aria-label="Remove item">&times;</button>
+            <i class="bi bi-arrow-repeat section-row-spinner" aria-hidden="true"></i>
         </div>
 
         <div class="card-item-field card-item-quantity-field">

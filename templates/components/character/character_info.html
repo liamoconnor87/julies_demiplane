@@ -91,6 +91,13 @@
         {% set field_value = character.armour_class %}
         {% include 'base/field_number.html' %}
 
+        {# Health Points #}
+        {% set field_id = 'character-health_points' %}
+        {% set field_name = 'character-health_points' %}
+        {% set field_label = 'Health Points' %}
+        {% set field_value = character.health_points %}
+        {% include 'base/field_number.html' %}
+
         {# Initiative #}
         {% set field_id = 'character-initiative' %}
         {% set field_name = 'character-initiative' %}
@@ -112,13 +119,6 @@
         {% set field_value = character.proficiency %}
         {% include 'base/field_number.html' %}
 
-        {# Passive Wisdom #}
-        {% set field_id = 'character-passive_wisdom' %}
-        {% set field_name = 'character-passive_wisdom' %}
-        {% set field_label = 'Passive Wisdom' %}
-        {% set field_value = character.passive_wisdom %}
-        {% include 'base/field_number.html' %}
-
         {# XP #}
         {% set field_wrapper_class = 'character-info-stat-field character-info-xp-field' %}
         {% set field_id = 'character-xp' %}
@@ -126,6 +126,30 @@
         {% set field_label = 'XP' %}
         {% set field_value = character.xp %}
         {% include 'base/field_number.html' %}
+    </div>
+
+    <div class="character-info-passive-stats-row{% if is_new_character %} new-char-hidden{% endif %}">
+        {% set passive_wrapper_class = 'custom-stats-section-field custom-stats-section-value-field custom-stats-square-field' %}
+        {% set passive_value_class = 'custom-stats-section-input' %}
+        {% set passive_label_class = 'custom-stats-section-label' %}
+
+        {# Passive Perception #}
+        {% set passive_value_id = 'character-passive_perception' %}
+        {% set passive_label_text = 'Passive Perception' %}
+        {% set passive_skill_source_id = 'wisdom_skills-perception' %}
+        {% include 'base/field_passive_stat.html' %}
+
+        {# Passive Insight #}
+        {% set passive_value_id = 'character-passive_insight' %}
+        {% set passive_label_text = 'Passive Insight' %}
+        {% set passive_skill_source_id = 'wisdom_skills-insight' %}
+        {% include 'base/field_passive_stat.html' %}
+
+        {# Passive Investigation #}
+        {% set passive_value_id = 'character-passive_investigation' %}
+        {% set passive_label_text = 'Passive Investigation' %}
+        {% set passive_skill_source_id = 'intelligence_skills-investigation' %}
+        {% include 'base/field_passive_stat.html' %}
     </div>
 
     {% set _ci_feedback_message = character_info_feedback_message if character_info_feedback_message is defined else '' %}

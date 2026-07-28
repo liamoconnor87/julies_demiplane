@@ -15,38 +15,14 @@ class BuffProcessor:
         if self.custom_buffs is None:
             return request_form_copy
 
-        ability_names = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma']
-
-        # Pre-fetch current DB base values for all buffable tables
-        abilities_db: dict = {}
-        skills_db: dict = {}
-        for ability_name in ability_names:
-            ability = self.db.go_get_one(ability_name, {'character_id': self.character_id}) or {}
-            abilities_db[ability_name] = ability
-            if ability.get('id'):
-                skills = self.db.go_get_one(f"{ability_name}_skills", {f"{ability_name}_id": ability['id']}) or {}
-                skills_db[ability_name] = skills
-
         raw_custom_stats = self.db.go_get_all('custom_stat', {'character_id': self.character_id}) or []
         custom_stats_by_id: dict = {}
         for cs in raw_custom_stats:
             if cs.get('id'):
                 custom_stats_by_id[cs['id']] = cs
 
-        def get_base(table_name: str, stat_name: str, cs_id: str = None) -> int:
-            if table_name == 'character':
-                return int(self.character.get(stat_name) or 0) if self.character else 0
-            elif table_name.endswith('_skills'):
-                return int(skills_db.get(table_name[:-7], {}).get(stat_name) or 0)
-            elif table_name in ability_names:
-                return int(abilities_db.get(table_name, {}).get(stat_name) or 0)
-            elif table_name == 'custom_stat' and cs_id:
-                return int(custom_stats_by_id.get(cs_id, {}).get('value') or 0)
-            return 0
-
         # First pass: accumulate total buff per form key across all buffs (handles stacking)
-        # buff_info[form_key] = {'total_buff': N, 'base': V}
-        buff_info: dict = {}
+        total_buff_by_key: dict = {}
 
         for buff in self.custom_buffs:
             buff_value = int(buff.get('value') or 0)
@@ -74,22 +50,18 @@ class BuffProcessor:
                         cs = custom_stats_by_id.get(stat_name)
                         if cs:
                             form_key = f"custom_stat-value-{stat_name}"
-                            if form_key not in buff_info:
-                                buff_info[form_key] = {'total_buff': 0, 'base': get_base('custom_stat', stat_name, stat_name)}
-                            buff_info[form_key]['total_buff'] += buff_value
+                            total_buff_by_key[form_key] = total_buff_by_key.get(form_key, 0) + buff_value
                     elif table_name in ('feat_and_trait', 'inventory'):
                         # stat_name is the record ID — no numeric transform needed
                         pass
                     else:
                         form_key = f"{table_name}-{stat_name}"
-                        if form_key not in buff_info:
-                            buff_info[form_key] = {'total_buff': 0, 'base': get_base(table_name, stat_name)}
-                        buff_info[form_key]['total_buff'] += buff_value
+                        total_buff_by_key[form_key] = total_buff_by_key.get(form_key, 0) + buff_value
 
-        # Second pass: compare submitted value against what the user was shown (base + total buff)
-        # If unchanged → strip the buff and store the base
-        # If changed   → the user typed a new value, treat it as the new base as-is
-        for form_key, info in buff_info.items():
+        # Second pass: the field always displays base + buff, so the buff must be subtracted
+        # back out before persisting — otherwise it keeps compounding onto the stored base
+        # every time the value changes (typing a new number, or the +/- stepper).
+        for form_key, total_buff in total_buff_by_key.items():
             if form_key not in request_form_copy:
                 continue
             try:
@@ -97,13 +69,7 @@ class BuffProcessor:
             except (TypeError, ValueError):
                 continue
 
-            current_base = info['base']
-            current_buffed = current_base + info['total_buff']
-
-            if submitted == current_buffed:
-                request_form_copy[form_key] = current_base
-            else:
-                request_form_copy[form_key] = submitted
+            request_form_copy[form_key] = submitted - total_buff
 
         return request_form_copy
 

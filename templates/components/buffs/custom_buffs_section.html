@@ -26,7 +26,7 @@
 					data-buff-value="{{ buff.value }}"
 					data-buff-targets='{{ buff.targets | tojson | forceescape }}'>
 					<div class="custom-buffs-card-main-field">
-						<div class="custom-buffs-card-value">{% if (buff.value | int) == 0 %}--{% else %}{{ buff.value }}{% endif %}</div>
+						<div class="custom-buffs-card-value">{% set buff_value_resolved = buff.value | int %}{% if buff_value_resolved == 0 %}--{% elif buff_value_resolved > 0 %}+{{ buff_value_resolved }}{% else %}{{ buff_value_resolved }}{% endif %}</div>
 						<div class="custom-buffs-card-title">{{ buff.name }}</div>
 					<button type="button" class="section-remove-x" data-buff-remove="true"
 							data-buff-value="{{ buff.value }}"
@@ -42,7 +42,7 @@
 		{% endif %}
 	</div>
 
-	<div class="custom-buffs-section-row custom-buffs-section-add-row">
+	<div class="custom-buffs-section-row custom-buffs-section-add-row" id="add-buff-action-container">
 		<div class="custom-buffs-section-top-row">
 			{% if not custom_buffs_at_capacity %}
 			{% set btn_wrapper_class = 'custom-buffs-section-field custom-buffs-section-action-field' %}

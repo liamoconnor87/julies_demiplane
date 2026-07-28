@@ -1,0 +1,11 @@
+{# Generic passive-stat display — computed client-side as 10 + the named
+   skill's current display value (already includes proficiency/buffs).
+   Set passive_wrapper_class, passive_value_id, passive_value_class,
+   passive_label_class, passive_label_text, passive_skill_source_id
+   before including. Non-interactive, never submitted — populated live by
+   recomputePassiveStats() in dnd_sheet.js. #}
+<div class="{{ passive_wrapper_class }}">
+    <div id="{{ passive_value_id }}" class="field-input {{ passive_value_class }} character-info-passive-value"
+         data-skill-source="{{ passive_skill_source_id }}">0</div>
+    <div class="field-label {{ passive_label_class }}">{{ passive_label_text }}</div>
+</div>

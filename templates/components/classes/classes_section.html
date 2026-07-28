@@ -7,7 +7,7 @@
                 <input type="text" id="classes-class_name-{{ char_class.id }}"
                        name="classes-class_name-{{ char_class.id }}" value="{{ char_class.class_name | title() }}" readonly class="field-input classes-section-input">
             </div>
-            <div class="classes-section-field classes-section-level-field">
+            <div id="classes-level-wrapper-{{ char_class.id }}" class="classes-section-field classes-section-level-field section-row-indicator" hx-indicator="#classes-level-wrapper-{{ char_class.id }}">
                 <button type="button" id="classes-action-{{ char_class.id }}"
                         data-class-remove="true"
                         hx-post="/characters/{{ character_id }}/class/{{ char_class.id }}/remove"
@@ -15,6 +15,7 @@
                         hx-swap="innerHTML"
                         hx-include="closest form"
                         class="section-remove-x" aria-label="Remove class">&times;</button>
+                <i class="bi bi-arrow-repeat section-row-spinner" aria-hidden="true"></i>
                 <div class="classes-section-level-wrapper">
                     <input type="number" id="classes-level-{{ char_class.id }}"
                            name="classes-level-{{ char_class.id }}" value="{{ char_class.level }}" class="field-input classes-section-input class-level-input">
