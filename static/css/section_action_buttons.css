@@ -69,3 +69,22 @@
 [data-locked='true'] .section-row-spinner {
     display: none !important;
 }
+
+/* ── Action-button icon swap — shows the click registered ──────────────────
+   Only rendered (in field_button.html) when the button posts via htmx, so
+   this only ever applies to real submit/action buttons. Relies on htmx's
+   default behaviour of adding .htmx-request to the requesting element
+   itself when no closer hx-indicator is set. ─────────────────────────────── */
+
+.btn-icon-spinner {
+    display: none;
+}
+
+.field-btn.htmx-request .btn-icon-default {
+    display: none;
+}
+
+.field-btn.htmx-request .btn-icon-spinner {
+    display: inline-block;
+    animation: spin 0.8s linear infinite;
+}

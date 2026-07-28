@@ -8,6 +8,6 @@
         {% if btn_hx_swap is defined and btn_hx_swap %}hx-swap="{{ btn_hx_swap }}"{% endif %}
         {% if btn_hx_include is defined and btn_hx_include %}hx-include="{{ btn_hx_include }}"{% endif %}
         {% if btn_aria_label is defined and btn_aria_label %}aria-label="{{ btn_aria_label }}"{% endif %}
-        {{ btn_extra_attrs|default('')|safe }}>{{ btn_icon|safe }}</button>
+        {{ btn_extra_attrs|default('')|safe }}><span class="btn-icon-default">{{ btn_icon|safe }}</span>{% if btn_hx_post is defined and btn_hx_post %}<i class="bi bi-arrow-repeat btn-icon-spinner" aria-hidden="true"></i>{% endif %}</button>
     <label {% if btn_id is defined and btn_id %}for="{{ btn_id }}"{% endif %} class="field-label section-action-label">{{ btn_label }}</label>
 </div>
