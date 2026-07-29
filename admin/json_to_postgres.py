@@ -1,7 +1,8 @@
 """
 Import JSON export into a PostgreSQL database (e.g. Neon).
 
-Creates all tables, seeds class data, then inserts every row from the JSON.
+Creates all tables, inserts every row from the JSON, then seeds any class
+data the export didn't already include.
 Safe to re-run — skips rows whose id already exists.
 
 Usage (from project root):
@@ -42,9 +43,6 @@ def import_data(input_path: str) -> None:
 
     print("Creating tables...")
     db_instance.go_create_db()
-
-    print("Seeding class data...")
-    db_instance.go_seed_db()
 
     print(f"\nImporting rows from {input_path}...")
 
@@ -92,6 +90,14 @@ def import_data(input_path: str) -> None:
 
     cursor.close()
     db.close()
+
+    # Runs after the import (not before) so its by-name existence check sees
+    # the classes the export just inserted and skips them — seeding first
+    # used to insert 13 classes under fresh ids, which the import's by-id
+    # dedup then couldn't recognize as the same rows, doubling every class.
+    # This only ever fills in classes the export didn't already have.
+    print("Seeding any missing class data...")
+    db_instance.go_seed_db()
 
     print(f"\nDone — {total_inserted} rows inserted, {total_skipped} already existed.")
 
