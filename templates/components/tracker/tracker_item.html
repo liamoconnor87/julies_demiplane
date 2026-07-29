@@ -4,8 +4,7 @@
     {# ── Tracker name row ── #}
     <div class="tracker-row">
         <div id="tracker-name-wrapper-{{ tracker.id }}" class="tracker-field tracker-name-field{% if not tracker.fixed %} section-row-indicator{% endif %}"{% if not tracker.fixed %} hx-indicator="#tracker-name-wrapper-{{ tracker.id }}"{% endif %}>
-            <label class="field-label tracker-label">Tracker</label> {# I want to remove this label, but the difference in height altered needs to be figured out to keep its size #}
-            <input type="text" class="field-input tracker-input tracker-name-input"
+            <input type="text" class="field-input tracker-input tracker-input-no-label tracker-name-input"
                    data-tracker-id="{{ tracker.id }}"
                    value="{{ tracker.name }}"
                    {% if tracker.fixed %}readonly{% endif %}>
