@@ -27,4 +27,15 @@
             </div>
         </div>
     </div>
+
+    <p class="section-help-text hit-dice-help-text">Track your Hit Dice as you spend them. Use +/− to mark one used or regained; Full Rest restores them all.</p>
+    {% if classes %}
+    <div class="hit-dice-grid">
+        {% for char_class in classes %}
+        <div class="hit-dice-tracker-item" id="hit-dice-tracker-{{ char_class.id }}" data-class-id="{{ char_class.id }}" data-hit-dice-max="{{ char_class.level }}">
+            {% include 'components/combat/hit_dice_field.html' %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>

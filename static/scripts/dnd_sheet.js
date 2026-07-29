@@ -293,12 +293,6 @@ window.addEventListener("load", () => {
 
         if (target.id === 'combat-stats-section-container') {
             bindCurrentHpCalculation();
-            syncGlobalLockState();
-            showGlobalFeedback('', 'success');
-            return;
-        }
-
-        if (target.id === 'hit-dice-section-container') {
             bindHitDiceSteppers();
             syncGlobalLockState();
             showGlobalFeedback('', 'success');
@@ -1336,9 +1330,9 @@ function syncGlobalLockState() {
     if (combatSection) {
         combatSection.dataset.locked = String(isLocked);
     }
-    // The whole Combat section (Temp HP, Current HP, Damage/Health) and the
-    // Hit Dice section are combat-tracking, not build fields — none of it
-    // respects the lock.
+    // The whole Combat section (Temp HP, Current HP, Damage/Health, Hit
+    // Dice) is combat-tracking, not build fields — none of it respects
+    // the lock.
 
     // ── Classes & custom stats section ──
     const statsSection = document.querySelector('.custom-stats-section');
@@ -1508,14 +1502,10 @@ function syncGlobalLockState() {
         el.style.display = isLocked ? 'none' : 'flex';
     });
     // Hit Dice tracking is combat-tracking, not a build field — always usable
-    // regardless of lock state (see bindHitDiceSteppers). It still gets
-    // data-locked set purely so its help text hides on lock like every
-    // other section's, via the generic [data-locked='true'] .section-help-text
-    // rule — this does not gate any Hit Dice control.
-    const hitDiceSection = document.querySelector('.hit-dice-section');
-    if (hitDiceSection) {
-        hitDiceSection.dataset.locked = String(isLocked);
-    }
+    // regardless of lock state (see bindHitDiceSteppers). It now lives inside
+    // .combat-section, so its help text already hides on lock via that
+    // section's own data-locked + the generic [data-locked='true']
+    // .section-help-text rule, with no extra wiring needed here.
 }
 
 function bindGlobalLockToggle() {

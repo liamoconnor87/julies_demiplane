@@ -4,7 +4,7 @@
     <span class="hit-dice-remaining" id="hit-dice-remaining-{{ char_class.id }}">{{ char_class.level }}</span>d{{ hit_die_mapping.get(char_class.class_name, 8) }}
 </div>
 <div class="hit-dice-stepper-row">
-    <button type="button" class="hit-dice-step-btn" data-hit-dice-step="-1" aria-label="Use a {{ char_class.class_name | title }} hit die">&minus;</button>
-    <span class="hit-dice-label">{{ char_class.class_name | title }}</span>
-    <button type="button" class="hit-dice-step-btn" data-hit-dice-step="1" aria-label="Regain a {{ char_class.class_name | title }} hit die">+</button>
+    <button type="button" class="hit-dice-step-btn" data-hit-dice-step="-1" aria-label="Use a Hit Die">&minus;</button>
+    <span class="hit-dice-label">Hit Dice</span>
+    <button type="button" class="hit-dice-step-btn" data-hit-dice-step="1" aria-label="Regain a Hit Die">+</button>
 </div>

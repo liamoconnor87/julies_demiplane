@@ -188,15 +188,6 @@
     min-width: 0;
 }
 
-.tracker-top-row-secondary-column {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 0;
-    width: 100%;
-    min-width: 0;
-    gap: 0.75rem;
-}
-
 /* ── Tracker section (full-page) ───────────────────────────────────────────── */
 
 .tracker-section {
