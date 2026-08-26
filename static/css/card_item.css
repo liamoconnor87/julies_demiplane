@@ -48,8 +48,19 @@
 }
 
 .feats-section {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0 0.75rem;
     width: 100%;
     --card-item-total-width: 19.75rem;
+}
+
+.feats-section > h4 {
+    width: 100%;
+    flex-basis: 100%;
+    flex-shrink: 0;
+    margin-bottom: 0.5rem;
 }
 
 #inventory-list,

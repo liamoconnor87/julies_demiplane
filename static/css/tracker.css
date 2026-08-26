@@ -183,11 +183,6 @@
     margin-bottom: 1rem;
 }
 
-.tracker-top-row > #combat-stats-section-container {
-    flex: 0 0 auto;
-    min-width: 0;
-}
-
 /* ── Tracker section (full-page) ───────────────────────────────────────────── */
 
 .tracker-section {

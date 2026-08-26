@@ -760,6 +760,7 @@ function initializeUiBindings() {
     bindGlobalLockToggle();
     bindTrackerAutoSave();
     bindTrackerToggles();
+    bindTrackerAddEntryToggles();
     bindAllOptimisticRemoveButtons();
     bindMobileCharacterSelect();
     bindAbilityStepButtons();
@@ -2996,13 +2997,14 @@ function bindSubBarTabs() {
 
     const pages = {
         'info':      document.getElementById('sheet-page-info'),
-        'inventory': document.getElementById('sheet-page-inventory'),
         'trackers':  document.getElementById('sheet-page-trackers'),
+        'feats':     document.getElementById('sheet-page-feats'),
+        'inventory': document.getElementById('sheet-page-inventory'),
     };
 
     const cookieKey = characterId ? `sub_bar_tab_${characterId}` : null;
     const savedTab = cookieKey ? getCookieValue(cookieKey) : null;
-    const validTabs = ['info', 'inventory', 'trackers'];
+    const validTabs = ['info', 'trackers', 'feats', 'inventory'];
     const initialTab = (savedTab && validTabs.includes(savedTab)) ? savedTab : 'info';
 
     const switchTo = (tabName) => {
@@ -3031,9 +3033,9 @@ function bindSubBarTabs() {
             el.classList.toggle('d-none', name !== tabName);
         });
 
-        // Show/hide Full Rest button (only on trackers tab)
+        // Show/hide Full Rest button (only on info and trackers tabs)
         document.querySelectorAll('[data-full-rest-btn="true"]').forEach((fullRestBtn) => {
-            fullRestBtn.classList.toggle('d-none', tabName !== 'trackers');
+            fullRestBtn.classList.toggle('d-none', tabName !== 'trackers' && tabName !== 'info');
         });
 
         // Persist choice
@@ -3042,22 +3044,25 @@ function bindSubBarTabs() {
         }
 
         // Re-bind sub-section bindings when switching into it
-        if (tabName === 'trackers') {
+        if (tabName === 'info') {
+            bindTrackerToggles();
+            bindHitDiceSteppers();
+            bindCurrentHpCalculation();
+            syncGlobalLockState();
+        } else if (tabName === 'trackers') {
             bindTrackerToggles();
             bindTrackerAddEntryToggles();
-            bindHitDiceSteppers();
             syncGlobalLockState();
             bindTrackerAutoSave();
-            bindCurrentHpCalculation();
             selectCustomBuffField();
             bindBuffCardEdit();
             decorateBuffedLabels();
+        } else if (tabName === 'feats') {
+            bindFeatDescriptionDisplayAutoHeight();
+            syncGlobalLockState();
         } else if (tabName === 'inventory') {
             selectInventoryField();
             bindInventoryDescriptionDisplayAutoHeight();
-            syncGlobalLockState();
-        } else if (tabName === 'info') {
-            bindFeatDescriptionDisplayAutoHeight();
             syncGlobalLockState();
         }
     };

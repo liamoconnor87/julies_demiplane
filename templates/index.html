@@ -173,10 +173,6 @@
                     {% include 'components/abilities/abilities_section.html' %}
                 </div>
 
-                <div id="feats-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
-                    {% include 'components/feats/feats_traits_section.html' %}
-                </div>
-
                 <div id="guest-combat-death-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
                     <div id="combat-stats-section-container">
                         {% include 'components/combat/guest_combat_stats.html' %}
@@ -184,6 +180,10 @@
                     <div id="guest-death-saves-section-container">
                         {% include 'components/combat/guest_death_saves.html' %}
                     </div>
+                </div>
+
+                <div id="feats-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
+                    {% include 'components/feats/feats_traits_section.html' %}
                 </div>
             </div>
         </form>
@@ -228,9 +228,41 @@
                         {% include 'components/abilities/abilities_section.html' %}
                     </div>
 
-                    <div id="feats-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
-                        {% include 'components/feats/feats_traits_section.html' %}
+                    <div id="guest-combat-death-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
+                        <div id="combat-stats-section-container">
+                            {% include 'components/combat/combat_stats.html' %}
+                        </div>
+                        <div id="guest-death-saves-section-container">
+                            {% include 'components/combat/guest_death_saves.html' %}
+                        </div>
                     </div>
+                </div>
+            </form>
+        </div>
+
+        {# ── Trackers tab ─────────────────────────────────────────────────── #}
+        {% if current_user.is_authenticated and active_character_id %}
+        <div id="sheet-page-trackers" class="sub-page d-none">
+            <form id="combat-buffs-form" action="/" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="tracker-top-row{% if is_new_character %} new-char-hidden{% endif %}">
+                    <div id="custom-buffs-section-container">
+                        {% include 'components/buffs/custom_buffs_section.html' %}
+                    </div>
+                </div>
+            </form>
+            <div id="tracker-page-container">
+                {% include 'components/tracker/tracker_page.html' %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# ── Feats tab ────────────────────────────────────────────────────── #}
+        <div id="sheet-page-feats" class="sub-page d-none">
+            <form action="/" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div id="feats-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                    {% include 'components/feats/feats_traits_section.html' %}
                 </div>
             </form>
         </div>
@@ -247,26 +279,6 @@
         </div>
         {% else %}
         <div id="sheet-page-inventory" class="sub-page d-none"></div>
-        {% endif %}
-
-        {# ── Combat tab (formerly "Trackers") ───────────────────────────────── #}
-        {% if current_user.is_authenticated and active_character_id %}
-        <div id="sheet-page-trackers" class="sub-page d-none">
-            <form id="combat-buffs-form" action="/" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="tracker-top-row{% if is_new_character %} new-char-hidden{% endif %}">
-                    <div id="combat-stats-section-container">
-                        {% include 'components/combat/combat_stats.html' %}
-                    </div>
-                    <div id="custom-buffs-section-container">
-                        {% include 'components/buffs/custom_buffs_section.html' %}
-                    </div>
-                </div>
-            </form>
-            <div id="tracker-page-container">
-                {% include 'components/tracker/tracker_page.html' %}
-            </div>
-        </div>
         {% endif %}
 
     {% endif %}

@@ -470,7 +470,7 @@ h4 {
    Responsive breakpoints
    ══════════════════════════════════════════════════════════════════════════════ */
 
-@media (max-width: 1600px) {
+@media (max-width: 1700px) {
     .sheet-layout {
         flex-wrap: wrap;
     }
