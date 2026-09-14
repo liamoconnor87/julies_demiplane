@@ -318,6 +318,12 @@ window.addEventListener("load", () => {
     // relationship someone adds later only needs an entry here rather than
     // a fresh special case discovered by a bug report.
     document.body.addEventListener('htmx:oobAfterSwap', (event) => {
+        // Global, idempotent, and every primary-target branch above already
+        // calls it — an OOB-swapped container needs the exact same lock/unlock
+        // treatment (readonly fields, disabled buttons, data-locked, hidden
+        // "add" actions) re-applied, so this runs for every OOB swap rather
+        // than being copied into each OOB_CONTAINER_REBIND entry individually.
+        safeBind(syncGlobalLockState);
         rebindOobContainer(event.detail.target || event.target);
     });
 
@@ -1580,7 +1586,13 @@ function syncGlobalLockState() {
     }
 
     // ── Tracker section ──
-    const trackerSection = document.querySelector('.tracker-section');
+    // Scoped to #tracker-page-container specifically: guest_death_saves.html
+    // also carries the .tracker-section class (purely to reuse its flex
+    // layout for the Death Saves widget), and it renders earlier in the page
+    // than the real Trackers tab. A bare '.tracker-section' query always
+    // matched that one instead, so this container's data-locked (and its
+    // help text's lock-hide rule, which depends on it) never applied at all.
+    const trackerSection = document.querySelector('#tracker-page-container .tracker-section');
     if (trackerSection) {
         trackerSection.dataset.locked = String(isLocked);
     }
