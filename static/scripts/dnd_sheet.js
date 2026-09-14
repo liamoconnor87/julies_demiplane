@@ -1,8 +1,8 @@
 window.addEventListener("load", () => {
-    initializeUiBindings();
-    bindDeleteCharacterDropdown();
-    bindSubBarTabs();
-    bindThemePanel();
+    safeBind(initializeUiBindings);
+    safeBind(bindDeleteCharacterDropdown);
+    safeBind(bindSubBarTabs);
+    safeBind(bindThemePanel);
 
     const reopenAuthDropdownIfError = () => {
         const authDropdown = document.getElementById('auth-dropdown');
@@ -287,6 +287,10 @@ window.addEventListener("load", () => {
             bindCurrentHpCalculation();
             bindBuffCardEdit();
             decorateBuffedLabels();
+            // buff_change_response.html also OOB-swaps abilities-section-container,
+            // character-info-section-container and custom-stats-section-container —
+            // those are re-bound generically by the htmx:oobAfterSwap listener
+            // below (OOB_CONTAINER_REBIND), not repeated here.
             showGlobalFeedback('', 'success');
             return;
         }
@@ -298,6 +302,22 @@ window.addEventListener("load", () => {
             showGlobalFeedback('', 'success');
             return;
         }
+    });
+
+    // A container swapped in as the direct target of a request gets the
+    // htmx:afterSwap handling above. A container swapped in as an
+    // out-of-band passenger on some *other* request's response never does —
+    // htmx fires htmx:oobAfterSwap for those instead, once per OOB element —
+    // so without this, any OOB-swapped container's inputs/checkboxes are
+    // left holding no listeners at all until a full page reload. This is
+    // the general form of the fix applied inline to individual branches
+    // above (e.g. custom-buffs-section-container repeating some of the
+    // abilities/character-info rebinds): one shared table, covering every
+    // container this app currently OOB-swaps anywhere, so a new OOB
+    // relationship someone adds later only needs an entry here rather than
+    // a fresh special case discovered by a bug report.
+    document.body.addEventListener('htmx:oobAfterSwap', (event) => {
+        rebindOobContainer(event.detail.target || event.target);
     });
 
     document.body.addEventListener('htmx:responseError', () => {
@@ -335,6 +355,10 @@ const feedbackHideTimers = new Map();
 
 // ── Debounced auto-save helper ───────────────────────────────────────────────
 const AUTO_SAVE_DEBOUNCE_MS = 1500;
+// Card-item text fields (feat/trait and inventory name+description) swap
+// the whole row's outerHTML on save, which drops focus/cursor position —
+// give typing pauses more room before that happens.
+const CARD_ITEM_AUTO_SAVE_DEBOUNCE_MS = 3000;
 
 function createDebouncedSaver(delayMs = AUTO_SAVE_DEBOUNCE_MS) {
     const timers = new Map();
@@ -732,39 +756,112 @@ function bindDeleteConfirmInput() {
     });
 }
 
+// One throwing bind step must not take down every bind step after it in the
+// same sequential list (initializeUiBindings, the `load` listener). Each
+// step is independent UI wiring, so isolate failures and keep going.
+function safeBind(fn) {
+    try {
+        fn();
+    } catch (err) {
+        console.error(`[dnd_sheet] ${fn.name || 'bind step'} failed:`, err);
+    }
+}
+
+// Every container this app ever swaps out-of-band (hx-swap-oob), mapped to
+// the interactivity it needs re-wired afterward. Used by the
+// htmx:oobAfterSwap listener below — see the comment there for why this
+// exists as its own table instead of living inside the htmx:afterSwap
+// branches. Only safe-to-repeat calls belong here (binding is idempotent,
+// recomputing is harmless) — never one-off request side effects like
+// feedback toasts or clearing an "add" form.
+const OOB_CONTAINER_REBIND = {
+    'abilities-section-container': () => {
+        bindAbilityAutoSave();
+        bindProficiencyToggles();
+        decorateBuffedLabels();
+        recomputePassiveStats();
+    },
+    'character-info-section-container': () => {
+        bindCurrentHpCalculation();
+        bindProficiencyToggles();
+        bindTrackerToggles();
+        decorateBuffedLabels();
+        bindCharacterInfoAutoSave();
+        recomputePassiveStats();
+    },
+    'custom-stats-section-container': () => {
+        bindAddStatButton();
+        bindCustomStatAutoSave();
+        selectCustomBuffField();
+        bindBuffCardEdit();
+        decorateBuffedLabels();
+    },
+    'custom-buffs-section-container': () => {
+        selectCustomBuffField();
+        bindProficiencyToggles();
+        bindCurrentHpCalculation();
+        bindBuffCardEdit();
+        decorateBuffedLabels();
+    },
+    'tracker-page-container': () => {
+        bindTrackerToggles();
+        bindTrackerAddEntryToggles();
+        bindTrackerAutoSave();
+    },
+    'combat-stats-section-container': () => {
+        bindCurrentHpCalculation();
+        bindHitDiceSteppers();
+    },
+    'add-class-action-container': () => {
+        bindAddClassButton();
+    },
+    'add-stat-action-container': () => {
+        bindAddStatButton();
+    },
+    'delete-character-dropdown': () => {
+        bindDeleteConfirmInput();
+    },
+};
+
+function rebindOobContainer(target) {
+    if (!target || !target.id) return;
+    const rebind = OOB_CONTAINER_REBIND[target.id];
+    if (rebind) safeBind(rebind);
+}
+
 function initializeUiBindings() {
-    bindAddClassButton();
-    bindAddStatButton();
-    selectFeatField();
-    selectInventoryField();
-    selectCustomBuffField();
-    bindClassLevelAutoSave();
-    bindCustomStatAutoSave();
-    bindProficiencyToggles();
-    bindCurrentHpCalculation();
-    bindBuffCardEdit();
-    bindFeatDescriptionDisplayAutoHeight();
-    bindInventoryDescriptionDisplayAutoHeight();
-    decorateBuffedLabels();
-    bindCharacterInfoAutoSave();
-    bindFeatAutoSave();
-    bindInventoryAutoSave();
-    bindAbilityAutoSave();
-    recomputePassiveStats();
-    bindFeatsContainerSettle();
-    bindInventoryContainerSettle();
-    bindAbilitiesContainerSettle();
-    bindCharacterInfoContainerSettle();
-    bindClassesContainerSettle();
-    bindCustomStatsContainerSettle();
-    bindGlobalLockToggle();
-    bindTrackerAutoSave();
-    bindTrackerToggles();
-    bindTrackerAddEntryToggles();
-    bindAllOptimisticRemoveButtons();
-    bindMobileCharacterSelect();
-    bindAbilityStepButtons();
-    bindHitDiceSteppers();
+    safeBind(bindAddClassButton);
+    safeBind(bindAddStatButton);
+    safeBind(selectFeatField);
+    safeBind(selectInventoryField);
+    safeBind(selectCustomBuffField);
+    safeBind(bindClassLevelAutoSave);
+    safeBind(bindCustomStatAutoSave);
+    safeBind(bindProficiencyToggles);
+    safeBind(bindCurrentHpCalculation);
+    safeBind(bindBuffCardEdit);
+    safeBind(bindFeatDescriptionDisplayAutoHeight);
+    safeBind(bindInventoryDescriptionDisplayAutoHeight);
+    safeBind(decorateBuffedLabels);
+    safeBind(bindCharacterInfoAutoSave);
+    safeBind(bindFeatAutoSave);
+    safeBind(bindInventoryAutoSave);
+    safeBind(bindAbilityAutoSave);
+    safeBind(recomputePassiveStats);
+    safeBind(bindFeatsContainerSettle);
+    safeBind(bindInventoryContainerSettle);
+    safeBind(bindAbilitiesContainerSettle);
+    safeBind(bindCharacterInfoContainerSettle);
+    safeBind(bindClassesContainerSettle);
+    safeBind(bindCustomStatsContainerSettle);
+    safeBind(bindGlobalLockToggle);
+    safeBind(bindTrackerAutoSave);
+    safeBind(bindTrackerToggles);
+    safeBind(bindTrackerAddEntryToggles);
+    safeBind(bindAllOptimisticRemoveButtons);
+    safeBind(bindMobileCharacterSelect);
+    safeBind(bindAbilityStepButtons);
+    safeBind(bindHitDiceSteppers);
 }
 
 function bindMobileCharacterSelect() {
@@ -876,7 +973,7 @@ function flushAllPendingInventory() {
     });
 }
 
-const featAutoSave = createDebouncedSaver();
+const featAutoSave = createDebouncedSaver(CARD_ITEM_AUTO_SAVE_DEBOUNCE_MS);
 
 function saveFeatRow(featId) {
     const characterIdField = document.getElementById('character-id');
@@ -1958,7 +2055,7 @@ function resizeInventoryDescriptionField(field) {
     field.style.height = `${field.scrollHeight}px`;
 }
 
-const inventoryAutoSave = createDebouncedSaver();
+const inventoryAutoSave = createDebouncedSaver(CARD_ITEM_AUTO_SAVE_DEBOUNCE_MS);
 
 function saveInventoryRow(inventoryId) {
     const characterIdField = document.getElementById('character-id');
