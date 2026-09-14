@@ -88,8 +88,6 @@ csp = {
     'object-src': "'none'",
     'script-src': [
         "'self'",
-        'https://cdn.jsdelivr.net',
-        'https://unpkg.com',
     ],
     'style-src': [
         "'self'",

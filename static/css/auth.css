@@ -44,7 +44,7 @@
 }
 
 .auth-dropdown-body .alert.alert-success {
-    background: var(--primary-color-transparent);
+    background: var(--field-bg-colour);
     border: 1px solid var(--secondary-color-dark);
     color: var(--label-colour);
     border-radius: 0;
@@ -133,7 +133,7 @@
 }
 
 .auth-btn-primary:hover {
-    background: var(--primary-color-transparent);
+    background: var(--field-bg-colour);
     color: var(--label-colour);
     border-color: var(--label-colour);
     opacity: 1;
