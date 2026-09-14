@@ -166,6 +166,7 @@ window.addEventListener("load", () => {
         if (target.id === 'abilities-section-container') {
             bindAbilityAutoSave();
             bindProficiencyToggles();
+            bindAbilityStepButtons();
             syncGlobalLockState();
             decorateBuffedLabels();
             recomputePassiveStats();
@@ -778,6 +779,7 @@ const OOB_CONTAINER_REBIND = {
     'abilities-section-container': () => {
         bindAbilityAutoSave();
         bindProficiencyToggles();
+        bindAbilityStepButtons();
         decorateBuffedLabels();
         recomputePassiveStats();
     },
@@ -2127,6 +2129,25 @@ function bindInventoryAutoSave() {
                 const step = parseInt(button.dataset.inventoryStep, 10) || 0;
                 const current = parseInt(qtyInput.value, 10) || 0;
                 const next = Math.max(0, current + step);
+
+                if (next <= 0) {
+                    // Dropping to zero removes the item outright. Call the same
+                    // remove endpoint the name field's × button uses, instead of
+                    // routing through the quantity-update endpoint's own
+                    // "quantity <= 0 means delete" fallback (an empty response
+                    // body plus HX-Retarget/HX-Reswap headers) — that path never
+                    // resolves the loading state this app tracks for a normal
+                    // update, so it was left stuck showing "saving".
+                    inventoryAutoSave.cancel(inventoryId);
+                    row.style.display = 'none';
+                    htmx.ajax('POST', `/characters/${characterId}/inventory/${inventoryId}/remove`, {
+                        source: row,
+                        target: '#inventory-section-container',
+                        swap: 'innerHTML',
+                    });
+                    return;
+                }
+
                 qtyInput.value = next;
 
                 // Keep the decrease button's lock/trash-icon state in sync without a server round trip.
@@ -2136,13 +2157,7 @@ function bindInventoryAutoSave() {
                 }
                 syncGlobalLockState();
 
-                if (next <= 0) {
-                    // Reaching zero deletes the item — destructive, so save immediately rather than waiting out the debounce.
-                    inventoryAutoSave.cancel(inventoryId);
-                    saveInventoryRow(inventoryId);
-                } else {
-                    inventoryAutoSave.schedule(inventoryId, () => saveInventoryRow(inventoryId));
-                }
+                inventoryAutoSave.schedule(inventoryId, () => saveInventoryRow(inventoryId));
             });
         });
     });

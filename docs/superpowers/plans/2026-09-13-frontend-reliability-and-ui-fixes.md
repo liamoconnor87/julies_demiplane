@@ -538,3 +538,31 @@ Auditing every `hx-swap-oob` template in the app for what its OOB companions act
 3. Repeat the original Task 6 buff-flow check (add/edit/remove a custom buff, confirm passive stats and proficiency toggles keep working).
 
 **What's still not covered:** `add-class-action-container` and `add-stat-action-container` are in the table for completeness, but were already working before this fix (their "+ Add" buttons are re-bound as a side effect of their primary-target branches already running on the same response). Every other OOB-swapped container in the app either has no interactive listeners to lose (static text, a disabled display field, a plain link) or is covered above — this was a full audit of every `hx-swap-oob` template in the codebase, not a partial one.
+
+---
+
+## Bugs found during manual verification (fixed same session)
+
+Two real bugs surfaced while working through the manual verification steps above — both fixed immediately, both confirmed passing afterward.
+
+### Bug 1: inventory quantity's "bin" button used the update route, not remove
+
+Decreasing an inventory item's quantity to 0 (the decrease button turns into a trash icon at quantity 1) called `saveInventoryRow()` — the `/inventory/<id>/update` endpoint — relying on that route's own "quantity ≤ 0 deletes the row" fallback, which replies with an empty body plus `HX-Retarget`/`HX-Reswap` headers to fake a removal. That swap replaces its own target element with nothing, and this app's spinner-clearing code listens on `document.body` for events that need to bubble up from the swapped element — an element that's just been removed can't bubble anything anywhere, so the global "saving" spinner never cleared.
+
+**File:** `static/scripts/dnd_sheet.js` — the quantity step button's click handler (`bindInventoryAutoSave()`) now calls `/inventory/<id>/remove` directly for the drop-to-zero case, the same endpoint and target the name field's × button already uses successfully, instead of routing through `/update`'s special case. Left the server-side "quantity ≤ 0 deletes" guard in `update_single_inventory_item` alone — unreachable from the UI now, but still a reasonable defensive check against a malformed direct POST to that endpoint.
+
+**Verified:** decreasing an item to 0 quantity via the trash-icon button now removes it cleanly with no stuck spinner, same as the × button.
+
+### Bug 2: ability score +/- buttons stopped working after any abilities-section swap
+
+`bindAbilityStepButtons()` delegates its click listener onto `.abilities-section` — but that's the *inner* element `abilities_section.html` renders fresh each time; `#abilities-section-container` (the id every rebind branch and the new `OOB_CONTAINER_REBIND` table key off) is a separate, stable outer wrapper around it. Every other section's equivalent listeners bind on that stable wrapper; this one didn't, so it was the one place recreating its listener's own attachment point on every swap — direct or OOB — of the abilities container. Nothing ever called `bindAbilityStepButtons()` again after the initial page load, so the +/- buttons went dead the moment anything swapped the abilities section (which, after the Follow-up B fix above, happens more often, since OOB companions of buff/character-info saves are now correctly refreshing everything else in that container).
+
+**File:** `static/scripts/dnd_sheet.js` — added `bindAbilityStepButtons()` alongside the other abilities rebinds in both the `abilities-section-container` branch of the `htmx:afterSwap` dispatcher and the `OOB_CONTAINER_REBIND` table entry for the same container.
+
+**Verified:** +/- buttons keep working after adding/editing/removing a custom buff, after a character-info save, and after any other action that swaps the abilities section.
+
+---
+
+## Final status
+
+All manual verification steps across every task and follow-up in this document — the original six tasks, both follow-ups, and both bugs above — have been run against the actual app and confirmed passing.
