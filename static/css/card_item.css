@@ -165,6 +165,10 @@
     min-height: var(--card-item-field-input-height);
 }
 
+.feat-name-input {
+    text-align: center;
+}
+
 .card-item-name-wrapper .buff-indicator {
     position: absolute;
     top: 0.15rem;
