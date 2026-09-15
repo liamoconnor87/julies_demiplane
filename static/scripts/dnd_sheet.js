@@ -189,7 +189,19 @@ window.addEventListener("load", () => {
             setTimeout(() => bindInventoryDescriptionDisplayAutoHeight(), 0);
             syncGlobalLockState();
             bindInventoryAutoSave();
+            // The purse widget is nested inside this container, so its own
+            // fresh nodes need re-binding too whenever the whole section swaps.
+            bindPurseAutoSave();
+            bindPurseStepButtons();
             decorateBuffedLabels();
+            showGlobalFeedback('', 'success');
+            return;
+        }
+
+        if (target.id === 'purse-section-container') {
+            bindPurseAutoSave();
+            bindPurseStepButtons();
+            syncGlobalLockState();
             showGlobalFeedback('', 'success');
             return;
         }
@@ -854,6 +866,8 @@ function initializeUiBindings() {
     safeBind(bindCharacterInfoAutoSave);
     safeBind(bindFeatAutoSave);
     safeBind(bindInventoryAutoSave);
+    safeBind(bindPurseAutoSave);
+    safeBind(bindPurseStepButtons);
     safeBind(bindAbilityAutoSave);
     safeBind(recomputePassiveStats);
     safeBind(bindFeatsContainerSettle);
@@ -1559,6 +1573,10 @@ function syncGlobalLockState() {
         }
     });
 
+    // Purse (currency) is deliberately NOT lock-gated, same reasoning as Hit
+    // Dice and Death Saves elsewhere in this file: it's something you adjust
+    // during play, not a build field, so locking it would just be friction.
+
     // ── Buffs section ──
     const buffsSection = document.querySelector('.custom-buffs-section');
     if (buffsSection) {
@@ -2172,6 +2190,67 @@ function bindInventoryAutoSave() {
                 inventoryAutoSave.schedule(inventoryId, () => saveInventoryRow(inventoryId));
             });
         });
+    });
+}
+
+// ── Purse (currency) ─────────────────────────────────────────────────────────
+// Each currency field is both directly typable and steppable — typing fires
+// 'input' naturally, and the step buttons dispatch a synthetic 'input' event
+// after adjusting the value, so there is exactly one save path for both
+// interactions (same approach as the ability-score fields).
+
+const CURRENCY_FIELDS = ['copper', 'silver', 'electrum', 'gold', 'platinum'];
+const purseAutoSave = createDebouncedSaver();
+
+function savePurse() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+    if (!characterId) return;
+
+    const container = document.getElementById('purse-section-container');
+    if (!container) return;
+
+    const values = {};
+    CURRENCY_FIELDS.forEach((field) => {
+        const input = container.querySelector(`.purse-input[data-currency="${field}"]`);
+        values[`purse-${field}`] = input ? input.value : '0';
+    });
+
+    htmx.ajax('POST', `/characters/${characterId}/purse/update`, {
+        target: '#purse-section-container',
+        swap: 'outerHTML',
+        values,
+    });
+}
+
+function bindPurseAutoSave() {
+    document.querySelectorAll('.purse-input').forEach((input) => {
+        if (input.dataset.autoSaveBound === 'true') return;
+        input.dataset.autoSaveBound = 'true';
+        input.addEventListener('input', () => purseAutoSave.schedule('purse', savePurse));
+    });
+}
+
+function bindPurseStepButtons() {
+    const section = document.querySelector('.purse-section');
+    if (!section || section.dataset.stepBound === 'true') return;
+    section.dataset.stepBound = 'true';
+
+    section.addEventListener('click', (event) => {
+        const button = event.target.closest('.purse-step-btn');
+        if (!button || button.disabled) return;
+
+        const currency = button.dataset.currency;
+        const step = parseInt(button.dataset.currencyStep, 10) || 0;
+        const input = currency ? section.querySelector(`.purse-input[data-currency="${currency}"]`) : null;
+        if (!input) return;
+
+        const current = parseInt(input.value, 10) || 0;
+        const next = Math.max(0, current + step);
+        if (next === current) return;
+
+        input.value = next;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
     });
 }
 

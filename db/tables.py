@@ -199,6 +199,15 @@ APP_TABLES = {
         "name": _text(),
         "value": _integer,
     },
+    "purse": {
+        "id": _id,
+        "character_id": _fk,
+        "copper": _integer,
+        "silver": _integer,
+        "electrum": _integer,
+        "gold": _integer,
+        "platinum": _integer,
+    },
     "user_theme": {
         "id": _id,
         "user_id": _fk,

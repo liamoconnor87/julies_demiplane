@@ -328,6 +328,66 @@
     margin: 0;
 }
 
+/* ── Purse (currency) — reuses the quantity control above, minus readonly ──── */
+
+.inventory-section > .purse-section {
+    width: 100%;
+    flex-basis: 100%;
+    flex-shrink: 0;
+}
+
+.purse-section {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.purse-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+}
+
+.purse-field .card-item-quantity-control {
+    flex: 0 0 auto;
+    width: var(--card-item-quantity-control-width);
+}
+
+.purse-currency-label {
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    height: var(--card-item-field-input-height);
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    background: var(--field-bg-colour);
+    color: var(--text-colour-three);
+}
+
+/* Coloured to look like the metal/alloy each currency actually is. */
+.purse-currency-label--copper { color: #B87333; }
+.purse-currency-label--silver { color: #C0C0C0; }
+.purse-currency-label--electrum { color: #C4B454; }
+.purse-currency-label--gold { color: #D4AF37; }
+.purse-currency-label--platinum { color: #E5E4E2; }
+
+.purse-input {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.purse-input::-webkit-outer-spin-button,
+.purse-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════════
    Hidden fields for add forms (section-specific IDs)
    ══════════════════════════════════════════════════════════════════════════════ */

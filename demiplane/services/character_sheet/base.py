@@ -93,6 +93,7 @@ class CharacterSheetBase:
         classes, class_options = self.fetch_classes_data(class_levels=class_levels)
         feats_and_traits = self.fetch_feats_data()
         inventory = self.fetch_inventory_data()
+        purse = self.fetch_purse_data()
         custom_stats = self.fetch_custom_stats_data()
         buff_target_options = self.fetch_buff_target_options_data(custom_stats, feats_and_traits, inventory)
         custom_buffs = self.fetch_custom_buffs_data()
@@ -106,6 +107,7 @@ class CharacterSheetBase:
             'feats_and_traits_at_capacity': len(feats_and_traits) >= FEAT_TRAIT_MAX,
             'inventory': inventory,
             'inventory_at_capacity': len(inventory) >= INVENTORY_MAX,
+            'purse': purse,
             'custom_stats': custom_stats,
             'custom_stats_at_capacity': len(custom_stats) >= CUSTOM_STAT_MAX,
             'custom_buffs': custom_buffs,

@@ -103,7 +103,7 @@ class User(UserMixin):
         direct_tables = [
             'inventory', 'class_to_character', 'feat_and_trait',
             'custom_stat', 'custom_buff', 'custom_buff_to_stat_table',
-            'stat_table_to_stat', 'user_to_character',
+            'stat_table_to_stat', 'user_to_character', 'purse',
         ]
         for table in direct_tables:
             db.go_delete_by(table, {'character_id': character_id})

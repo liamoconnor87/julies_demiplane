@@ -15,12 +15,14 @@ def register_inventory_fragment_routes(app, db, limiter):
         sheet.save_inventory_values(character_id, request.form)
 
         inventory = sheet.fetch_inventory_data()
+        purse = sheet.fetch_purse_data()
         custom_buffs = sheet.fetch_custom_buffs_data()
         buff_target_options = sheet.fetch_buff_target_options_data(inventory=inventory)
         return render_template(
             'components/inventory/inventory_change_response.html',
             inventory=inventory,
             inventory_at_capacity=len(inventory) >= INVENTORY_MAX,
+            purse=purse,
             custom_buffs=custom_buffs,
             custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
             buff_target_options=buff_target_options,
@@ -39,12 +41,14 @@ def register_inventory_fragment_routes(app, db, limiter):
 
         sheet = CharacterSheet(character_id=character_id)
         inventory = sheet.fetch_inventory_data()
+        purse = sheet.fetch_purse_data()
         custom_buffs = sheet.fetch_custom_buffs_data()
         buff_target_options = sheet.fetch_buff_target_options_data(inventory=inventory)
         return render_template(
             'components/inventory/inventory_change_response.html',
             inventory=inventory,
             inventory_at_capacity=len(inventory) >= INVENTORY_MAX,
+            purse=purse,
             custom_buffs=custom_buffs,
             custom_buffs_at_capacity=len(custom_buffs) >= CUSTOM_BUFF_MAX,
             buff_target_options=buff_target_options,

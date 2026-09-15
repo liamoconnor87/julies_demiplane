@@ -6,6 +6,7 @@ from .feats import register_feats_fragment_routes
 from .inventory import register_inventory_fragment_routes
 from .custom_stats import register_custom_stats_fragment_routes
 from .custom_buffs import register_custom_buffs_fragment_routes
+from .purse import register_purse_fragment_routes
 
 
 def register_fragment_routes(app, db, limiter):
@@ -17,3 +18,4 @@ def register_fragment_routes(app, db, limiter):
     register_custom_stats_fragment_routes(app, db, limiter)
     register_custom_buffs_fragment_routes(app, db, limiter)
     register_tracker_fragment_routes(app, db, limiter)
+    register_purse_fragment_routes(app, db, limiter)
