@@ -14,11 +14,12 @@ from .feats import FeatsMixin
 from .inventory import InventoryMixin
 from .custom_stats import CustomStatsMixin
 from .custom_buffs import CustomBuffsMixin
+from .purse import PurseMixin
 
 
 class CharacterSheet(
     CharacterInfoMixin, AbilitiesMixin, ClassesMixin, FeatsMixin,
-    InventoryMixin, CustomStatsMixin, CustomBuffsMixin, CharacterSheetBase,
+    InventoryMixin, CustomStatsMixin, CustomBuffsMixin, PurseMixin, CharacterSheetBase,
 ):
     pass
 

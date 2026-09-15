@@ -1,0 +1,16 @@
+<div id="purse-section-container" class="purse-section">
+    {% for field, label in [('copper', 'Copper'), ('silver', 'Silver'), ('electrum', 'Electrum'), ('gold', 'Gold'), ('platinum', 'Platinum')] %}
+    <div class="purse-field">
+        <label class="purse-currency-label purse-currency-label--{{ field }}" for="purse-{{ field }}" title="{{ label }}">{{ label[0] }}</label>
+        <div class="card-item-quantity-control">
+            <button type="button" class="field-btn card-item-btn card-item-quantity-btn purse-step-btn"
+                    data-currency="{{ field }}" data-currency-step="-1" aria-label="Decrease {{ label }}">−</button>
+            <input type="number" id="purse-{{ field }}" name="purse-{{ field }}"
+                   class="field-input card-item-input card-item-quantity-display purse-input"
+                   data-currency="{{ field }}" value="{{ purse[field] }}" min="0" title="{{ label }}">
+            <button type="button" class="field-btn card-item-btn card-item-quantity-btn purse-step-btn"
+                    data-currency="{{ field }}" data-currency-step="1" aria-label="Increase {{ label }}">+</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
