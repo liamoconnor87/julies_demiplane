@@ -203,7 +203,15 @@
     cursor: pointer;
 }
 
-.spells-section[data-locked='true'] .spell-row-top {
+/* #spells-section-container prefix (not just .spells-section) to match/beat
+   the known-only-active rule above's ID-based specificity -- without it,
+   that rule's pointer cursor would keep winning over this default even
+   while locked, since an ID always outranks a plain class+attribute chain. */
+#spells-section-container .spells-section[data-locked='true'] .spell-row-top {
+    cursor: default;
+}
+
+.spells-section[data-locked='true'] .spell-known-square {
     cursor: default;
 }
 
