@@ -1,0 +1,25 @@
+<div id="spell-row-{{ spell.id }}" class="card-item-row card-item-saved-row spell-row collapsed{% if spell.id in known_spell_ids %} known-active{% endif %}{% if spell.id in prepared_spell_ids %} prepared-active{% endif %}" data-spell-id="{{ spell.id }}" data-character-id="{{ character_id }}">
+    <div class="card-item-field card-item-name-field card-item-name-wrapper">
+        <div class="field-input card-item-input spell-row-top spell-prepared-toggle" role="button" tabindex="0"
+             aria-pressed="{% if spell.id in prepared_spell_ids %}true{% else %}false{% endif %}" aria-label="Toggle prepared spell">
+            <span class="spell-known-square" role="button" tabindex="0"
+                  aria-pressed="{% if spell.id in known_spell_ids %}true{% else %}false{% endif %}" aria-label="Toggle known spell"></span>
+            <span class="spell-name-text">{{ spell.name }}</span>
+        </div>
+        <button type="button" class="section-remove-x spell-row-toggle" aria-label="Toggle spell details">
+            <i class="bi bi-chevron-up"></i>
+        </button>
+        <div class="spell-row-details">
+            <p class="spell-row-meta">{% if spell.level == 0 %}{{ spell.school }} Cantrip{% else %}Level {{ spell.level }} {{ spell.school }}{% endif %}</p>
+            <p class="spell-row-meta"><strong>Casting Time:</strong> {{ spell.casting_time }}</p>
+            <p class="spell-row-meta"><strong>Range:</strong> {{ spell.range }}</p>
+            <p class="spell-row-meta"><strong>Components:</strong> {{ spell.components }}</p>
+            <p class="spell-row-meta"><strong>Duration:</strong> {{ spell.duration }}</p>
+            <div class="card-item-footer spell-row-rune" aria-hidden="true">
+                {% include 'components/ui/rune_partition.html' %}
+            </div>
+            <div class="card-item-description-display spell-row-description">{{ spell.description }}</div>
+            <p class="spell-row-meta spell-row-classes"><strong>{{ spell.classes }}</strong></p>
+        </div>
+    </div>
+</div>

@@ -38,6 +38,21 @@ class CustomBuffsMixin:
 
         return custom_buffs
 
+    def _remove_buff_targets_for(self, table_name: str, record_id: str):
+        """Delete any buff target rows pointing at a since-removed record (a tracker, feat,
+        inventory item, custom stat, or spell that's just been deleted/un-known'd), so a
+        custom buff doesn't silently keep pointing at something that no longer exists."""
+        stat_rows = self._rows('stat_table_to_stat', {'character_id': self.character_id, 'stat_name': record_id})
+        for stat_row in stat_rows:
+            stat_table_id = stat_row.get('stat_table_id')
+            group = self.store.go_get_one('custom_buff_to_stat_table', {'stat_table_id': stat_table_id, 'character_id': self.character_id})
+            if not group or group.get('stat_table_name') != table_name:
+                continue
+            self.store.go_delete_it('stat_table_to_stat', {'id': stat_row['id']})
+            remaining = self._rows('stat_table_to_stat', {'stat_table_id': stat_table_id, 'character_id': self.character_id})
+            if not remaining:
+                self.store.go_delete_it('custom_buff_to_stat_table', {'id': group['id']})
+
     def save_custom_buff_values(self, character_id: str, request_form):
         table_name = 'custom_buff'
         name = sanitize_str(request_form.get(f'{table_name}-name'), max_len=255)
@@ -52,7 +67,9 @@ class CustomBuffsMixin:
         custom_stats = self._rows('custom_stat', {'character_id': character_id})
         feats_and_traits = self._rows('feat_and_trait', {'character_id': character_id})
         inventory = self._rows('inventory', {'character_id': character_id})
-        buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
+        trackers = self._rows('tracker', {'character_id': character_id})
+        known_spells = self.fetch_known_spells_data()
+        buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory, trackers, known_spells)
 
         selected_tables = []
         for field_name in request_form:
@@ -125,7 +142,9 @@ class CustomBuffsMixin:
         custom_stats = self._rows('custom_stat', {'character_id': character_id})
         feats_and_traits = self._rows('feat_and_trait', {'character_id': character_id})
         inventory = self._rows('inventory', {'character_id': character_id})
-        buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
+        trackers = self._rows('tracker', {'character_id': character_id})
+        known_spells = self.fetch_known_spells_data()
+        buff_target_options = self._get_buff_target_options(custom_stats, feats_and_traits, inventory, trackers, known_spells)
 
         selected_tables = []
         for field_name in request_form:

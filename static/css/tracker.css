@@ -251,6 +251,19 @@
     position: relative;
 }
 
+/* Trackers don't share .card-item-name-wrapper, so the buff-indicator
+   positioning card_item.css gives feats/inventory for free needs its own
+   copy here -- same offsets, same reserved padding-left on the input. */
+.tracker-name-field .buff-indicator {
+    position: absolute;
+    top: 0.15rem;
+    left: 0.5rem;
+}
+
+.tracker-name-field:has(.buff-indicator) .tracker-input {
+    padding-left: 1.25rem;
+}
+
 .tracker-entry-name-field {
     width: var(--tracker-entry-name-width);
     min-width: var(--tracker-entry-name-width);

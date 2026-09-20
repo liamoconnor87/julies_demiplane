@@ -1,0 +1,2607 @@
+{
+ "Air Bubble": [
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Create Spelljamming Helm": [
+  "Wizard"
+ ],
+ "Distort Value": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Fast Friends": [
+  "Bard",
+  "Cleric",
+  "Wizard"
+ ],
+ "Gift of Gab": [
+  "Bard",
+  "Wizard"
+ ],
+ "Incite Greed": [
+  "Cleric",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Jim's Glowing Coin": [
+  "Wizard"
+ ],
+ "Jim's Magic Missile": [
+  "Wizard"
+ ],
+ "Motivational Speech": [
+  "Bard",
+  "Cleric"
+ ],
+ "Linked Glyphs": [
+  "Bard",
+  "Cleric",
+  "Wizard"
+ ],
+ "Aura of Evasion": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Battle Familiar": [
+  "Druid",
+  "Warlock",
+  "Wizard"
+ ],
+ "Catnap": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Detonate": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Disruptive Tune": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Distorted Distance": [
+  "Bard",
+  "Warlock",
+  "Wizard"
+ ],
+ "Dueling Ground": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Enervation": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Entrancing Mirrors": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Festering Blast": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Fractured Awareness": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Grave Ground": [
+  "Cleric",
+  "Warlock",
+  "Wizard"
+ ],
+ "Hindsight": [
+  "Wizard"
+ ],
+ "Illusory Dragon": [
+  "Wizard"
+ ],
+ "Inflict Doubt": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Invulnerability": [
+  "Wizard"
+ ],
+ "Iron Body": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Lightning Ring": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Moment of Prescience": [
+  "Wizard"
+ ],
+ "Mordenkainen's Lucubration": [
+  "Wizard"
+ ],
+ "Negative Energy Flood": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Power Word Pain": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Reweave Fate": [
+  "Bard",
+  "Cleric",
+  "Warlock",
+  "Wizard"
+ ],
+ "Spirit Lantern": [
+  "Cleric",
+  "Warlock",
+  "Wizard"
+ ],
+ "Summon Dinosaur": [
+  "Druid"
+ ],
+ "Summon Plant": [
+  "Druid",
+  "Ranger"
+ ],
+ "Transfix": [
+  "Bard",
+  "Warlock",
+  "Wizard"
+ ],
+ "Uncertain Footing": [
+  "Bard",
+  "Warlock",
+  "Wizard"
+ ],
+ "Vision of Elapsing Eons": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Wail of the Banshee": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Waves of Exhaustion": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Wither and Bloom": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Zone of Amicability": [
+  "Bard",
+  "Warlock"
+ ],
+ "Antagonize": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Spirit of Death": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Spray of Cards": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Homunculus Servant": [
+  "Artificer"
+ ],
+ "Dark Star": [
+  "Wizard"
+ ],
+ "Fortune's Favor": [
+  "Wizard"
+ ],
+ "Gift of Alacrity": [
+  "Wizard"
+ ],
+ "Gravity Fissure": [
+  "Wizard"
+ ],
+ "Gravity Sinkhole": [
+  "Wizard"
+ ],
+ "Immovable Object": [
+  "Wizard"
+ ],
+ "Magnify Gravity": [
+  "Wizard"
+ ],
+ "Pulse Wave": [
+  "Wizard"
+ ],
+ "Ravenous Void": [
+  "Wizard"
+ ],
+ "Reality Break": [
+  "Wizard"
+ ],
+ "Sapping Sting": [
+  "Cleric",
+  "Wizard"
+ ],
+ "Temporal Shunt": [
+  "Wizard"
+ ],
+ "Tether Essence": [
+  "Wizard"
+ ],
+ "Time Ravage": [
+  "Wizard"
+ ],
+ "Wristpocket": [
+  "Wizard"
+ ],
+ "Alustriel's Mooncloak": [
+  "Bard",
+  "Druid",
+  "Ranger",
+  "Wizard"
+ ],
+ "Backlash": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Blade of Disaster": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Cacophonic Shield": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Conjure Constructs": [
+  "Wizard"
+ ],
+ "Death Armor": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Deryan's Helpful Homunculi": [
+  "Cleric",
+  "Wizard"
+ ],
+ "Dirge": [
+  "Bard",
+  "Cleric"
+ ],
+ "Doomtide": [
+  "Bard",
+  "Cleric",
+  "Warlock"
+ ],
+ "Elminster's Effulgent Spheres": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Elminster's Elusion": [
+  "Wizard"
+ ],
+ "Holy Star of Mystra": [
+  "Cleric",
+  "Wizard"
+ ],
+ "Laeral's Silver Lance": [
+  "Cleric",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Simbul's Synostodweomer": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Songal's Elemental Suffusion": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Spellfire Flare": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Spellfire Storm": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Sylun\u00e9's Viper": [
+  "Druid",
+  "Wizard"
+ ],
+ "Wardaway": [
+  "Bard",
+  "Cleric",
+  "Paladin",
+  "Wizard"
+ ],
+ "Ashardalon's Stride": [
+  "Artificer"
+ ],
+ "Draconic Transformation": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Fizban's Platinum Shield": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Nathair's Mischief": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Raulothim's Psychic Lance": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Rime's Binding Ice": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Summon Draconic Spirit": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Encode Thoughts": [],
+ "Create Magen": [
+  "Wizard"
+ ],
+ "Frost Fingers": [
+  "Wizard"
+ ],
+ "Flock of Familiars": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Galder's Speedy Courier": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Galder's Tower": [
+  "Wizard"
+ ],
+ "Gate Seal": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Warp Sense": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Borrowed Knowledge": [
+  "Bard",
+  "Cleric",
+  "Warlock",
+  "Wizard"
+ ],
+ "Kinetic Jaunt": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Silvery Barbs": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Vortex Warp": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Booming Blade": [
+  "Artificer"
+ ],
+ "Dream of the Blue Veil": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Green-Flame Blade": [
+  "Artificer"
+ ],
+ "Intellect Fortress": [
+  "Artificer"
+ ],
+ "Lightning Lure": [
+  "Artificer"
+ ],
+ "Mind Sliver": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Spirit Shroud": [
+  "Cleric",
+  "Paladin",
+  "Warlock",
+  "Wizard"
+ ],
+ "Summon Aberration": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Summon Beast": [
+  "Druid",
+  "Ranger"
+ ],
+ "Summon Celestial": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Summon Construct": [
+  "Artificer"
+ ],
+ "Summon Elemental": [
+  "Druid",
+  "Ranger",
+  "Wizard"
+ ],
+ "Summon Fey": [
+  "Druid",
+  "Ranger",
+  "Warlock",
+  "Wizard"
+ ],
+ "Summon Fiend": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Summon Shadowspawn": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Summon Undead": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Sword Burst": [
+  "Artificer"
+ ],
+ "Tasha's Caustic Brew": [
+  "Artificer"
+ ],
+ "Tasha's Mind Whip": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Tasha's Otherworldly Guise": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Abi-Dalzim's Horrid Wilting": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Absorb Elements": [
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Aganazzar's Scorcher": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Beast Bond": [
+  "Druid",
+  "Ranger"
+ ],
+ "Bones of the Earth": [
+  "Druid"
+ ],
+ "Catapult": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Cause Fear": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Ceremony": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Chaos Bolt": [
+  "Sorcerer"
+ ],
+ "Charm Monster": [
+  "Bard",
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Control Flames": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Control Winds": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Create Bonfire": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Create Homunculus": [
+  "Wizard"
+ ],
+ "Crown of Stars": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Danse Macabre": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Dawn": [
+  "Cleric",
+  "Wizard"
+ ],
+ "Dragon's Breath": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Druid Grove": [
+  "Druid"
+ ],
+ "Dust Devil": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Earth Tremor": [
+  "Bard",
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Earthbind": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Elemental Bane": [
+  "Druid",
+  "Warlock",
+  "Wizard"
+ ],
+ "Enemies Abound": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Erupting Earth": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Far Step": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Find Greater Steed": [
+  "Paladin"
+ ],
+ "Flame Arrows": [
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Frostbite": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Guardian of Nature": [
+  "Druid",
+  "Ranger"
+ ],
+ "Gust": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Healing Spirit": [
+  "Druid",
+  "Ranger"
+ ],
+ "Holy Weapon": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Ice Knife": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Immolation": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Infernal Calling": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Infestation": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Investiture of Flame": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Investiture of Ice": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Investiture of Stone": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Investiture of Wind": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Life Transference": [
+  "Cleric",
+  "Wizard"
+ ],
+ "Maddening Darkness": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Maelstrom": [
+  "Druid"
+ ],
+ "Magic Stone": [
+  "Druid",
+  "Warlock"
+ ],
+ "Mass Polymorph": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Maximilian's Earthen Grasp": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Melf's Minute Meteors": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Mental Prison": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Mighty Fortress": [
+  "Wizard"
+ ],
+ "Mind Spike": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Mold Earth": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Primal Savagery": [
+  "Druid"
+ ],
+ "Primordial Ward": [
+  "Druid"
+ ],
+ "Psychic Scream": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Pyrotechnics": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Scatter": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Shadow Blade": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Shadow of Moil": [
+  "Warlock"
+ ],
+ "Shape Water": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Sickening Radiance": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Skill Empowerment": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Skywrite": [
+  "Bard",
+  "Druid",
+  "Wizard"
+ ],
+ "Snare": [
+  "Druid",
+  "Ranger",
+  "Wizard"
+ ],
+ "Snilloc's Snowball Swarm": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Soul Cage": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Steel Wind Strike": [
+  "Ranger",
+  "Wizard"
+ ],
+ "Storm Sphere": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Summon Greater Demon": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Summon Lesser Demons": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Synaptic Static": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Temple of the Gods": [
+  "Cleric"
+ ],
+ "Tenser's Transformation": [
+  "Wizard"
+ ],
+ "Thunder Step": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Thunderclap": [
+  "Bard",
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Tidal Wave": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Tiny Servant": [
+  "Wizard"
+ ],
+ "Toll the Dead": [
+  "Cleric",
+  "Warlock",
+  "Wizard"
+ ],
+ "Transmute Rock": [
+  "Druid",
+  "Wizard"
+ ],
+ "Vitriolic Sphere": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Wall of Light": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Wall of Sand": [
+  "Wizard"
+ ],
+ "Wall of Water": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Warding Wind": [
+  "Bard",
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Watery Sphere": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Whirlwind": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Word of Radiance": [
+  "Cleric"
+ ],
+ "Wrath of Nature": [
+  "Druid",
+  "Ranger"
+ ],
+ "Zephyr Strike": [
+  "Ranger"
+ ],
+ "Acid Splash": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Aid": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger"
+ ],
+ "Alarm": [
+  "Ranger",
+  "Wizard"
+ ],
+ "Alter Self": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Animal Friendship": [
+  "Bard",
+  "Druid",
+  "Ranger"
+ ],
+ "Animal Messenger": [
+  "Bard",
+  "Druid",
+  "Ranger"
+ ],
+ "Animal Shapes": [
+  "Druid"
+ ],
+ "Animate Dead": [
+  "Cleric",
+  "Wizard"
+ ],
+ "Animate Objects": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Antilife Shell": [
+  "Druid"
+ ],
+ "Antimagic Field": [
+  "Cleric",
+  "Wizard"
+ ],
+ "Antipathy/Sympathy": [
+  "Bard",
+  "Druid",
+  "Wizard"
+ ],
+ "Arcane Eye": [
+  "Wizard"
+ ],
+ "Arcane Gate": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Arcane Lock": [
+  "Wizard"
+ ],
+ "Arcane Vigor": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Armor of Agathys": [
+  "Warlock"
+ ],
+ "Arms of Hadar": [
+  "Warlock"
+ ],
+ "Astral Projection": [
+  "Cleric",
+  "Warlock",
+  "Wizard"
+ ],
+ "Augury": [
+  "Cleric",
+  "Druid",
+  "Wizard"
+ ],
+ "Aura of Life": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Aura of Purity": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Aura of Vitality": [
+  "Cleric",
+  "Druid",
+  "Paladin"
+ ],
+ "Awaken": [
+  "Bard",
+  "Druid"
+ ],
+ "Bane": [
+  "Bard",
+  "Cleric",
+  "Warlock"
+ ],
+ "Banishing Smite": [
+  "Paladin"
+ ],
+ "Banishment": [
+  "Cleric",
+  "Paladin",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Barkskin": [
+  "Druid",
+  "Ranger"
+ ],
+ "Beacon of Hope": [
+  "Cleric"
+ ],
+ "Beast Sense": [
+  "Druid",
+  "Ranger"
+ ],
+ "Befuddlement": [
+  "Bard",
+  "Druid",
+  "Warlock",
+  "Wizard"
+ ],
+ "Bestow Curse": [
+  "Bard",
+  "Cleric",
+  "Wizard"
+ ],
+ "Bigby's Hand": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Blade Barrier": [
+  "Cleric"
+ ],
+ "Blade Ward": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Bless": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Blight": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Blinding Smite": [
+  "Paladin"
+ ],
+ "Blindness/Deafness": [
+  "Bard",
+  "Cleric",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Blink": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Blur": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Burning Hands": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Call Lightning": [
+  "Druid"
+ ],
+ "Calm Emotions": [
+  "Bard",
+  "Cleric"
+ ],
+ "Chain Lightning": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Charm Person": [
+  "Bard",
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Chill Touch": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Chromatic Orb": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Circle of Death": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Circle of Power": [
+  "Cleric",
+  "Paladin",
+  "Wizard"
+ ],
+ "Clairvoyance": [
+  "Bard",
+  "Cleric",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Clone": [
+  "Wizard"
+ ],
+ "Cloud of Daggers": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Cloudkill": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Color Spray": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Command": [
+  "Bard",
+  "Cleric",
+  "Paladin"
+ ],
+ "Commune": [
+  "Cleric"
+ ],
+ "Commune with Nature": [
+  "Druid",
+  "Ranger"
+ ],
+ "Compelled Duel": [
+  "Paladin"
+ ],
+ "Comprehend Languages": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Compulsion": [
+  "Bard"
+ ],
+ "Cone of Cold": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Confusion": [
+  "Bard",
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Conjure Animals": [
+  "Druid",
+  "Ranger"
+ ],
+ "Conjure Barrage": [
+  "Ranger"
+ ],
+ "Conjure Celestial": [
+  "Cleric"
+ ],
+ "Conjure Elemental": [
+  "Druid",
+  "Wizard"
+ ],
+ "Conjure Fey": [
+  "Druid"
+ ],
+ "Conjure Minor Elementals": [
+  "Druid",
+  "Wizard"
+ ],
+ "Conjure Volley": [
+  "Ranger"
+ ],
+ "Conjure Woodland Beings": [
+  "Druid",
+  "Ranger"
+ ],
+ "Contact Other Plane": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Contagion": [
+  "Cleric",
+  "Druid"
+ ],
+ "Contingency": [
+  "Wizard"
+ ],
+ "Continual Flame": [
+  "Cleric",
+  "Druid",
+  "Wizard"
+ ],
+ "Control Water": [
+  "Cleric",
+  "Druid",
+  "Wizard"
+ ],
+ "Control Weather": [
+  "Cleric",
+  "Druid",
+  "Wizard"
+ ],
+ "Cordon of Arrows": [
+  "Ranger"
+ ],
+ "Counterspell": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Create Food and Water": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Create or Destroy Water": [
+  "Cleric",
+  "Druid"
+ ],
+ "Create Undead": [
+  "Cleric",
+  "Warlock",
+  "Wizard"
+ ],
+ "Creation": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Crown of Madness": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Crusader's Mantle": [
+  "Paladin"
+ ],
+ "Cure Wounds": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger"
+ ],
+ "Dancing Lights": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Darkness": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Darkvision": [
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Daylight": [
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger",
+  "Sorcerer"
+ ],
+ "Death Ward": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Delayed Blast Fireball": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Demiplane": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Destructive Wave": [
+  "Paladin"
+ ],
+ "Detect Evil and Good": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Detect Magic": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Detect Poison and Disease": [
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger"
+ ],
+ "Detect Thoughts": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Dimension Door": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Disguise Self": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Disintegrate": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Dispel Evil and Good": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Dispel Magic": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Dissonant Whispers": [
+  "Bard"
+ ],
+ "Divination": [
+  "Cleric",
+  "Druid",
+  "Wizard"
+ ],
+ "Divine Favor": [
+  "Paladin"
+ ],
+ "Divine Smite": [
+  "Paladin"
+ ],
+ "Divine Word": [
+  "Cleric"
+ ],
+ "Dominate Beast": [
+  "Druid",
+  "Ranger",
+  "Sorcerer"
+ ],
+ "Dominate Monster": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Dominate Person": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Drawmij's Instant Summons": [
+  "Wizard"
+ ],
+ "Dream": [
+  "Bard",
+  "Warlock",
+  "Wizard"
+ ],
+ "Druidcraft": [
+  "Druid"
+ ],
+ "Earthquake": [
+  "Cleric",
+  "Druid",
+  "Sorcerer"
+ ],
+ "Eldritch Blast": [
+  "Warlock"
+ ],
+ "Elemental Weapon": [
+  "Druid",
+  "Paladin",
+  "Ranger"
+ ],
+ "Elementalism": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Enhance Ability": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Enlarge/Reduce": [
+  "Bard",
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Ensnaring Strike": [
+  "Ranger"
+ ],
+ "Entangle": [
+  "Druid",
+  "Ranger"
+ ],
+ "Enthrall": [
+  "Bard",
+  "Warlock"
+ ],
+ "Etherealness": [
+  "Bard",
+  "Cleric",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Evard's Black Tentacles": [
+  "Wizard"
+ ],
+ "Expeditious Retreat": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Eyebite": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Fabricate": [
+  "Wizard"
+ ],
+ "Faerie Fire": [
+  "Bard",
+  "Druid"
+ ],
+ "False Life": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Fear": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Feather Fall": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Feign Death": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Wizard"
+ ],
+ "Find Familiar": [
+  "Wizard"
+ ],
+ "Find Steed": [
+  "Paladin"
+ ],
+ "Find the Path": [
+  "Bard",
+  "Cleric",
+  "Druid"
+ ],
+ "Find Traps": [
+  "Cleric",
+  "Druid",
+  "Ranger"
+ ],
+ "Finger of Death": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Fire Bolt": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Fire Shield": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Fire Storm": [
+  "Cleric",
+  "Druid",
+  "Sorcerer"
+ ],
+ "Fireball": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Flame Blade": [
+  "Druid",
+  "Sorcerer"
+ ],
+ "Flame Strike": [
+  "Cleric"
+ ],
+ "Flaming Sphere": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Flesh to Stone": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Fly": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Fog Cloud": [
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Forbiddance": [
+  "Cleric"
+ ],
+ "Forcecage": [
+  "Bard",
+  "Warlock",
+  "Wizard"
+ ],
+ "Foresight": [
+  "Bard",
+  "Druid",
+  "Warlock",
+  "Wizard"
+ ],
+ "Fount of Moonlight": [
+  "Bard",
+  "Druid"
+ ],
+ "Freedom of Movement": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Ranger"
+ ],
+ "Friends": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Gaseous Form": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Gate": [
+  "Cleric",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Geas": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Wizard"
+ ],
+ "Gentle Repose": [
+  "Cleric",
+  "Paladin",
+  "Wizard"
+ ],
+ "Giant Insect": [
+  "Druid"
+ ],
+ "Glibness": [
+  "Bard",
+  "Warlock"
+ ],
+ "Globe of Invulnerability": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Glyph of Warding": [
+  "Bard",
+  "Cleric",
+  "Wizard"
+ ],
+ "Goodberry": [
+  "Druid",
+  "Ranger"
+ ],
+ "Grasping Vine": [
+  "Druid",
+  "Ranger"
+ ],
+ "Grease": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Greater Invisibility": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Greater Restoration": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger"
+ ],
+ "Guardian of Faith": [
+  "Cleric"
+ ],
+ "Guards and Wards": [
+  "Bard",
+  "Wizard"
+ ],
+ "Guidance": [
+  "Cleric",
+  "Druid"
+ ],
+ "Guiding Bolt": [
+  "Cleric"
+ ],
+ "Gust of Wind": [
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Hail of Thorns": [
+  "Ranger"
+ ],
+ "Hallow": [
+  "Cleric"
+ ],
+ "Hallucinatory Terrain": [
+  "Bard",
+  "Druid",
+  "Warlock",
+  "Wizard"
+ ],
+ "Harm": [
+  "Cleric"
+ ],
+ "Haste": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Heal": [
+  "Cleric",
+  "Druid"
+ ],
+ "Healing Word": [
+  "Bard",
+  "Cleric",
+  "Druid"
+ ],
+ "Heat Metal": [
+  "Bard",
+  "Druid"
+ ],
+ "Hellish Rebuke": [
+  "Warlock"
+ ],
+ "Heroes' Feast": [
+  "Bard",
+  "Cleric",
+  "Druid"
+ ],
+ "Heroism": [
+  "Bard",
+  "Paladin"
+ ],
+ "Hex": [
+  "Warlock"
+ ],
+ "Hold Monster": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Hold Person": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Holy Aura": [
+  "Cleric"
+ ],
+ "Hunger of Hadar": [
+  "Warlock"
+ ],
+ "Hunter's Mark": [
+  "Ranger"
+ ],
+ "Hypnotic Pattern": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Ice Storm": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Identify": [
+  "Bard",
+  "Wizard"
+ ],
+ "Illusory Script": [
+  "Bard",
+  "Warlock",
+  "Wizard"
+ ],
+ "Imprisonment": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Incendiary Cloud": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Inflict Wounds": [
+  "Cleric"
+ ],
+ "Insect Plague": [
+  "Cleric",
+  "Druid",
+  "Sorcerer"
+ ],
+ "Invisibility": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Jallarzi's Storm of Radiance": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Jump": [
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Knock": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Legend Lore": [
+  "Bard",
+  "Cleric",
+  "Wizard"
+ ],
+ "Leomund's Secret Chest": [
+  "Wizard"
+ ],
+ "Leomund's Tiny Hut": [
+  "Bard",
+  "Wizard"
+ ],
+ "Lesser Restoration": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger"
+ ],
+ "Levitate": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Light": [
+  "Bard",
+  "Cleric",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Lightning Arrow": [
+  "Ranger"
+ ],
+ "Lightning Bolt": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Locate Animals or Plants": [
+  "Bard",
+  "Druid",
+  "Ranger"
+ ],
+ "Locate Creature": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger",
+  "Wizard"
+ ],
+ "Locate Object": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger",
+  "Wizard"
+ ],
+ "Longstrider": [
+  "Bard",
+  "Druid",
+  "Ranger",
+  "Wizard"
+ ],
+ "Mage Armor": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Mage Hand": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Magic Circle": [
+  "Cleric",
+  "Paladin",
+  "Warlock",
+  "Wizard"
+ ],
+ "Magic Jar": [
+  "Wizard"
+ ],
+ "Magic Missile": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Magic Mouth": [
+  "Bard",
+  "Wizard"
+ ],
+ "Magic Weapon": [
+  "Paladin",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Major Image": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Mass Cure Wounds": [
+  "Bard",
+  "Cleric",
+  "Druid"
+ ],
+ "Mass Heal": [
+  "Cleric"
+ ],
+ "Mass Healing Word": [
+  "Bard",
+  "Cleric"
+ ],
+ "Mass Suggestion": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Maze": [
+  "Wizard"
+ ],
+ "Meld into Stone": [
+  "Cleric",
+  "Druid",
+  "Ranger"
+ ],
+ "Melf's Acid Arrow": [
+  "Wizard"
+ ],
+ "Mending": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Message": [
+  "Bard",
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Meteor Swarm": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Mind Blank": [
+  "Bard",
+  "Wizard"
+ ],
+ "Minor Illusion": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Mirage Arcane": [
+  "Bard",
+  "Druid",
+  "Wizard"
+ ],
+ "Mirror Image": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Mislead": [
+  "Bard",
+  "Warlock",
+  "Wizard"
+ ],
+ "Misty Step": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Modify Memory": [
+  "Bard",
+  "Wizard"
+ ],
+ "Moonbeam": [
+  "Druid"
+ ],
+ "Mordenkainen's Faithful Hound": [
+  "Wizard"
+ ],
+ "Mordenkainen's Magnificent Mansion": [
+  "Bard",
+  "Wizard"
+ ],
+ "Mordenkainen's Private Sanctum": [
+  "Wizard"
+ ],
+ "Mordenkainen's Sword": [
+  "Bard",
+  "Wizard"
+ ],
+ "Move Earth": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Nondetection": [
+  "Bard",
+  "Ranger",
+  "Wizard"
+ ],
+ "Nystul's Magic Aura": [
+  "Wizard"
+ ],
+ "Otiluke's Freezing Sphere": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Otiluke's Resilient Sphere": [
+  "Wizard"
+ ],
+ "Otto's Irresistible Dance": [
+  "Bard",
+  "Wizard"
+ ],
+ "Pass without Trace": [
+  "Druid",
+  "Ranger"
+ ],
+ "Passwall": [
+  "Wizard"
+ ],
+ "Phantasmal Force": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Phantasmal Killer": [
+  "Bard",
+  "Wizard"
+ ],
+ "Phantom Steed": [
+  "Wizard"
+ ],
+ "Planar Ally": [
+  "Cleric"
+ ],
+ "Planar Binding": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Warlock",
+  "Wizard"
+ ],
+ "Plane Shift": [
+  "Cleric",
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Plant Growth": [
+  "Bard",
+  "Druid",
+  "Ranger"
+ ],
+ "Poison Spray": [
+  "Druid",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Polymorph": [
+  "Bard",
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Power Word Fortify": [
+  "Bard",
+  "Cleric"
+ ],
+ "Power Word Heal": [
+  "Bard",
+  "Cleric"
+ ],
+ "Power Word Kill": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Power Word Stun": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Prayer of Healing": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Prestidigitation": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Prismatic Spray": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Prismatic Wall": [
+  "Bard",
+  "Wizard"
+ ],
+ "Produce Flame": [
+  "Druid"
+ ],
+ "Programmed Illusion": [
+  "Bard",
+  "Wizard"
+ ],
+ "Project Image": [
+  "Bard",
+  "Wizard"
+ ],
+ "Protection from Energy": [
+  "Cleric",
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Protection from Evil and Good": [
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Warlock",
+  "Wizard"
+ ],
+ "Protection from Poison": [
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger"
+ ],
+ "Purify Food and Drink": [
+  "Cleric",
+  "Druid",
+  "Paladin"
+ ],
+ "Raise Dead": [
+  "Bard",
+  "Cleric",
+  "Paladin"
+ ],
+ "Rary's Telepathic Bond": [
+  "Bard",
+  "Wizard"
+ ],
+ "Ray of Enfeeblement": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Ray of Frost": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Ray of Sickness": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Regenerate": [
+  "Bard",
+  "Cleric",
+  "Druid"
+ ],
+ "Reincarnate": [
+  "Druid"
+ ],
+ "Remove Curse": [
+  "Cleric",
+  "Paladin",
+  "Warlock",
+  "Wizard"
+ ],
+ "Resistance": [
+  "Cleric",
+  "Druid"
+ ],
+ "Resurrection": [
+  "Bard",
+  "Cleric"
+ ],
+ "Reverse Gravity": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Revivify": [
+  "Cleric",
+  "Druid",
+  "Paladin",
+  "Ranger"
+ ],
+ "Rope Trick": [
+  "Wizard"
+ ],
+ "Sacred Flame": [
+  "Cleric"
+ ],
+ "Sanctuary": [
+  "Cleric"
+ ],
+ "Scorching Ray": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Scrying": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Warlock",
+  "Wizard"
+ ],
+ "Searing Smite": [
+  "Paladin"
+ ],
+ "See Invisibility": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Seeming": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Sending": [
+  "Bard",
+  "Cleric",
+  "Wizard"
+ ],
+ "Sequester": [
+  "Wizard"
+ ],
+ "Shapechange": [
+  "Druid",
+  "Wizard"
+ ],
+ "Shatter": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Shield": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Shield of Faith": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Shillelagh": [
+  "Druid"
+ ],
+ "Shining Smite": [
+  "Paladin"
+ ],
+ "Shocking Grasp": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Silence": [
+  "Bard",
+  "Cleric",
+  "Ranger"
+ ],
+ "Silent Image": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Simulacrum": [
+  "Wizard"
+ ],
+ "Sleep": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Sleet Storm": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Slow": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Sorcerous Burst": [
+  "Sorcerer"
+ ],
+ "Spare the Dying": [
+  "Cleric",
+  "Druid"
+ ],
+ "Speak with Animals": [
+  "Bard",
+  "Druid",
+  "Ranger",
+  "Warlock"
+ ],
+ "Speak with Dead": [
+  "Bard",
+  "Cleric",
+  "Wizard"
+ ],
+ "Speak with Plants": [
+  "Bard",
+  "Druid",
+  "Ranger"
+ ],
+ "Spider Climb": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Spike Growth": [
+  "Druid",
+  "Ranger"
+ ],
+ "Spirit Guardians": [
+  "Cleric"
+ ],
+ "Spiritual Weapon": [
+  "Cleric"
+ ],
+ "Staggering Smite": [
+  "Paladin"
+ ],
+ "Starry Wisp": [
+  "Bard",
+  "Druid"
+ ],
+ "Stinking Cloud": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Stone Shape": [
+  "Cleric",
+  "Druid",
+  "Wizard"
+ ],
+ "Stoneskin": [
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Storm of Vengeance": [
+  "Druid"
+ ],
+ "Suggestion": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Summon Dragon": [
+  "Wizard"
+ ],
+ "Sunbeam": [
+  "Cleric",
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Sunburst": [
+  "Cleric",
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Swift Quiver": [
+  "Ranger"
+ ],
+ "Symbol": [
+  "Bard",
+  "Cleric",
+  "Druid",
+  "Wizard"
+ ],
+ "Tasha's Bubbling Cauldron": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Tasha's Hideous Laughter": [
+  "Bard",
+  "Warlock",
+  "Wizard"
+ ],
+ "Telekinesis": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Telepathy": [
+  "Wizard"
+ ],
+ "Teleport": [
+  "Bard",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Teleportation Circle": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Tenser's Floating Disk": [
+  "Wizard"
+ ],
+ "Thaumaturgy": [
+  "Cleric"
+ ],
+ "Thorn Whip": [
+  "Druid"
+ ],
+ "Thunderous Smite": [
+  "Paladin"
+ ],
+ "Thunderwave": [
+  "Bard",
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Time Stop": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Tongues": [
+  "Bard",
+  "Cleric",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Transport via Plants": [
+  "Druid"
+ ],
+ "Tree Stride": [
+  "Druid",
+  "Ranger"
+ ],
+ "True Polymorph": [
+  "Bard",
+  "Warlock",
+  "Wizard"
+ ],
+ "True Resurrection": [
+  "Cleric",
+  "Druid"
+ ],
+ "True Seeing": [
+  "Bard",
+  "Cleric",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "True Strike": [
+  "Bard",
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Tsunami": [
+  "Druid"
+ ],
+ "Unseen Servant": [
+  "Bard",
+  "Warlock",
+  "Wizard"
+ ],
+ "Vampiric Touch": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Vicious Mockery": [
+  "Bard"
+ ],
+ "Wall of Fire": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Wall of Force": [
+  "Wizard"
+ ],
+ "Wall of Ice": [
+  "Wizard"
+ ],
+ "Wall of Stone": [
+  "Druid",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Wall of Thorns": [
+  "Druid"
+ ],
+ "Warding Bond": [
+  "Cleric",
+  "Paladin"
+ ],
+ "Water Breathing": [
+  "Druid",
+  "Ranger",
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Water Walk": [
+  "Cleric",
+  "Druid",
+  "Ranger",
+  "Sorcerer"
+ ],
+ "Web": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Weird": [
+  "Warlock",
+  "Wizard"
+ ],
+ "Wind Walk": [
+  "Druid"
+ ],
+ "Wind Wall": [
+  "Druid",
+  "Ranger"
+ ],
+ "Wish": [
+  "Sorcerer",
+  "Wizard"
+ ],
+ "Witch Bolt": [
+  "Sorcerer",
+  "Warlock",
+  "Wizard"
+ ],
+ "Word of Recall": [
+  "Cleric"
+ ],
+ "Wrathful Smite": [
+  "Paladin"
+ ],
+ "Yolande's Regal Presence": [
+  "Bard",
+  "Wizard"
+ ],
+ "Zone of Truth": [
+  "Bard",
+  "Cleric",
+  "Paladin"
+ ]
+}

@@ -1,0 +1,7 @@
+{# One pill per class this character has, active by default. Rendered both
+   inline (spells_section.html) and as an OOB swap target from
+   classes_fragment_response.html when a class is added/removed, so it stays
+   in sync without touching the rest of the (stateful) Spells tab. #}
+{% for class_name in class_names %}
+<button type="button" class="spell-level-filter-pill active" data-spell-filter-class="{{ class_name }}">{{ class_name }}</button>
+{% endfor %}

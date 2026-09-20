@@ -168,6 +168,14 @@ body.guest-page {
     margin-bottom: 0;
 }
 
+/* Let the name-entry form sit beside the welcome card instead of
+   claiming the full row width (overrides ".sheet-page-content form"). */
+#guest-top-row form {
+    width: auto;
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
 #auth-landing-panel {
     margin-bottom: 0.85rem;
 }
@@ -203,6 +211,12 @@ body.guest-page {
 .guest-landing-link:focus-visible {
     color: var(--text-colour-one);
     text-decoration: underline;
+}
+
+.guest-landing-screenshot {
+    display: block;
+    max-width: 44rem;
+    border: 1px solid var(--secondary-color-dark);
 }
 
 .sheet-page-content form {
@@ -555,6 +569,10 @@ h4 {
 
     body.guest-page #char-group-container + #abilities-section-container {
         margin-top: 0.6rem;
+    }
+
+    .guest-landing-screenshot {
+        max-width: 70%;
     }
 }
 

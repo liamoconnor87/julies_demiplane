@@ -100,6 +100,15 @@ window.addEventListener("load", () => {
                 document.querySelectorAll('.new-char-hidden').forEach(el => {
                     el.classList.remove('new-char-hidden');
                 });
+
+                // The welcome pitch and screenshot/roadmap were only there to
+                // sell signing up before the sheet existed — hide them now.
+                const guestLandingPanel = document.getElementById('guest-landing-panel');
+                if (guestLandingPanel) guestLandingPanel.classList.add('d-none');
+                const guestLandingExtras = document.querySelector('.guest-landing-extras');
+                if (guestLandingExtras) guestLandingExtras.classList.add('d-none');
+                const newUserRoadmap = document.getElementById('new-user-roadmap');
+                if (newUserRoadmap) newUserRoadmap.classList.add('d-none');
             }
 
             hydrateCharacterInfoFeedbackFromServer();
@@ -259,6 +268,7 @@ window.addEventListener("load", () => {
             bindTrackerAddEntryToggles();
             syncGlobalLockState();
             bindTrackerAutoSave();
+            decorateBuffedLabels();
             showGlobalFeedback('', 'success');
             return;
         }
@@ -269,6 +279,7 @@ window.addEventListener("load", () => {
             bindTrackerAddEntryToggles();
             syncGlobalLockState();
             bindTrackerAutoSave();
+            decorateBuffedLabels();
             showGlobalFeedback('', 'success');
             return;
         }
@@ -365,6 +376,8 @@ window.addEventListener("load", () => {
 
 let featDescriptionResizeWindowBound = false;
 let inventoryDescriptionResizeWindowBound = false;
+let spellMasonryResizeWindowBound = false;
+let spellMasonryResizeTimer = null;
 const ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 5;
 const CURRENT_HP_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const CHARACTER_INFO_FEEDBACK_HIDE_MS = 3000;
@@ -841,6 +854,9 @@ const OOB_CONTAINER_REBIND = {
     'delete-character-dropdown': () => {
         bindDeleteConfirmInput();
     },
+    'spell-class-filter-pills': () => {
+        bindSpellClassFilters();
+    },
 };
 
 function rebindOobContainer(target) {
@@ -884,6 +900,15 @@ function initializeUiBindings() {
     safeBind(bindMobileCharacterSelect);
     safeBind(bindAbilityStepButtons);
     safeBind(bindHitDiceSteppers);
+    safeBind(bindSpellSearch);
+    safeBind(bindSpellLevelFilters);
+    safeBind(bindSpellClassFilters);
+    safeBind(bindSpellKnownFilter);
+    safeBind(bindSpellPreparedFilter);
+    safeBind(layoutAllSpellMasonry);
+    safeBind(bindSpellRowToggles);
+    safeBind(bindSpellCategoryToggles);
+    safeBind(bindSpellMasonryResize);
 }
 
 function bindMobileCharacterSelect() {
@@ -1636,6 +1661,15 @@ function syncGlobalLockState() {
     // .combat-section, so its help text already hides on lock via that
     // section's own data-locked + the generic [data-locked='true']
     // .section-help-text rule, with no extra wiring needed here.
+
+    // ── Spells section ──
+    // Collapse/expand (per-card and per-category) is just a display toggle,
+    // same reasoning as Hit Dice/Purse above, so it stays usable regardless
+    // of lock state. Marking a spell "known" does write to the character
+    // though, so that one respects the lock (see bindSpellRowToggles).
+    document.querySelectorAll('.spells-section').forEach((section) => {
+        section.dataset.locked = String(isLocked);
+    });
 }
 
 function bindGlobalLockToggle() {
@@ -1748,6 +1782,15 @@ function getBuffedLabelElement(table, stat) {
     if (table === 'inventory') {
         const input = document.getElementById(`inventory-name-${normalizedStat}`);
         return input ? input.closest('.card-item-name-wrapper') : null;
+    }
+
+    if (table === 'tracker') {
+        return document.getElementById(`tracker-name-wrapper-${normalizedStat}`);
+    }
+
+    if (table === 'spell') {
+        const row = document.querySelector(`.spell-row[data-spell-id="${normalizedStat}"]`);
+        return row ? row.querySelector('.card-item-name-wrapper') : null;
     }
 
     const key = `${table}-${normalizedStat}`;
@@ -3188,6 +3231,417 @@ function bindTrackerAutoSave() {
     });
 }
 
+// Spells are a plain flat card list (see spells.css / spell_row.html) -- no
+// search, filters, categories, or per-character add/remove/prepare. Each
+// card just has a chevron in the name row's corner to collapse/expand its
+// details; state isn't persisted, it just resets to expanded on reload.
+function bindSpellRowToggles() {
+    document.querySelectorAll('.spell-row-toggle').forEach((toggle) => {
+        if (toggle.dataset.bound === 'true') return;
+        toggle.dataset.bound = 'true';
+
+        toggle.addEventListener('click', () => {
+            toggle.closest('.spell-row').classList.toggle('collapsed');
+        });
+    });
+
+    // Known: the small square, always clickable regardless of which filter
+    // view is showing. Sits inside .spell-prepared-toggle's own clickable
+    // area, so it stops propagation to avoid also firing that.
+    document.querySelectorAll('.spell-known-square').forEach((square) => {
+        if (square.dataset.bound === 'true') return;
+        square.dataset.bound = 'true';
+
+        const toggleKnown = (event) => {
+            event.stopPropagation();
+            const row = square.closest('.spell-row');
+            if (!row) return;
+            const section = row.closest('.spells-section');
+            if (section && section.dataset.locked === 'true') return;
+
+            const isKnown = row.classList.toggle('known-active');
+            square.setAttribute('aria-pressed', String(isKnown));
+
+            const characterId = row.dataset.characterId;
+            const spellId = row.dataset.spellId;
+            if (!characterId || !spellId) return;
+            htmx.ajax('POST', `/characters/${characterId}/spell/${spellId}/toggle-known`, { swap: 'none' });
+        };
+
+        square.addEventListener('click', toggleKnown);
+        square.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                toggleKnown(event);
+            }
+        });
+    });
+
+    // Prepared: the rest of the name bar. Only does anything while viewing
+    // Known Spells -- outside that view a spell you don't even know can't
+    // sensibly be prepared, so it's inert (confirmed UX decision).
+    document.querySelectorAll('.spell-prepared-toggle').forEach((toggle) => {
+        if (toggle.dataset.bound === 'true') return;
+        toggle.dataset.bound = 'true';
+
+        const togglePrepared = () => {
+            const knownFilterPill = document.getElementById('spell-known-filter');
+            const knownOnly = knownFilterPill ? knownFilterPill.classList.contains('active') : false;
+            if (!knownOnly) return;
+
+            const row = toggle.closest('.spell-row');
+            if (!row) return;
+            const section = row.closest('.spells-section');
+            if (section && section.dataset.locked === 'true') return;
+
+            const isPrepared = row.classList.toggle('prepared-active');
+            toggle.setAttribute('aria-pressed', String(isPrepared));
+
+            const characterId = row.dataset.characterId;
+            const spellId = row.dataset.spellId;
+            if (!characterId || !spellId) return;
+            htmx.ajax('POST', `/characters/${characterId}/spell/${spellId}/toggle-prepared`, { swap: 'none' });
+        };
+
+        toggle.addEventListener('click', togglePrepared);
+        toggle.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                togglePrepared();
+            }
+        });
+    });
+}
+
+// Search box + level pills, reintroduced from the earlier design. A section
+// is visible only if its own pill is active AND it has at least one row
+// matching the current search text (both filters apply together, not either/or).
+function applySpellFilters() {
+    const searchInput = document.getElementById('spell-search-input');
+    const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const knownFilterPill = document.getElementById('spell-known-filter');
+    const knownOnly = knownFilterPill ? knownFilterPill.classList.contains('active') : false;
+    const preparedFilterPill = document.getElementById('spell-prepared-filter');
+    // Guarded by knownOnly even if the pill's own state says active -- it's
+    // hidden (CSS) and meaningless outside the Known Spells view, so it must
+    // never filter anything on its own.
+    const preparedOnly = knownOnly && preparedFilterPill ? preparedFilterPill.classList.contains('active') : false;
+
+    // Known Spells takes over as the one thing being filtered on -- the level
+    // pills get hidden (CSS, .known-only-active) and stop restricting
+    // anything, so what's shown is genuinely everything known, not that
+    // narrowed further by whatever a level pill happened to be left at.
+    // Prepared Spells (a sub-filter of it) only becomes visible here too.
+    const filterRow = document.getElementById('spell-level-filter-row');
+    if (filterRow) filterRow.classList.toggle('known-only-active', knownOnly);
+
+    // Prepared Spells drills in one step further: every card showing is
+    // already known, so the Known Spells pill (nothing left for it to turn
+    // off) and each row's known square (redundant, everything here IS known)
+    // both hide too -- both come back the moment Prepared is toggled off.
+    if (filterRow) filterRow.classList.toggle('prepared-only-active', preparedOnly);
+
+    // Same class on the shared container (the one ancestor both the filter
+    // bar and every .spells-section actually sit under), so the prepared-
+    // toggle name bar can only look clickable (pointer cursor) while it's
+    // actually clickable -- see .spell-row-top's cursor rules.
+    const sectionContainer = document.getElementById('spells-section-container');
+    if (sectionContainer) sectionContainer.classList.toggle('known-only-active', knownOnly);
+    if (sectionContainer) sectionContainer.classList.toggle('prepared-only-active', preparedOnly);
+
+    // Empty (no classes added yet, or every class pill switched off) means
+    // no restriction at all -- the "full library just in case" escape hatch.
+    const activeClassNames = Array.from(document.querySelectorAll('.spell-level-filter-pill[data-spell-filter-class].active'))
+        .map((pill) => pill.dataset.spellFilterClass);
+
+    document.querySelectorAll('.spells-section[data-spell-level]').forEach((section) => {
+        const level = section.dataset.spellLevel;
+        const pill = document.querySelector(`.spell-level-filter-pill[data-spell-filter-level="${level}"]`);
+        const pillActive = knownOnly || (pill ? pill.classList.contains('active') : true);
+
+        let anyVisible = false;
+        section.querySelectorAll('.spell-row').forEach((row) => {
+            const nameEl = row.querySelector('.spell-name-text');
+            const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+            const matchesSearch = !query || name.includes(query);
+            const matchesKnown = !knownOnly || row.classList.contains('known-active');
+            const matchesPrepared = !preparedOnly || row.classList.contains('prepared-active');
+            const classesEl = row.querySelector('.spell-row-classes');
+            const spellClasses = classesEl ? classesEl.textContent.split(',').map((c) => c.trim()) : [];
+            const matchesClass = activeClassNames.length === 0 || spellClasses.some((c) => activeClassNames.includes(c));
+            const visible = matchesSearch && matchesKnown && matchesPrepared && matchesClass;
+            row.classList.toggle('d-none', !visible);
+            if (visible) anyVisible = true;
+        });
+
+        section.classList.toggle('d-none', !pillActive || !anyVisible);
+    });
+
+    layoutAllSpellMasonry();
+}
+
+function bindSpellSearch() {
+    const searchInput = document.getElementById('spell-search-input');
+    if (!searchInput || searchInput.dataset.bound === 'true') return;
+    searchInput.dataset.bound = 'true';
+    searchInput.addEventListener('input', applySpellFilters);
+}
+
+function getSpellLevelFilterCookieKey(characterId) {
+    return `spell_level_filter_${characterId}`;
+}
+
+function bindSpellLevelFilters() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+
+    if (characterId) {
+        const raw = getCookieValue(getSpellLevelFilterCookieKey(characterId));
+        if (raw) {
+            try {
+                const inactiveLevels = JSON.parse(raw);
+                if (Array.isArray(inactiveLevels)) {
+                    inactiveLevels.forEach((level) => {
+                        const pill = document.querySelector(`.spell-level-filter-pill[data-spell-filter-level="${level}"]`);
+                        if (pill) pill.classList.remove('active');
+                    });
+                }
+            } catch (_) { /* ignore */ }
+        }
+    }
+
+    // .spell-level-filter-pill[data-spell-filter-level] excludes the Known
+    // Spells pill below -- it shares the class for styling, but isn't a level
+    // and has its own separate persistence.
+    document.querySelectorAll('.spell-level-filter-pill[data-spell-filter-level]').forEach((pill) => {
+        if (pill.dataset.bound === 'true') return;
+        pill.dataset.bound = 'true';
+
+        pill.addEventListener('click', () => {
+            pill.classList.toggle('active');
+            applySpellFilters();
+
+            if (!characterId) return;
+            const inactiveLevels = [];
+            document.querySelectorAll('.spell-level-filter-pill[data-spell-filter-level]').forEach((p) => {
+                if (!p.classList.contains('active')) inactiveLevels.push(p.dataset.spellFilterLevel);
+            });
+            setCookieValue(getSpellLevelFilterCookieKey(characterId), JSON.stringify(inactiveLevels), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+        });
+    });
+
+    applySpellFilters();
+}
+
+function getSpellClassFilterCookieKey(characterId) {
+    return `spell_class_filter_${characterId}`;
+}
+
+// One pill per class the character has, active by default (see
+// spell_class_filter_pills.html). Re-run whenever that partial gets
+// OOB-swapped in (a class was added/removed) -- see OOB_CONTAINER_REBIND --
+// since the fresh pills come back unbound and need their persisted
+// inactive state re-applied.
+function bindSpellClassFilters() {
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+
+    if (characterId) {
+        const raw = getCookieValue(getSpellClassFilterCookieKey(characterId));
+        if (raw) {
+            try {
+                const inactiveClasses = JSON.parse(raw);
+                if (Array.isArray(inactiveClasses)) {
+                    inactiveClasses.forEach((className) => {
+                        const pill = document.querySelector(`.spell-level-filter-pill[data-spell-filter-class="${className}"]`);
+                        if (pill) pill.classList.remove('active');
+                    });
+                }
+            } catch (_) { /* ignore */ }
+        }
+    }
+
+    document.querySelectorAll('.spell-level-filter-pill[data-spell-filter-class]').forEach((pill) => {
+        if (pill.dataset.bound === 'true') return;
+        pill.dataset.bound = 'true';
+
+        pill.addEventListener('click', () => {
+            pill.classList.toggle('active');
+            applySpellFilters();
+
+            if (!characterId) return;
+            const inactiveClasses = [];
+            document.querySelectorAll('.spell-level-filter-pill[data-spell-filter-class]').forEach((p) => {
+                if (!p.classList.contains('active')) inactiveClasses.push(p.dataset.spellFilterClass);
+            });
+            setCookieValue(getSpellClassFilterCookieKey(characterId), JSON.stringify(inactiveClasses), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+        });
+    });
+
+    applySpellFilters();
+}
+
+function getSpellKnownFilterCookieKey(characterId) {
+    return `spell_known_filter_${characterId}`;
+}
+
+// "Known Spells" pill: off by default (shows everything); switching it on
+// restricts every section down to only the rows already marked known (see
+// .spell-row.known-active / toggle_spell_known), same AND-with-everything-else
+// logic applySpellFilters already gives the level pills and search box.
+function bindSpellKnownFilter() {
+    const pill = document.getElementById('spell-known-filter');
+    if (!pill || pill.dataset.bound === 'true') return;
+    pill.dataset.bound = 'true';
+
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+
+    if (characterId && getCookieValue(getSpellKnownFilterCookieKey(characterId)) === 'true') {
+        pill.classList.add('active');
+    }
+
+    pill.addEventListener('click', () => {
+        pill.classList.toggle('active');
+        applySpellFilters();
+
+        if (!characterId) return;
+        setCookieValue(getSpellKnownFilterCookieKey(characterId), String(pill.classList.contains('active')), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+    });
+
+    applySpellFilters();
+}
+
+function getSpellPreparedFilterCookieKey(characterId) {
+    return `spell_prepared_filter_${characterId}`;
+}
+
+// Hidden by CSS until Known Spells is active (see .known-only-active in
+// spells.css) -- its own on/off state still persists independently of that,
+// same as the level pills do, so it's remembered next time Known Spells is
+// switched back on rather than always resetting.
+function bindSpellPreparedFilter() {
+    const pill = document.getElementById('spell-prepared-filter');
+    if (!pill || pill.dataset.bound === 'true') return;
+    pill.dataset.bound = 'true';
+
+    const characterIdField = document.getElementById('character-id');
+    const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
+
+    if (characterId && getCookieValue(getSpellPreparedFilterCookieKey(characterId)) === 'true') {
+        pill.classList.add('active');
+    }
+
+    pill.addEventListener('click', () => {
+        pill.classList.toggle('active');
+        applySpellFilters();
+
+        if (!characterId) return;
+        setCookieValue(getSpellPreparedFilterCookieKey(characterId), String(pill.classList.contains('active')), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
+    });
+
+    applySpellFilters();
+}
+
+// Bulk expand/collapse for a whole category. Doesn't need a masonry re-run
+// like a filter change does -- every card in the section just grows/shrinks
+// in place, and each already only affects its own column's height (see
+// layoutSpellMasonry), whether it's one card resizing or all of them at once.
+function bindSpellCategoryToggles() {
+    document.querySelectorAll('.spell-category-toggle').forEach((toggle) => {
+        if (toggle.dataset.bound === 'true') return;
+        toggle.dataset.bound = 'true';
+
+        toggle.addEventListener('click', () => {
+            const section = toggle.closest('.spells-section');
+            if (!section) return;
+            const collapseAll = !section.classList.contains('all-collapsed');
+            section.classList.toggle('all-collapsed', collapseAll);
+            section.querySelectorAll('.spell-row').forEach((row) => {
+                row.classList.toggle('collapsed', collapseAll);
+            });
+        });
+    });
+}
+
+// Real column buckets instead of CSS `columns:` masonry -- see the comment
+// on .spells-list in spells.css for why. Distributes cards into whichever
+// column is currently shortest (classic masonry placement), moving the
+// existing DOM nodes rather than re-rendering them, so collapsed/known-active
+// state and bound listeners survive. Re-run on resize since column count
+// depends on viewport width; a card expanding/collapsing never needs a
+// re-run, since that only changes height within its own column -- but a
+// search/pill filter does, since hiding cards leaves the columns they were
+// originally bucketed into (back when everything was visible) sitting empty
+// while the survivors stay wherever they first landed. Only visible cards
+// take part in the shortest-column balancing; hidden ones just ride along
+// in column 0 so they're still there when a cleared filter reveals them again.
+// ponytail: recomputes from scratch every time rather than preserving a
+// user-chosen order -- fine until drag-and-drop reordering exists, at which
+// point this needs to respect a persisted per-card position instead.
+function layoutSpellMasonry(list) {
+    const allCards = Array.from(list.querySelectorAll('.card-item-row'));
+    if (!allCards.length) return;
+
+    // Re-sort alphabetically on every run, not just the first. After a card
+    // has been placed into a .spells-column div once, querySelectorAll
+    // returns cards in column-major DOM order (every card in column 0, then
+    // every card in column 1, ...) instead of the original alphabetical
+    // order -- round-robining that on a later filter click would scramble
+    // it further each time instead of restoring it.
+    allCards.sort((a, b) => {
+        const nameA = a.querySelector('.spell-name-text')?.textContent || '';
+        const nameB = b.querySelector('.spell-name-text')?.textContent || '';
+        return nameA.localeCompare(nameB);
+    });
+
+    const visibleCards = allCards.filter((card) => !card.classList.contains('d-none'));
+    const referenceCard = visibleCards[0] || allCards[0];
+    const cardWidth = referenceCard.getBoundingClientRect().width;
+    if (!cardWidth) return;
+    const gap = parseFloat(getComputedStyle(list).columnGap) || 12;
+    const columnCount = Math.max(1, Math.floor((list.clientWidth + gap) / (cardWidth + gap)));
+
+    const columns = [];
+    for (let i = 0; i < columnCount; i++) {
+        const column = document.createElement('div');
+        column.className = 'spells-column';
+        columns.push(column);
+    }
+
+    // Round-robin by position, not "shortest column" by height. Cards are
+    // already alphabetical (fetch_all_spells sorts by level then name), so
+    // this reads left-to-right, top-to-bottom in that same order every time
+    // -- a height-based placement looks fine at rest, but reshuffles which
+    // column each card lands in whenever a filter changes what's visible,
+    // since that changes which column is "shortest" at each step.
+    visibleCards.forEach((card, index) => {
+        columns[index % columnCount].appendChild(card);
+    });
+
+    allCards.forEach((card) => {
+        if (card.classList.contains('d-none')) {
+            columns[0].appendChild(card);
+        }
+    });
+
+    list.replaceChildren(...columns);
+}
+
+function layoutAllSpellMasonry() {
+    document.querySelectorAll('.spells-list').forEach(layoutSpellMasonry);
+}
+
+function bindSpellMasonryResize() {
+    if (!spellMasonryResizeWindowBound) {
+        window.addEventListener('resize', () => {
+            clearTimeout(spellMasonryResizeTimer);
+            spellMasonryResizeTimer = setTimeout(layoutAllSpellMasonry, 200);
+        });
+        spellMasonryResizeWindowBound = true;
+    }
+}
+
 // ── Sub-bar tab navigation ───────────────────────────────────────────────────
 
 function bindSubBarTabs() {
@@ -3203,11 +3657,12 @@ function bindSubBarTabs() {
         'trackers':  document.getElementById('sheet-page-trackers'),
         'feats':     document.getElementById('sheet-page-feats'),
         'inventory': document.getElementById('sheet-page-inventory'),
+        'spells':    document.getElementById('sheet-page-spells'),
     };
 
     const cookieKey = characterId ? `sub_bar_tab_${characterId}` : null;
     const savedTab = cookieKey ? getCookieValue(cookieKey) : null;
-    const validTabs = ['info', 'trackers', 'feats', 'inventory'];
+    const validTabs = ['info', 'trackers', 'feats', 'inventory', 'spells'];
     const initialTab = (savedTab && validTabs.includes(savedTab)) ? savedTab : 'info';
 
     const switchTo = (tabName) => {
@@ -3267,6 +3722,12 @@ function bindSubBarTabs() {
             selectInventoryField();
             bindInventoryDescriptionDisplayAutoHeight();
             syncGlobalLockState();
+        } else if (tabName === 'spells') {
+            // The tab is d-none at page load (unless it's the saved tab), so the
+            // initial layoutAllSpellMasonry() call in initializeUiBindings runs
+            // against a hidden, zero-width container and bails out. Re-run it
+            // here now that the tab is actually visible and measurable.
+            layoutAllSpellMasonry();
         }
     };
 

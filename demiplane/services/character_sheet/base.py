@@ -1,8 +1,9 @@
+from itertools import groupby
 from typing import Optional
 
 from go_get_it.go_get_it import GoGetDB
 from demiplane.services import guest_character as guest_session
-from demiplane.services.dnd_mappings import ABILITY_TO_SKILL_MAPPING, CLASS_HIT_DIE_MAPPING
+from demiplane.services.dnd_mappings import ABILITY_TO_SKILL_MAPPING, CLASS_HIT_DIE_MAPPING, SPELL_LEVEL_LABELS
 
 from .constants import FEAT_TRAIT_MAX, INVENTORY_MAX, CUSTOM_STAT_MAX, CUSTOM_BUFF_MAX
 
@@ -19,6 +20,7 @@ class CharacterSheetBase:
             "initiative",
             "speed",
             "proficiency",
+            "health_points",
         ],
         "strength": ["value", "modifier"],
         "dexterity": ["value", "modifier"],
@@ -68,7 +70,21 @@ class CharacterSheetBase:
         """Fetch every class in the reference 'class' table."""
         return self._rows('class')
 
-    def fetch_buff_target_options_data(self, custom_stats=None, feats_and_traits=None, inventory=None):
+    def fetch_all_spells(self):
+        """Fetch every spell in the reference 'spell' table, sorted by level then name."""
+        return sorted(self._rows('spell'), key=lambda spell: (spell.get('level') or 0, spell.get('name') or ''))
+
+    def group_spells_by_level(self, spells, known_spell_ids=None):
+        """Bucket spells (already sorted by level) into (level, label, spells, known_count) quads."""
+        known_spell_ids = known_spell_ids or set()
+        groups = []
+        for level, level_spells in groupby(spells, key=lambda spell: spell.get('level') or 0):
+            spells_list = list(level_spells)
+            known_count = sum(1 for spell in spells_list if spell.get('id') in known_spell_ids)
+            groups.append((level, SPELL_LEVEL_LABELS.get(level, f'Level {level}'), spells_list, known_count))
+        return groups
+
+    def fetch_buff_target_options_data(self, custom_stats=None, feats_and_traits=None, inventory=None, trackers=None, known_spells=None):
         """Thin wrapper around _get_buff_target_options that fetches any missing piece itself."""
         if custom_stats is None:
             custom_stats = self.fetch_custom_stats_data()
@@ -76,7 +92,11 @@ class CharacterSheetBase:
             feats_and_traits = self.fetch_feats_data()
         if inventory is None:
             inventory = self.fetch_inventory_data()
-        return self._get_buff_target_options(custom_stats, feats_and_traits, inventory)
+        if trackers is None:
+            trackers = self._rows('tracker', {'character_id': self.character_id})
+        if known_spells is None:
+            known_spells = self.fetch_known_spells_data()
+        return self._get_buff_target_options(custom_stats, feats_and_traits, inventory, trackers, known_spells)
 
     def create_form(self):
         """
@@ -115,7 +135,7 @@ class CharacterSheetBase:
             'buff_target_options': buff_target_options,
         }
 
-    def _get_buff_target_options(self, custom_stats, feats_and_traits=None, inventory=None):
+    def _get_buff_target_options(self, custom_stats, feats_and_traits=None, inventory=None, trackers=None, known_spells=None):
         options = {
             table_name: columns[:]
             for table_name, columns in self.BUFF_TARGET_TABLE_COLUMNS.items()
@@ -158,9 +178,38 @@ class CharacterSheetBase:
 
         inventory_ids.sort(key=lambda x: x['name'])
         options['inventory'] = inventory_ids
+
+        tracker_ids = []
+        seen_tracker_ids = set()
+        for tracker in trackers or []:
+            tracker_id = tracker.get('id')
+            tracker_name = str(tracker.get('name') or '').strip()
+            if tracker_id and tracker_name and tracker_id not in seen_tracker_ids:
+                seen_tracker_ids.add(tracker_id)
+                tracker_ids.append({'id': tracker_id, 'name': tracker_name})
+
+        tracker_ids.sort(key=lambda x: x['name'])
+        options['tracker'] = tracker_ids
+
+        # Only known spells, not the whole shared catalog -- see
+        # SpellsMixin.fetch_known_spells_data. A buff targeting a spell is
+        # decoration-only (like feat_and_trait/inventory below), since spells
+        # have no per-character numeric field for BuffProcessor to modify.
+        spell_ids = []
+        seen_spell_ids = set()
+        for spell in known_spells or []:
+            spell_id = spell.get('id')
+            spell_name = str(spell.get('name') or '').strip()
+            if spell_id and spell_name and spell_id not in seen_spell_ids:
+                seen_spell_ids.add(spell_id)
+                spell_ids.append({'id': spell_id, 'name': spell_name})
+
+        spell_ids.sort(key=lambda x: x['name'])
+        options['spell'] = spell_ids
+
         return options
 
-    _ID_BASED_TABLES = {'custom_stat', 'feat_and_trait', 'inventory'}
+    _ID_BASED_TABLES = {'custom_stat', 'feat_and_trait', 'inventory', 'tracker', 'spell'}
 
     def _get_valid_stat_values(self, buff_target_options, table_name):
         """Get set of valid stat values for a table. For ID-based tables, returns IDs."""

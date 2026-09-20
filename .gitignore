@@ -1,7 +1,6 @@
 db/data
 db/db_export.json
 backups/
-data
 flask_session/
 .env
 .venv/

@@ -124,8 +124,15 @@ def register_main_routes(app, db):
                 user_theme=user_theme,
             )
 
-        _, character_sheet_data = build_character_sheet_data(character_id)
+        sheet, character_sheet_data = build_character_sheet_data(character_id)
         trackers = get_trackers_for_character(db, character_id)
+        known_spell_ids = sheet.fetch_known_spell_ids()
+        prepared_spell_ids = sheet.fetch_prepared_spell_ids()
+        spell_groups = sheet.group_spells_by_level(sheet.fetch_all_spells(), known_spell_ids)
+        # Seeded lowercase (db/seed.py) but spell.classes stores proper-cased
+        # names ("Wizard") from the 5etools data -- capitalize so the pill
+        # label reads right AND so the two actually match up in the filter.
+        class_names = sorted({c.get('class_name', '').capitalize() for c in character_sheet_data['classes'] if c.get('class_name')})
 
         # Detect if this is a brand-new character (no name set yet)
         is_new_character = not character_sheet_data['character'].get('name')
@@ -156,5 +163,9 @@ def register_main_routes(app, db):
             trackers_at_capacity=len(trackers) >= TRACKER_MAX,
             tracker_max=TRACKER_MAX,
             tracker_entry_max=TRACKER_ENTRY_MAX,
+            spell_groups=spell_groups,
+            known_spell_ids=known_spell_ids,
+            prepared_spell_ids=prepared_spell_ids,
+            class_names=class_names,
             user_theme=user_theme,
         )
