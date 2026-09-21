@@ -12,5 +12,4 @@ venv/
 *.log
 .DS_Store
 misc
-docs
 
