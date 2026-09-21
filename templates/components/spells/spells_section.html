@@ -9,7 +9,6 @@
         {% set field_label_class = 'spell-search-label' %}
         {% set field_extra_attrs = 'placeholder="Search spells..." autocomplete="off"' | safe %}
         {% include 'base/field_text.html' %}
-        <p class="section-help-text">Type to filter spells by name.</p>
         <div class="spell-level-filter-row" id="spell-level-filter-row">
             <button type="button" class="spell-level-filter-pill" id="spell-known-filter">Known Spells</button>
             <button type="button" class="spell-level-filter-pill" id="spell-prepared-filter">Prepared Spells</button>
@@ -18,7 +17,7 @@
         {% endfor %}
             <span id="spell-class-filter-pills">{% include 'components/spells/spell_class_filter_pills.html' %}</span>
         </div>
-        <p class="section-help-text">Click a level pill to hide that category. Class pills narrow the list to what you can actually cast - turn them all off to browse the full library. The square next to a spell marks it known; toggle Known Spells to see just those, then click a spell there to mark it prepared. Toggling Prepared Spells narrows things further and hides Known Spells and the square until you switch it back off.</p>
+        <p class="section-help-text" id="spell-filter-help-text">Use the filter buttons to narrow the list down. Click the square next to a spell to mark it known, building up a shortlist of spells you've found or used - then toggle Known Spells to see just that shortlist.</p>
     </div>
     {% for level, label, group_spells, known_count in spell_groups %}
     <div class="card-item-section spells-section all-collapsed" data-spell-level="{{ level }}">

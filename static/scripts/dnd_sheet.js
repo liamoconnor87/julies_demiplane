@@ -1670,6 +1670,12 @@ function syncGlobalLockState() {
     document.querySelectorAll('.spells-section').forEach((section) => {
         section.dataset.locked = String(isLocked);
     });
+    // Also on the shared container (wraps the filter bar too, which sits as
+    // a *sibling* of .spells-section rather than inside one) so the generic
+    // [data-locked='true'] .section-help-text rule reaches the filter row's
+    // help text too, not just each level section's own.
+    const spellsSectionContainer = document.getElementById('spells-section-container');
+    if (spellsSectionContainer) spellsSectionContainer.dataset.locked = String(isLocked);
 }
 
 function bindGlobalLockToggle() {
@@ -3335,6 +3341,17 @@ function applySpellFilters() {
     const filterRow = document.getElementById('spell-level-filter-row');
     if (filterRow) filterRow.classList.toggle('known-only-active', knownOnly);
 
+    const helpText = document.getElementById('spell-filter-help-text');
+    if (helpText) {
+        if (preparedOnly) {
+            helpText.textContent = 'Showing your prepared spells for today.';
+        } else if (knownOnly) {
+            helpText.textContent = 'Click a spell\'s name to mark it prepared, or again to un-prepare it.';
+        } else {
+            helpText.textContent = 'Use the filter buttons to narrow the list down. Click the square next to a spell to mark it known, building up a shortlist of spells you\'ve found or used - then toggle Known Spells to see just that shortlist.';
+        }
+    }
+
     // Prepared Spells drills in one step further: every card showing is
     // already known, so the Known Spells pill (nothing left for it to turn
     // off) and each row's known square (redundant, everything here IS known)
@@ -3360,6 +3377,7 @@ function applySpellFilters() {
         const pillActive = knownOnly || (pill ? pill.classList.contains('active') : true);
 
         let anyVisible = false;
+        let visibleCount = 0;
         section.querySelectorAll('.spell-row').forEach((row) => {
             const nameEl = row.querySelector('.spell-name-text');
             const name = nameEl ? nameEl.textContent.toLowerCase() : '';
@@ -3371,8 +3389,14 @@ function applySpellFilters() {
             const matchesClass = activeClassNames.length === 0 || spellClasses.some((c) => activeClassNames.includes(c));
             const visible = matchesSearch && matchesKnown && matchesPrepared && matchesClass;
             row.classList.toggle('d-none', !visible);
-            if (visible) anyVisible = true;
+            if (visible) {
+                anyVisible = true;
+                visibleCount += 1;
+            }
         });
+
+        const countEl = section.querySelector('.spell-known-count');
+        if (countEl) countEl.textContent = `(${visibleCount})`;
 
         section.classList.toggle('d-none', !pillActive || !anyVisible);
     });

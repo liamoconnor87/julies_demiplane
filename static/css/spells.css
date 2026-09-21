@@ -211,7 +211,12 @@
     cursor: default;
 }
 
+/* Same opacity+pointer-events treatment .section-remove-x already gets when
+   locked (section_action_buttons.css) -- fully hidden but still reserving
+   its layout space, so the name doesn't shift when it disappears. */
 .spells-section[data-locked='true'] .spell-known-square {
+    opacity: 0;
+    pointer-events: none;
     cursor: default;
 }
 
@@ -219,7 +224,7 @@
     display: inline-block;
     width: 0.85rem;
     height: 0.85rem;
-    margin-right: 0.4rem;
+    margin-left: 0.4rem;
     border: 1px solid var(--title-colour);
     background: transparent;
     cursor: pointer;

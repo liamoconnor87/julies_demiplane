@@ -2,9 +2,9 @@
     <div class="card-item-field card-item-name-field card-item-name-wrapper">
         <div class="field-input card-item-input spell-row-top spell-prepared-toggle" role="button" tabindex="0"
              aria-pressed="{% if spell.id in prepared_spell_ids %}true{% else %}false{% endif %}" aria-label="Toggle prepared spell">
+            <span class="spell-name-text">{{ spell.name }}</span>
             <span class="spell-known-square" role="button" tabindex="0"
                   aria-pressed="{% if spell.id in known_spell_ids %}true{% else %}false{% endif %}" aria-label="Toggle known spell"></span>
-            <span class="spell-name-text">{{ spell.name }}</span>
         </div>
         <button type="button" class="section-remove-x spell-row-toggle" aria-label="Toggle spell details">
             <i class="bi bi-chevron-up"></i>
