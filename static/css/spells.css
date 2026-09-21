@@ -191,33 +191,68 @@
     border-color: var(--text-colour-three);
 }
 
+/* Just the flex container. The whole card header is the prepared click target
+   now (see bindSpellRowToggles), so the row governs the cursor -- but this
+   element also carries .field-input, whose `cursor: text` is set directly on
+   it and so beats anything inherited. Inherit explicitly to hand control back
+   to the row. Same specificity as .field-input, and spells.css loads later. */
 .spell-row-top {
     display: flex;
     align-items: center;
-    /* Only actually does anything (toggles prepared) inside the Known
-       Spells view -- pointer cursor only shows up there to match. */
+    cursor: inherit;
+}
+
+/* Hidden but still reserving its layout space, so the name doesn't shift when
+   it disappears. visibility rather than the opacity+pointer-events pair
+   .section-remove-x uses: this is a real button now, and neither opacity nor
+   pointer-events takes it out of the tab order, so a keyboard user could tab
+   onto an invisible control in a locked section and get nothing. */
+.spells-section[data-locked='true'] .spell-known-square {
+    visibility: hidden;
     cursor: default;
 }
 
-#spells-section-container.known-only-active .spell-row-top {
+/* The spell name. Strips the UA button chrome so it reads as plain text, and
+   deliberately does NOT grow: it hugs the name so the known square sits right
+   beside it rather than being pushed out to the chevron. */
+.spell-prepared-toggle {
+    min-width: 0;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+}
+
+/* Cursor has to be stated on the button, not inherited: Bootstrap's reboot
+   carries `button:not(:disabled) { cursor: pointer }` at (0,1,1), which
+   outranks a plain class, so the name would claim to be clickable everywhere.
+   aria-disabled is the exact condition the click handler bails on, so keying
+   off it keeps the two in step. */
+.spell-prepared-toggle[aria-disabled='true'] {
+    cursor: default;
+}
+
+.spell-prepared-toggle[aria-disabled='false'] {
     cursor: pointer;
 }
 
-/* #spells-section-container prefix (not just .spells-section) to match/beat
-   the known-only-active rule above's ID-based specificity -- without it,
-   that rule's pointer cursor would keep winning over this default even
-   while locked, since an ID always outranks a plain class+attribute chain. */
-#spells-section-container .spells-section[data-locked='true'] .spell-row-top {
-    cursor: default;
+/* The whole card header toggles prepared, so the pointer belongs on the row,
+   not just the name. Scoped to the only state where the click does something:
+   inside Known Spells, not drilled into Prepared (read-only view), unlocked.
+   All three hooks are already maintained -- known-only-active and
+   prepared-only-active by applySpellFilters, data-locked by
+   syncGlobalLockState -- and this mirrors the click handler's own bails. */
+#spells-section-container.known-only-active:not(.prepared-only-active):not([data-locked='true']) .spell-row {
+    cursor: pointer;
 }
 
-/* Same opacity+pointer-events treatment .section-remove-x already gets when
-   locked (section_action_buttons.css) -- fully hidden but still reserving
-   its layout space, so the name doesn't shift when it disappears. */
-.spells-section[data-locked='true'] .spell-known-square {
-    opacity: 0;
-    pointer-events: none;
-    cursor: default;
+/* The description is deliberately not part of the click target, so it must not
+   inherit the pointer. Set directly, which beats the inherited value. */
+.spell-row-details {
+    cursor: auto;
 }
 
 .spell-known-square {
@@ -225,11 +260,21 @@
     width: 0.85rem;
     height: 0.85rem;
     margin-left: 0.4rem;
+    padding: 0;
+    appearance: none;
     border: 1px solid var(--title-colour);
     background: transparent;
     cursor: pointer;
     flex-shrink: 0;
     box-sizing: border-box;
+}
+
+/* These two are the only keyboard targets in the row, and .field-input's
+   outline:none sits on the wrapper, not on them. */
+.spell-prepared-toggle:focus-visible,
+.spell-known-square:focus-visible {
+    outline: 2px solid var(--text-colour-one);
+    outline-offset: 1px;
 }
 
 .spell-row.known-active .spell-known-square {

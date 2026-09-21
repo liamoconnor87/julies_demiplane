@@ -3,5 +3,5 @@
    classes_fragment_response.html when a class is added/removed, so it stays
    in sync without touching the rest of the (stateful) Spells tab. #}
 {% for class_name in class_names %}
-<button type="button" class="spell-level-filter-pill active" data-spell-filter-class="{{ class_name }}">{{ class_name }}</button>
+<button type="button" class="spell-level-filter-pill active" data-spell-filter-class="{{ class_name }}" aria-pressed="true">{{ class_name }}</button>
 {% endfor %}

@@ -1,3 +1,4 @@
+from functools import lru_cache
 from itertools import groupby
 from typing import Optional
 
@@ -8,6 +9,27 @@ from demiplane.services.dnd_mappings import ABILITY_TO_SKILL_MAPPING, CLASS_HIT_
 from .constants import FEAT_TRAIT_MAX, INVENTORY_MAX, CUSTOM_STAT_MAX, CUSTOM_BUFF_MAX
 
 ggi = GoGetDB()
+
+
+@lru_cache(maxsize=1)
+def _spell_catalogue() -> list:
+    """Every spell, read once per process and sorted by level then name.
+
+    The 'spell' table is read-only reference data at runtime -- only
+    admin/seed_spells.py writes it, offline. Without this, every buff-target
+    render pulls all 581 rows out of the database to build a 30-item dropdown,
+    and that happens on every inventory, feat, custom-stat and buff save, not
+    just on page load.
+
+    Goes straight to ggi rather than self.store on purpose: 'spell' isn't a
+    guest session table, so GuestSessionStore would only delegate here anyway.
+
+    Re-seeding spells needs an app restart before the new ones show up.
+    """
+    return sorted(
+        ggi.go_get_all('spell') or [],
+        key=lambda spell: (spell.get('level') or 0, spell.get('name') or ''),
+    )
 
 
 class CharacterSheetBase:
@@ -72,17 +94,18 @@ class CharacterSheetBase:
 
     def fetch_all_spells(self):
         """Fetch every spell in the reference 'spell' table, sorted by level then name."""
-        return sorted(self._rows('spell'), key=lambda spell: (spell.get('level') or 0, spell.get('name') or ''))
+        # Shallow copy so a caller sorting or filtering in place can't corrupt
+        # the shared cache. The dicts themselves are still shared -- nothing
+        # mutates a spell row today.
+        # ponytail: shallow copy only, deep-copy if a caller ever edits a row
+        return list(_spell_catalogue())
 
-    def group_spells_by_level(self, spells, known_spell_ids=None):
-        """Bucket spells (already sorted by level) into (level, label, spells, known_count) quads."""
-        known_spell_ids = known_spell_ids or set()
-        groups = []
-        for level, level_spells in groupby(spells, key=lambda spell: spell.get('level') or 0):
-            spells_list = list(level_spells)
-            known_count = sum(1 for spell in spells_list if spell.get('id') in known_spell_ids)
-            groups.append((level, SPELL_LEVEL_LABELS.get(level, f'Level {level}'), spells_list, known_count))
-        return groups
+    def group_spells_by_level(self, spells):
+        """Bucket spells (already sorted by level) into (level, label, spells) triples."""
+        return [
+            (level, SPELL_LEVEL_LABELS.get(level, f'Level {level}'), list(level_spells))
+            for level, level_spells in groupby(spells, key=lambda spell: spell.get('level') or 0)
+        ]
 
     def fetch_buff_target_options_data(self, custom_stats=None, feats_and_traits=None, inventory=None, trackers=None, known_spells=None):
         """Thin wrapper around _get_buff_target_options that fetches any missing piece itself."""

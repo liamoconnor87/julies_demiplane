@@ -378,6 +378,8 @@ let featDescriptionResizeWindowBound = false;
 let inventoryDescriptionResizeWindowBound = false;
 let spellMasonryResizeWindowBound = false;
 let spellMasonryResizeTimer = null;
+let spellSearchTimer = null;
+const SPELL_SEARCH_DEBOUNCE_MS = 120;
 const ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 5;
 const CURRENT_HP_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const CHARACTER_INFO_FEEDBACK_HIDE_MS = 3000;
@@ -856,6 +858,7 @@ const OOB_CONTAINER_REBIND = {
     },
     'spell-class-filter-pills': () => {
         bindSpellClassFilters();
+        applySpellFilters();
     },
 };
 
@@ -905,7 +908,10 @@ function initializeUiBindings() {
     safeBind(bindSpellClassFilters);
     safeBind(bindSpellKnownFilter);
     safeBind(bindSpellPreparedFilter);
-    safeBind(layoutAllSpellMasonry);
+    // The four binds above only restore their saved state now -- this is the
+    // single pass that applies it and lays the cards out. It used to be five
+    // full masonry passes and fifty forced reflows on every page load.
+    safeBind(applySpellFilters);
     safeBind(bindSpellRowToggles);
     safeBind(bindSpellCategoryToggles);
     safeBind(bindSpellMasonryResize);
@@ -1676,6 +1682,11 @@ function syncGlobalLockState() {
     // help text too, not just each level section's own.
     const spellsSectionContainer = document.getElementById('spells-section-container');
     if (spellsSectionContainer) spellsSectionContainer.dataset.locked = String(isLocked);
+    // Locking makes the prepared toggle inert, and its aria-disabled (which
+    // also drives the cursor) is set in applySpellFilters -- so it has to
+    // re-run here or the name bar keeps offering a pointer while locked.
+    // Safe to call unconditionally: it null-guards every lookup.
+    applySpellFilters();
 }
 
 function bindGlobalLockToggle() {
@@ -3268,53 +3279,67 @@ function bindSpellRowToggles() {
             const isKnown = row.classList.toggle('known-active');
             square.setAttribute('aria-pressed', String(isKnown));
 
+            // Un-knowing deletes the whole spell_to_character row server-side
+            // (toggle_spell_known), so `prepared` goes with it and re-knowing
+            // comes back prepared: 0. Unknown means unprepared, so mirror that
+            // here -- otherwise the row keeps a stale prepared-active and the
+            // next prepare click writes the opposite of what it's showing.
+            if (!isKnown) {
+                row.classList.remove('prepared-active');
+                const preparedToggle = row.querySelector('.spell-prepared-toggle');
+                if (preparedToggle) preparedToggle.setAttribute('aria-pressed', 'false');
+            }
+
             const characterId = row.dataset.characterId;
             const spellId = row.dataset.spellId;
             if (!characterId || !spellId) return;
             htmx.ajax('POST', `/characters/${characterId}/spell/${spellId}/toggle-known`, { swap: 'none' });
         };
 
+        // Native <button>, so Enter and Space already fire click -- a manual
+        // keydown handler here would double-toggle and double-POST.
         square.addEventListener('click', toggleKnown);
-        square.addEventListener('keydown', (event) => {
-            if (event.key === ' ' || event.key === 'Enter') {
-                event.preventDefault();
-                toggleKnown(event);
-            }
-        });
     });
 
-    // Prepared: the rest of the name bar. Only does anything while viewing
-    // Known Spells -- outside that view a spell you don't even know can't
-    // sensibly be prepared, so it's inert (confirmed UX decision).
-    document.querySelectorAll('.spell-prepared-toggle').forEach((toggle) => {
-        if (toggle.dataset.bound === 'true') return;
-        toggle.dataset.bound = 'true';
+    // Prepared: the whole card header, not just the name. The name stays a real
+    // <button> so keyboard and screen readers still have a proper control --
+    // its native click bubbles up to here, so there's one code path either way
+    // and nothing fires twice. Only does anything while viewing Known Spells:
+    // outside that view a spell you don't even know can't sensibly be prepared
+    // (confirmed UX decision).
+    document.querySelectorAll('.spell-row').forEach((row) => {
+        if (row.dataset.preparedBound === 'true') return;
+        row.dataset.preparedBound = 'true';
 
-        const togglePrepared = () => {
+        row.addEventListener('click', (event) => {
+            // The chevron and the known square are their own controls. The
+            // chevron especially -- it doesn't stop propagation, so without
+            // this a collapse click would prepare the spell at the same time.
+            // .spell-row-details is excluded so the description stays readable
+            // and selectable rather than being one big toggle.
+            if (event.target.closest('.spell-row-toggle, .spell-known-square, .spell-row-details')) return;
+
             const knownFilterPill = document.getElementById('spell-known-filter');
             const knownOnly = knownFilterPill ? knownFilterPill.classList.contains('active') : false;
             if (!knownOnly) return;
 
-            const row = toggle.closest('.spell-row');
-            if (!row) return;
+            // Prepared Spells is a read-only view -- it's the list you actually
+            // play from, so a stray click mustn't quietly drop a spell out of
+            // it. Un-prepare from the Known Spells view instead.
+            const preparedFilterPill = document.getElementById('spell-prepared-filter');
+            if (preparedFilterPill && preparedFilterPill.classList.contains('active')) return;
+
             const section = row.closest('.spells-section');
             if (section && section.dataset.locked === 'true') return;
 
             const isPrepared = row.classList.toggle('prepared-active');
-            toggle.setAttribute('aria-pressed', String(isPrepared));
+            const preparedToggle = row.querySelector('.spell-prepared-toggle');
+            if (preparedToggle) preparedToggle.setAttribute('aria-pressed', String(isPrepared));
 
             const characterId = row.dataset.characterId;
             const spellId = row.dataset.spellId;
             if (!characterId || !spellId) return;
             htmx.ajax('POST', `/characters/${characterId}/spell/${spellId}/toggle-prepared`, { swap: 'none' });
-        };
-
-        toggle.addEventListener('click', togglePrepared);
-        toggle.addEventListener('keydown', (event) => {
-            if (event.key === ' ' || event.key === 'Enter') {
-                event.preventDefault();
-                togglePrepared();
-            }
         });
     });
 }
@@ -3389,6 +3414,16 @@ function applySpellFilters() {
             const matchesClass = activeClassNames.length === 0 || spellClasses.some((c) => activeClassNames.includes(c));
             const visible = matchesSearch && matchesKnown && matchesPrepared && matchesClass;
             row.classList.toggle('d-none', !visible);
+            // Mirror exactly what togglePrepared bails on -- outside the Known
+            // Spells view, or in a locked section. Drives both the screen
+            // reader state and the cursor (spells.css keys off aria-disabled),
+            // so the bar never looks clickable where it isn't. This loop
+            // already walks every row, so it's free.
+            const preparedToggle = row.querySelector('.spell-prepared-toggle');
+            if (preparedToggle) {
+                const inert = !knownOnly || preparedOnly || section.dataset.locked === 'true';
+                preparedToggle.setAttribute('aria-disabled', String(inert));
+            }
             if (visible) {
                 anyVisible = true;
                 visibleCount += 1;
@@ -3408,7 +3443,26 @@ function bindSpellSearch() {
     const searchInput = document.getElementById('spell-search-input');
     if (!searchInput || searchInput.dataset.bound === 'true') return;
     searchInput.dataset.bound = 'true';
-    searchInput.addEventListener('input', applySpellFilters);
+    // Debounced: one keystroke rebuilds and re-sorts all 581 cards, so typing
+    // a word ran that eight times and threw seven of the results away. Each
+    // keystroke cancels the pending run, so it only fires once you pause.
+    searchInput.addEventListener('input', () => {
+        clearTimeout(spellSearchTimer);
+        spellSearchTimer = setTimeout(applySpellFilters, SPELL_SEARCH_DEBOUNCE_MS);
+    });
+}
+
+// Every filter pill carries its on/off state in the `active` class, which is
+// purely a colour change in spells.css. Mirror it into aria-pressed so the
+// state isn't signalled by colour alone -- all six places that flip a pill go
+// through here.
+function setSpellPillActive(pill, isActive) {
+    pill.classList.toggle('active', isActive);
+    pill.setAttribute('aria-pressed', String(isActive));
+}
+
+function toggleSpellPill(pill) {
+    setSpellPillActive(pill, !pill.classList.contains('active'));
 }
 
 function getSpellLevelFilterCookieKey(characterId) {
@@ -3427,7 +3481,7 @@ function bindSpellLevelFilters() {
                 if (Array.isArray(inactiveLevels)) {
                     inactiveLevels.forEach((level) => {
                         const pill = document.querySelector(`.spell-level-filter-pill[data-spell-filter-level="${level}"]`);
-                        if (pill) pill.classList.remove('active');
+                        if (pill) setSpellPillActive(pill, false);
                     });
                 }
             } catch (_) { /* ignore */ }
@@ -3442,7 +3496,7 @@ function bindSpellLevelFilters() {
         pill.dataset.bound = 'true';
 
         pill.addEventListener('click', () => {
-            pill.classList.toggle('active');
+            toggleSpellPill(pill);
             applySpellFilters();
 
             if (!characterId) return;
@@ -3453,8 +3507,6 @@ function bindSpellLevelFilters() {
             setCookieValue(getSpellLevelFilterCookieKey(characterId), JSON.stringify(inactiveLevels), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
         });
     });
-
-    applySpellFilters();
 }
 
 function getSpellClassFilterCookieKey(characterId) {
@@ -3478,7 +3530,7 @@ function bindSpellClassFilters() {
                 if (Array.isArray(inactiveClasses)) {
                     inactiveClasses.forEach((className) => {
                         const pill = document.querySelector(`.spell-level-filter-pill[data-spell-filter-class="${className}"]`);
-                        if (pill) pill.classList.remove('active');
+                        if (pill) setSpellPillActive(pill, false);
                     });
                 }
             } catch (_) { /* ignore */ }
@@ -3490,7 +3542,7 @@ function bindSpellClassFilters() {
         pill.dataset.bound = 'true';
 
         pill.addEventListener('click', () => {
-            pill.classList.toggle('active');
+            toggleSpellPill(pill);
             applySpellFilters();
 
             if (!characterId) return;
@@ -3501,8 +3553,6 @@ function bindSpellClassFilters() {
             setCookieValue(getSpellClassFilterCookieKey(characterId), JSON.stringify(inactiveClasses), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
         });
     });
-
-    applySpellFilters();
 }
 
 function getSpellKnownFilterCookieKey(characterId) {
@@ -3522,18 +3572,16 @@ function bindSpellKnownFilter() {
     const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
 
     if (characterId && getCookieValue(getSpellKnownFilterCookieKey(characterId)) === 'true') {
-        pill.classList.add('active');
+        setSpellPillActive(pill, true);
     }
 
     pill.addEventListener('click', () => {
-        pill.classList.toggle('active');
+        toggleSpellPill(pill);
         applySpellFilters();
 
         if (!characterId) return;
         setCookieValue(getSpellKnownFilterCookieKey(characterId), String(pill.classList.contains('active')), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
     });
-
-    applySpellFilters();
 }
 
 function getSpellPreparedFilterCookieKey(characterId) {
@@ -3553,18 +3601,16 @@ function bindSpellPreparedFilter() {
     const characterId = characterIdField ? String(characterIdField.value || '').trim() : '';
 
     if (characterId && getCookieValue(getSpellPreparedFilterCookieKey(characterId)) === 'true') {
-        pill.classList.add('active');
+        setSpellPillActive(pill, true);
     }
 
     pill.addEventListener('click', () => {
-        pill.classList.toggle('active');
+        toggleSpellPill(pill);
         applySpellFilters();
 
         if (!characterId) return;
         setCookieValue(getSpellPreparedFilterCookieKey(characterId), String(pill.classList.contains('active')), ABILITY_LOCK_COOKIE_MAX_AGE_SECONDS);
     });
-
-    applySpellFilters();
 }
 
 // Bulk expand/collapse for a whole category. Doesn't need a masonry re-run

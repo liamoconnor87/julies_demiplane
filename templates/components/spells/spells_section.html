@@ -10,23 +10,24 @@
         {% set field_extra_attrs = 'placeholder="Search spells..." autocomplete="off"' | safe %}
         {% include 'base/field_text.html' %}
         <div class="spell-level-filter-row" id="spell-level-filter-row">
-            <button type="button" class="spell-level-filter-pill" id="spell-known-filter">Known Spells</button>
-            <button type="button" class="spell-level-filter-pill" id="spell-prepared-filter">Prepared Spells</button>
-        {% for level, label, group_spells, known_count in spell_groups %}
-            <button type="button" class="spell-level-filter-pill active" data-spell-filter-level="{{ level }}">{{ label }}</button>
+            <button type="button" class="spell-level-filter-pill" id="spell-known-filter" aria-pressed="false">Known Spells</button>
+            <button type="button" class="spell-level-filter-pill" id="spell-prepared-filter" aria-pressed="false">Prepared Spells</button>
+        {% for level, label, group_spells in spell_groups %}
+            <button type="button" class="spell-level-filter-pill active" data-spell-filter-level="{{ level }}" aria-pressed="true">{{ label }}</button>
         {% endfor %}
             <span id="spell-class-filter-pills">{% include 'components/spells/spell_class_filter_pills.html' %}</span>
         </div>
         <p class="section-help-text" id="spell-filter-help-text">Use the filter buttons to narrow the list down. Click the square next to a spell to mark it known, building up a shortlist of spells you've found or used - then toggle Known Spells to see just that shortlist.</p>
     </div>
-    {% for level, label, group_spells, known_count in spell_groups %}
+    {% for level, label, group_spells in spell_groups %}
     <div class="card-item-section spells-section all-collapsed" data-spell-level="{{ level }}">
         <div class="spells-section-header">
             <h4>{{ label }}</h4>
             <button type="button" class="spell-level-filter-pill spell-category-toggle" aria-label="Expand or collapse all {{ label }} spells">
                 <i class="bi bi-chevron-up"></i>
             </button>
-            <span class="spell-known-count">({{ known_count }})</span>
+            {# Filled by applySpellFilters with the count actually showing. #}
+            <span class="spell-known-count"></span>
         </div>
         <div class="spells-list">
         {% for spell in group_spells %}

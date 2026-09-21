@@ -1,12 +1,23 @@
 <div id="spell-row-{{ spell.id }}" class="card-item-row card-item-saved-row spell-row collapsed{% if spell.id in known_spell_ids %} known-active{% endif %}{% if spell.id in prepared_spell_ids %} prepared-active{% endif %}" data-spell-id="{{ spell.id }}" data-character-id="{{ character_id }}">
     <div class="card-item-field card-item-name-field card-item-name-wrapper">
-        <div class="field-input card-item-input spell-row-top spell-prepared-toggle" role="button" tabindex="0"
-             aria-pressed="{% if spell.id in prepared_spell_ids %}true{% else %}false{% endif %}" aria-label="Toggle prepared spell">
-            <span class="spell-name-text">{{ spell.name }}</span>
-            <span class="spell-known-square" role="button" tabindex="0"
-                  aria-pressed="{% if spell.id in known_spell_ids %}true{% else %}false{% endif %}" aria-label="Toggle known spell"></span>
+        {# Two real sibling buttons rather than a role="button" nested in another:
+           nested interactive roles are invalid, and an aria-label on the wrapper
+           replaced its subtree, so the spell name never reached the accessibility
+           tree. Every label now carries the name, since a screen reader's element
+           list is otherwise 581 identical entries. .spell-row-top stays the flex
+           container all the existing CSS targets. #}
+        <div class="field-input card-item-input spell-row-top">
+            <button type="button" class="spell-prepared-toggle"
+                    aria-pressed="{% if spell.id in prepared_spell_ids %}true{% else %}false{% endif %}"
+                    aria-disabled="true"
+                    aria-label="{{ spell.name }}: prepared">
+                <span class="spell-name-text">{{ spell.name }}</span>
+            </button>
+            <button type="button" class="spell-known-square"
+                    aria-pressed="{% if spell.id in known_spell_ids %}true{% else %}false{% endif %}"
+                    aria-label="{{ spell.name }}: known"></button>
         </div>
-        <button type="button" class="section-remove-x spell-row-toggle" aria-label="Toggle spell details">
+        <button type="button" class="section-remove-x spell-row-toggle" aria-label="{{ spell.name }} details">
             <i class="bi bi-chevron-up"></i>
         </button>
         <div class="spell-row-details">

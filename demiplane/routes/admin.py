@@ -26,6 +26,8 @@ _CHILD_TABLES_BY_CHARACTER = [
     ('wisdom', 'character_id'),
     ('charisma', 'character_id'),
     ('tracker', 'character_id'),
+    ('spell_to_character', 'character_id'),
+    ('purse', 'character_id'),
 ]
 
 _ABILITY_TABLES = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma']
@@ -43,6 +45,7 @@ _FK_TO_PARENT = {
     'user_id': 'user',
     'character_id': 'character',
     'class_id': 'class',
+    'spell_id': 'spell',
     'tracker_id': 'tracker',
     'custom_buff_id': 'custom_buff',
     'strength_id': 'strength',

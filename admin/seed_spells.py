@@ -17,8 +17,11 @@ across every sourcebook. admin/data/spell_classes.json is a precomputed
 {spell name: [classes]} slice of just that file for all 581 spells here,
 built once rather than vendoring the whole lookup.
 
-Idempotent: skips any spell whose name already exists, so re-running after
-pulling newer copies of the source files only adds spells that are new.
+Idempotent twice over: it skips any spell whose name already exists, and ids
+are derived from the spell name rather than random (see spell_id), so even
+wiping the table and reseeding gives every spell back the id it had before.
+That keeps spell_to_character resolving -- a random-id reseed silently
+orphaned 21 of Julie's spell picks on 18 Sep 2026.
 XPHB is always processed first regardless of file order, so its own 2024
 text wins if a later sourcebook reprints the same spell name.
 
@@ -34,11 +37,11 @@ import json
 import os
 import re
 import sys
+import uuid as uuid_lib
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from go_get_it.go_get_it import GoGetDB
-from demiplane.functions.functions import uuid
 
 DEFAULT_INPUT_GLOB = 'admin/data/spells-*.json'
 DEFAULT_CLASSES_INPUT = 'admin/data/spell_classes.json'
@@ -184,9 +187,35 @@ def format_duration(spell: dict) -> str:
     return f'Concentration, up to {base}' if duration.get('concentration') else base
 
 
+# Fixed namespace for spell ids. Never change it: every id in every database
+# is derived from it, so a new namespace would orphan every character's spells.
+_SPELL_ID_NAMESPACE = uuid_lib.UUID('90a4f83a-a568-4eb4-9037-730a5434e385')
+
+
+def spell_id(name: str) -> str:
+    """Stable id for a spell, derived from its name.
+
+    Deliberately not random. The seeder skips by name, so name is already the
+    identity of a spell here, and deriving the id from it makes a reseed
+    idempotent: wipe the table, run again, and every spell comes back with the
+    id it had before, so spell_to_character keeps resolving.
+
+    Random ids cost us this once already -- emptying the table on 18 Sep 2026
+    and reseeding gave all 581 spells new ids and silently orphaned 21 of
+    Julie's picks, with no error anywhere because spell_id has no FK.
+
+    Args:
+        name: the spell's name, exactly as it appears in the source data.
+
+    Returns:
+        32 lowercase hex characters, matching the TEXT(32) id column.
+    """
+    return uuid_lib.uuid5(_SPELL_ID_NAMESPACE, name).hex
+
+
 def map_spell(spell: dict, classes_by_name: dict) -> dict:
     return {
-        'id': uuid(),
+        'id': spell_id(spell['name']),
         'name': spell['name'],
         'level': spell['level'],
         'school': SCHOOL_NAMES.get(spell.get('school'), spell.get('school', '')),
@@ -236,11 +265,38 @@ def seed_spells(input_paths: list, classes_input_path: str) -> None:
     print(f'Total: {total_added} spells added, {total_skipped} already present, across {len(input_paths)} files')
 
 
+def self_check() -> None:
+    """Assert spell ids are stable and well-formed. Run with --self-check.
+
+    These ids are load-bearing across databases: local SQLite and live Postgres
+    only agree because both derive the same id from the same name. If any of
+    these assertions ever fails, reseeding will orphan characters' spells.
+    """
+    assert spell_id('Fireball') == spell_id('Fireball'), 'not deterministic'
+    assert spell_id('Fireball') != spell_id('Ice Knife'), 'collides across names'
+    assert spell_id('Fireball') != spell_id('fireball'), 'case must matter, names are case-sensitive'
+
+    got = spell_id('Fireball')
+    assert len(got) == 32, f'id must fit TEXT(32), got {len(got)}'
+    assert all(c in '0123456789abcdef' for c in got), f'id must be lowercase hex, got {got!r}'
+
+    # Pinned values. A change here means the namespace or derivation moved,
+    # which silently re-ids every spell in every database.
+    assert spell_id('Fireball') == '2467cf52a65c56488722c9670097654c', 'Fireball id drifted'
+    assert spell_id('Acid Splash') == '3e14558a85425ee895146d47e4091a7c', 'Acid Splash id drifted'
+
+    print('self-check passed: spell ids are deterministic, 32-char hex, and unchanged')
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Seed the spell reference table from vendored 5etools JSON files')
     parser.add_argument('--input', nargs='+', default=None, help=f'Source JSON file(s) (default: everything matching {DEFAULT_INPUT_GLOB})')
     parser.add_argument('--classes-input', default=DEFAULT_CLASSES_INPUT, help=f'Path to the spell-classes JSON file (default: {DEFAULT_CLASSES_INPUT})')
+    parser.add_argument('--self-check', action='store_true', help='Verify spell id generation is stable, then exit without touching the database')
     args = parser.parse_args()
+    if args.self_check:
+        self_check()
+        return
     input_paths = args.input if args.input else sorted(glob.glob(DEFAULT_INPUT_GLOB))
     seed_spells(input_paths, args.classes_input)
 

@@ -4,6 +4,7 @@ from flask_login import current_user
 from demiplane.auth.models import User, UserTheme
 from demiplane.services.character_sheet import TRACKER_MAX, TRACKER_ENTRY_MAX
 from demiplane.services import guest_character as guest
+from demiplane.services.dnd_mappings import spell_filter_class_names
 from demiplane.routes.fragments import get_trackers_for_character
 from demiplane.routes.helpers import build_character_sheet_data, build_guest_character_sheet_data
 
@@ -128,11 +129,8 @@ def register_main_routes(app, db):
         trackers = get_trackers_for_character(db, character_id)
         known_spell_ids = sheet.fetch_known_spell_ids()
         prepared_spell_ids = sheet.fetch_prepared_spell_ids()
-        spell_groups = sheet.group_spells_by_level(sheet.fetch_all_spells(), known_spell_ids)
-        # Seeded lowercase (db/seed.py) but spell.classes stores proper-cased
-        # names ("Wizard") from the 5etools data -- capitalize so the pill
-        # label reads right AND so the two actually match up in the filter.
-        class_names = sorted({c.get('class_name', '').capitalize() for c in character_sheet_data['classes'] if c.get('class_name')})
+        spell_groups = sheet.group_spells_by_level(sheet.fetch_all_spells())
+        class_names = spell_filter_class_names(character_sheet_data['classes'])
 
         # Detect if this is a brand-new character (no name set yet)
         is_new_character = not character_sheet_data['character'].get('name')

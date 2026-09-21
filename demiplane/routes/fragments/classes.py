@@ -5,6 +5,7 @@ from demiplane.auth.models import User
 from demiplane.services.character_sheet import CharacterSheet, CUSTOM_STAT_MAX, TRACKER_MAX
 from demiplane.services.custom_buff import BuffProcessor
 from demiplane.services import guest_character as guest
+from demiplane.services.dnd_mappings import spell_filter_class_names
 from demiplane.routes.fragments.trackers import get_trackers_for_character
 from demiplane.routes.helpers import guest_or_login_required, build_guest_character_sheet_data
 
@@ -40,10 +41,7 @@ def register_classes_fragment_routes(app, db, limiter):
         custom_buffs = sheet.fetch_custom_buffs_data()
         BuffProcessor(character_id).transform_out({'custom_stats': custom_stats, 'custom_buffs': custom_buffs})
         trackers = get_trackers_for_character(db, character_id)
-        # Seeded lowercase (db/seed.py) but spell.classes stores proper-cased
-        # names ("Wizard") from the 5etools data -- capitalize so the pill
-        # label reads right AND so the two actually match up in the filter.
-        class_names = sorted({c.get('class_name', '').capitalize() for c in classes if c.get('class_name')})
+        class_names = spell_filter_class_names(classes)
 
         return render_template(
             'components/classes/classes_fragment_response.html',
@@ -92,10 +90,7 @@ def register_classes_fragment_routes(app, db, limiter):
         custom_buffs = sheet.fetch_custom_buffs_data()
         BuffProcessor(character_id).transform_out({'custom_stats': custom_stats, 'custom_buffs': custom_buffs})
         trackers = get_trackers_for_character(db, character_id)
-        # Seeded lowercase (db/seed.py) but spell.classes stores proper-cased
-        # names ("Wizard") from the 5etools data -- capitalize so the pill
-        # label reads right AND so the two actually match up in the filter.
-        class_names = sorted({c.get('class_name', '').capitalize() for c in classes if c.get('class_name')})
+        class_names = spell_filter_class_names(classes)
 
         return render_template(
             'components/classes/classes_fragment_response.html',
