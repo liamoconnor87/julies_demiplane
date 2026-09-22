@@ -4,6 +4,7 @@ from flask_login import current_user
 from demiplane.auth.models import User, UserTheme
 from demiplane.services.character_sheet import TRACKER_MAX, TRACKER_ENTRY_MAX
 from demiplane.services import guest_character as guest
+from demiplane.services.dnd_mappings import spell_filter_class_names
 from demiplane.routes.fragments import get_trackers_for_character
 from demiplane.routes.helpers import build_character_sheet_data, build_guest_character_sheet_data
 
@@ -124,8 +125,12 @@ def register_main_routes(app, db):
                 user_theme=user_theme,
             )
 
-        _, character_sheet_data = build_character_sheet_data(character_id)
+        sheet, character_sheet_data = build_character_sheet_data(character_id)
         trackers = get_trackers_for_character(db, character_id)
+        known_spell_ids = sheet.fetch_known_spell_ids()
+        prepared_spell_ids = sheet.fetch_prepared_spell_ids()
+        spell_groups = sheet.group_spells_by_level(sheet.fetch_all_spells())
+        class_names = spell_filter_class_names(character_sheet_data['classes'])
 
         # Detect if this is a brand-new character (no name set yet)
         is_new_character = not character_sheet_data['character'].get('name')
@@ -156,5 +161,9 @@ def register_main_routes(app, db):
             trackers_at_capacity=len(trackers) >= TRACKER_MAX,
             tracker_max=TRACKER_MAX,
             tracker_entry_max=TRACKER_ENTRY_MAX,
+            spell_groups=spell_groups,
+            known_spell_ids=known_spell_ids,
+            prepared_spell_ids=prepared_spell_ids,
+            class_names=class_names,
             user_theme=user_theme,
         )

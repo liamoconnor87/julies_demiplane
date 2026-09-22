@@ -2,7 +2,7 @@ from flask import abort, render_template, request
 from flask_login import current_user, login_required
 
 from demiplane.auth.models import User
-from demiplane.services.character_sheet import TRACKER_MAX, TRACKER_ENTRY_MAX
+from demiplane.services.character_sheet import CharacterSheet, TRACKER_MAX, TRACKER_ENTRY_MAX
 from demiplane.functions.functions import uuid as generate_uuid
 
 from ._shared import _rows_or_empty, _count_or_zero
@@ -126,6 +126,7 @@ def register_tracker_fragment_routes(app, db, limiter):
             for entry in entries:
                 db.go_delete_it('tracker_entry', {'id': entry['id']})
             db.go_delete_it('tracker', {'id': tracker_id, 'character_id': character_id})
+            CharacterSheet(character_id=character_id)._remove_buff_targets_for('tracker', tracker_id)
 
         return _render_tracker_page(character_id)
 

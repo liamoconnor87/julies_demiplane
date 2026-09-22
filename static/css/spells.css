@@ -1,0 +1,362 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   spells.css — Spells tab: flat card list, same section/masonry pattern
+   feats/inventory use (card_item.css: .feats-section/.inventory-section,
+   #feats-list/#inventory-list).
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Search field + level-filter pills sit above the level sections rather than
+   inside any one of them, since they act across all of them at once. */
+.spells-filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    margin-bottom: 0.75rem;
+}
+
+/* --card-item-total-width only exists inside .card-item-section
+   (card_item.css) -- .spells-filter-bar sits outside that scope as a
+   sibling of the level sections, so referencing it here silently resolved
+   to `auto`, and flex's default align-items:stretch then filled the whole
+   row. Sized to match character_info.css's .character-info-name-field
+   instead, per the character-name field template this reuses. */
+.spell-search-field {
+    min-width: 120px;
+    max-width: 15.5rem;
+}
+
+.spell-level-filter-row {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+/* Stable id for OOB-swapping the class pills in from classes_fragment_response.html
+   without touching the rest of this (stateful) row -- display:contents drops
+   its own box entirely so the pills inside still lay out, gap and all, as
+   if they were direct children of .spell-level-filter-row. */
+#spell-class-filter-pills {
+    display: contents;
+}
+
+.spell-level-filter-pill {
+    background: var(--field-bg-colour);
+    color: var(--text-colour-three);
+    border: 1px solid transparent;
+    border-radius: 0;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.spell-level-filter-pill.active {
+    color: var(--secondary-color-dark);
+    border-color: var(--secondary-color-dark);
+}
+
+/* Known Spells replaces the level pills rather than stacking with them --
+   see applySpellFilters in dnd_sheet.js, which also stops the (now hidden)
+   level pills' state from restricting anything while this is active. */
+.spell-level-filter-row.known-only-active .spell-level-filter-pill[data-spell-filter-level] {
+    display: none;
+}
+
+/* Prepared Spells is a sub-filter of Known Spells -- meaningless (and
+   hidden) until that's on, since only known spells can be prepared. */
+#spell-prepared-filter {
+    display: none;
+}
+
+.spell-level-filter-row.known-only-active #spell-prepared-filter {
+    display: inline-block;
+}
+
+/* Drilled in one level further -- nothing left for Known Spells to narrow
+   down from here, so it hides too until Prepared is switched back off. */
+.spell-level-filter-row.prepared-only-active #spell-known-filter {
+    display: none;
+}
+
+.spells-section {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0 0.75rem;
+    width: 100%;
+}
+
+/* One .spells-section per level (Cantrips, 1st Level, ...) now stacks
+   directly in the tab with no shared flex/gap ancestor, so they need their
+   own spacing -- matches .sheet-column's gap elsewhere in the app. */
+.spells-section + .spells-section {
+    margin-top: 0.75rem;
+}
+
+.spells-section-header {
+    width: 100%;
+    flex-basis: 100%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    /* Single source of truth for the title/chevron size, so they can only
+       ever shrink together (see the .known-only-active override below) --
+       matches h4's own default (Bootstrap) size to start with. */
+    --spells-section-title-size: 1.5rem;
+}
+
+.spells-section-header > h4 {
+    margin-bottom: 0;
+    font-size: var(--spells-section-title-size);
+}
+
+.spell-known-count {
+    color: var(--title-colour);
+    font-size: 0.75rem;
+    opacity: 0.75;
+}
+
+.spell-level-filter-pill.spell-category-toggle {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--spells-section-title-size);
+    background: transparent;
+    padding: 0 0.25rem;
+}
+
+/* Known Spells view tends to have many small categories at once -- shrink
+   the titles/chevrons to save vertical space while it's active. */
+#spells-section-container.known-only-active .spells-section-header {
+    --spells-section-title-size: 1rem;
+}
+
+.spell-category-toggle i {
+    display: block;
+}
+
+.spells-section.all-collapsed .spell-category-toggle i {
+    transform: rotate(180deg);
+}
+
+/* Real column buckets (JS-assigned in dnd_sheet.js, see layoutSpellMasonry)
+   instead of CSS `columns:` -- multi-column layout has no addressable column,
+   so an expanding card's height change reshuffles which column *everything*
+   lands in. Fixed buckets mean a card only ever pushes its own column down,
+   and it's a DOM structure future drag-and-drop reordering can target. Before
+   JS runs, cards are direct flex children here and just wrap plainly. */
+.spells-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0 0.75rem;
+    width: 100%;
+}
+
+.spells-column {
+    display: flex;
+    flex-direction: column;
+    width: var(--card-item-total-width);
+    min-width: 0;
+}
+
+/* Border starts transparent at its final width, so toggling "prepared" only
+   ever changes colour, never the row's footprint in the masonry column. */
+.spell-row {
+    width: var(--card-item-total-width);
+    max-width: 100%;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+}
+
+/* Prepared, not known -- "known" now has its own square indicator (below)
+   instead, freeing this border up for prepared. Field text colour rather
+   than the theme accent, per request. Hidden by default (main list): it
+   only means anything while looking at Known Spells specifically, and
+   even then not once Prepared has narrowed things further (every row
+   showing is already prepared at that point, so it'd just be noise). */
+.spell-row.prepared-active {
+    border-color: transparent;
+}
+
+#spells-section-container.known-only-active:not(.prepared-only-active) .spell-row.prepared-active {
+    border-color: var(--text-colour-three);
+}
+
+/* Just the flex container. The whole card header is the prepared click target
+   now (see bindSpellRowToggles), so the row governs the cursor -- but this
+   element also carries .field-input, whose `cursor: text` is set directly on
+   it and so beats anything inherited. Inherit explicitly to hand control back
+   to the row. Same specificity as .field-input, and spells.css loads later. */
+.spell-row-top {
+    display: flex;
+    align-items: center;
+    cursor: inherit;
+}
+
+/* Hidden but still reserving its layout space, so the name doesn't shift when
+   it disappears. visibility rather than the opacity+pointer-events pair
+   .section-remove-x uses: this is a real button now, and neither opacity nor
+   pointer-events takes it out of the tab order, so a keyboard user could tab
+   onto an invisible control in a locked section and get nothing. */
+.spells-section[data-locked='true'] .spell-known-square {
+    visibility: hidden;
+    cursor: default;
+}
+
+/* The spell name. Strips the UA button chrome so it reads as plain text, and
+   deliberately does NOT grow: it hugs the name so the known square sits right
+   beside it rather than being pushed out to the chevron. */
+.spell-prepared-toggle {
+    min-width: 0;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+}
+
+/* Cursor has to be stated on the button, not inherited: Bootstrap's reboot
+   carries `button:not(:disabled) { cursor: pointer }` at (0,1,1), which
+   outranks a plain class, so the name would claim to be clickable everywhere.
+   aria-disabled is the exact condition the click handler bails on, so keying
+   off it keeps the two in step. */
+.spell-prepared-toggle[aria-disabled='true'] {
+    cursor: default;
+}
+
+.spell-prepared-toggle[aria-disabled='false'] {
+    cursor: pointer;
+}
+
+/* The whole card header toggles prepared, so the pointer belongs on the row,
+   not just the name. Scoped to the only state where the click does something:
+   inside Known Spells, not drilled into Prepared (read-only view), unlocked.
+   All three hooks are already maintained -- known-only-active and
+   prepared-only-active by applySpellFilters, data-locked by
+   syncGlobalLockState -- and this mirrors the click handler's own bails. */
+#spells-section-container.known-only-active:not(.prepared-only-active):not([data-locked='true']) .spell-row {
+    cursor: pointer;
+}
+
+/* The description is deliberately not part of the click target, so it must not
+   inherit the pointer. Set directly, which beats the inherited value. */
+.spell-row-details {
+    cursor: auto;
+}
+
+.spell-known-square {
+    display: inline-block;
+    width: 0.85rem;
+    height: 0.85rem;
+    margin-left: 0.4rem;
+    padding: 0;
+    appearance: none;
+    border: 1px solid var(--title-colour);
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+/* These two are the only keyboard targets in the row, and .field-input's
+   outline:none sits on the wrapper, not on them. */
+.spell-prepared-toggle:focus-visible,
+.spell-known-square:focus-visible {
+    outline: 2px solid var(--text-colour-one);
+    outline-offset: 1px;
+}
+
+.spell-row.known-active .spell-known-square {
+    background: var(--secondary-color-dark);
+    border-color: var(--secondary-color-dark);
+}
+
+/* Only needed in the main, unfiltered list -- everything showing inside
+   Known Spells (with or without Prepared narrowing it further) is known
+   by definition, so the square is redundant there. Comes back the moment
+   Known Spells is switched back off. */
+#spells-section-container.known-only-active .spell-known-square {
+    display: none;
+}
+
+/* The 1.5rem right-padding gutter card_item.css reserves for feat/inventory's
+   "x" delete button now holds the collapse chevron instead, so it's kept
+   rather than shrunk back down. */
+
+.spell-row-toggle.section-remove-x {
+    font-size: 0.85rem;
+}
+
+/* .spell-row-toggle only shares .section-remove-x for its corner position
+   and sizing -- it isn't a delete button, and collapse/expand should stay
+   usable regardless of lock (see toggleKnown's lock guard, which is the
+   thing that's actually supposed to respect it). Without this override,
+   section_action_buttons.css's generic [data-locked='true'] .section-remove-x
+   rule (opacity:0, pointer-events:none) would wrongly disable it too, now
+   that .spells-section carries data-locked for the "known" toggle. */
+.spells-section[data-locked='true'] .spell-row-toggle {
+    opacity: 1;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.spell-row-toggle i {
+    display: block;
+}
+
+.spell-row.collapsed .spell-row-toggle i {
+    transform: rotate(180deg);
+}
+
+.spell-row.collapsed .spell-row-details {
+    display: none;
+}
+
+/* card_item.css bolds every saved-row name field by default (3 classes) --
+   spells start plain and only bold once expanded, so the "off" state has to
+   match/exceed that selector's specificity, and the "on" state needs to beat
+   the "off" one in turn. */
+.card-item-saved-row .card-item-name-field .card-item-input.spell-row-top {
+    font-weight: normal;
+}
+
+.card-item-saved-row.spell-row:not(.collapsed) .card-item-input.spell-row-top {
+    font-weight: bold;
+}
+
+.spell-row-details {
+    padding: 0.5rem 0.75rem;
+    background: var(--field-bg-colour);
+}
+
+.spell-row-meta {
+    margin: 0 0 0.25rem;
+    font-size: 0.8rem;
+    color: var(--text-colour-three);
+}
+
+.spell-row-rune {
+    background: transparent;
+    padding: 0.35rem 0;
+    margin: 0.25rem 0;
+}
+
+.spell-row-description {
+    background: transparent;
+    padding: 0 0 1rem;
+}
+
+.spell-row-classes {
+    margin: 0.35rem 0 0;
+}

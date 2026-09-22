@@ -104,7 +104,12 @@ class User(UserMixin):
             'inventory', 'class_to_character', 'feat_and_trait',
             'custom_stat', 'custom_buff', 'custom_buff_to_stat_table',
             'stat_table_to_stat', 'user_to_character', 'purse',
+            'spell_to_character', 'tracker',
         ]
+        # tracker_entry hangs off tracker_id, not character_id, so its rows have
+        # to go before the trackers they point at. Same order admin.py uses.
+        for tracker in db.go_get_all('tracker', {'character_id': character_id}) or []:
+            db.go_delete_by('tracker_entry', {'tracker_id': tracker['id']})
         for table in direct_tables:
             db.go_delete_by(table, {'character_id': character_id})
 

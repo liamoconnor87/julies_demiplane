@@ -3,15 +3,30 @@
     <h2 class="guest-landing-title">Welcome to Julie's Demiplane: A D&D 5e Character Sheet (2014 &amp; 2024 rules)</h2>
 
     <p class="guest-landing-text">
-        Create a quick character sheet from the field below. Your guest character is saved in this browser.
-        <br>
-        <br>
-        {% if show_guest_name_entry %}
-        Sign up to save your character permanently, you can add more characters, add inventory, build trackers and customise the colours!
-        {% else %}
-        Go to your character:
-        <a class="guest-landing-link" href="/?character_id={{ character_id }}">"{{ guest_character_name or 'New Character' }}"</a>
-        {% endif %}
+        Hi, I'm Liam. This is a personal project of mine, built to replace your paper character sheet while keeping its simplicity.
     </p>
+
+    <p class="guest-landing-text mt-2">
+        That's on purpose: most fields are just open text, so you can fill them in however suits your table :)
+    </p>
+
+    <p class="guest-landing-text mt-2">
+        Create a quick character sheet from the name field, no signup needed. It's saved right here in your browser.
+    </p>
+
+    {% if show_guest_name_entry %}
+    <p class="guest-landing-text mb-1 mt-2">Sign up and you'll also get:</p>
+    <ul class="guest-landing-text mb-0">
+        <li>more than one character</li>
+        <li>inventory and coin tracking</li>
+        <li>combat trackers and buffs</li>
+        <li>your own colour theme</li>
+    </ul>
+    {% else %}
+    <p class="guest-landing-text mt-2">
+        Good to see you again! Your character's waiting:
+        <a class="guest-landing-link" href="/?character_id={{ character_id }}">"{{ guest_character_name or 'New Character' }}"</a>
+    </p>
+    {% endif %}
 </div>
 {% endif %}

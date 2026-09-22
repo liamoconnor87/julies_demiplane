@@ -58,6 +58,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/add_actions.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/section_action_buttons.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tracker.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spells.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/theme_panel.css') }}">
     <!-- CSRF token for htmx fragment requests -->
@@ -139,54 +140,66 @@
     <h1 class="visually-hidden">Julie's Demiplane D&D 5e Character Sheet (2014 &amp; 2024 rules)</h1>
     {% if is_guest and character %}
 
-        <div id="guest-landing-panel">
-            {% include 'components/character/guest_landing_panel_inner.html' %}
+        <div id="guest-top-row" class="sheet-layout">
+            <div id="guest-landing-panel">
+                {% include 'components/character/guest_landing_panel_inner.html' %}
+            </div>
+
+            {% if guest_show_sheet %}
+            <form action="/" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div id="sheet-content" class="sheet-layout" data-is-new="{{ 'true' if is_new_character else 'false' }}">
+                    <div id="char-group-container" class="sheet-column">
+                        <div id="character-info-section-container">
+                            {% include 'components/character/character_info.html' %}
+                        </div>
+
+                        <div id="classes-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                            {% include 'components/classes/classes_section.html' %}
+                        </div>
+
+                        <div id="add-class-action-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                            {% include 'components/classes/add_class_action.html' %}
+                        </div>
+
+                        <div id="custom-stats-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                            {% include 'components/stats/custom_stats_section.html' %}
+                        </div>
+
+                        <div id="add-stat-action-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
+                            {% include 'components/stats/add_stat_action.html' %}
+                        </div>
+                    </div>
+
+                    <div id="abilities-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
+                        {% include 'components/abilities/abilities_section.html' %}
+                    </div>
+
+                    <div id="guest-combat-death-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
+                        <div id="combat-stats-section-container">
+                            {% include 'components/combat/guest_combat_stats.html' %}
+                        </div>
+                        <div id="guest-death-saves-section-container">
+                            {% include 'components/combat/guest_death_saves.html' %}
+                        </div>
+                    </div>
+
+                    <div id="feats-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
+                        {% include 'components/feats/feats_traits_section.html' %}
+                    </div>
+                </div>
+            </form>
+            {% endif %}
         </div>
 
-        {% if guest_show_sheet %}
-        <form action="/" method="POST">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div id="sheet-content" class="sheet-layout" data-is-new="{{ 'true' if is_new_character else 'false' }}">
-                <div id="char-group-container" class="sheet-column">
-                    <div id="character-info-section-container">
-                        {% include 'components/character/character_info.html' %}
-                    </div>
+        {% if show_guest_landing_panel %}
+        <div class="guest-landing-extras mt-3">
+            <img src="{{ url_for('static', filename='images/character-sheet-screenshot.png') }}"
+                 alt="A Julie's Demiplane character sheet showing abilities, skills and combat stats for a level 7 Bard"
+                 class="guest-landing-screenshot img-fluid">
 
-                    <div id="classes-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                        {% include 'components/classes/classes_section.html' %}
-                    </div>
-
-                    <div id="add-class-action-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                        {% include 'components/classes/add_class_action.html' %}
-                    </div>
-
-                    <div id="custom-stats-section-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                        {% include 'components/stats/custom_stats_section.html' %}
-                    </div>
-
-                    <div id="add-stat-action-container"{% if is_new_character %} class="new-char-hidden"{% endif %}>
-                        {% include 'components/stats/add_stat_action.html' %}
-                    </div>
-                </div>
-
-                <div id="abilities-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
-                    {% include 'components/abilities/abilities_section.html' %}
-                </div>
-
-                <div id="guest-combat-death-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
-                    <div id="combat-stats-section-container">
-                        {% include 'components/combat/guest_combat_stats.html' %}
-                    </div>
-                    <div id="guest-death-saves-section-container">
-                        {% include 'components/combat/guest_death_saves.html' %}
-                    </div>
-                </div>
-
-                <div id="feats-section-container"{% if is_new_character %} class="new-char-hidden sheet-section"{% else %} class="sheet-section"{% endif %}>
-                    {% include 'components/feats/feats_traits_section.html' %}
-                </div>
-            </div>
-        </form>
+            {% include 'components/character/roadmap_panel.html' %}
+        </div>
         {% endif %}
 
     {% elif current_user.is_authenticated and characters and not character %}
@@ -196,6 +209,12 @@
         </div>
 
     {% elif current_user.is_authenticated and character %}
+
+        {% if is_new_character and not characters %}
+        <div id="new-user-roadmap">
+            {% include 'components/character/roadmap_panel.html' %}
+        </div>
+        {% endif %}
 
         {# ── Info tab ─────────────────────────────────────────────────────── #}
         <div id="sheet-page-info" class="sub-page">
@@ -280,6 +299,13 @@
         {% else %}
         <div id="sheet-page-inventory" class="sub-page d-none"></div>
         {% endif %}
+
+        {# ── Spells tab ───────────────────────────────────────────────────── #}
+        <div id="sheet-page-spells" class="sub-page d-none">
+            <div id="spells-section-container">
+                {% include 'components/spells/spells_section.html' %}
+            </div>
+        </div>
 
     {% endif %}
     </main>

@@ -95,3 +95,4 @@ class CustomStatsMixin:
         if not existing:
             return
         self.store.go_delete_it('custom_stat', {'id': custom_stat_id, 'character_id': character_id})
+        self._remove_buff_targets_for('custom_stat', custom_stat_id)

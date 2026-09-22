@@ -70,6 +70,12 @@ if QUERY_DEBUG:
 
 # ── CSRF ──────────────────────────────────────────────────────────────────────
 CSRFProtect(app)
+# Flask-WTF expires the token after an hour by default, but we render it into
+# the page once and never refresh it -- so any tab left open longer than that
+# had every POST rejected with a 400. A character sheet sits open for a whole
+# session. The token is still bound to the session, so the session lifetime
+# above is the real limit and this just stops the shorter one firing first.
+app.config['WTF_CSRF_TIME_LIMIT'] = None
 
 # ── Rate limiting ─────────────────────────────────────────────────────────────
 limiter = Limiter(

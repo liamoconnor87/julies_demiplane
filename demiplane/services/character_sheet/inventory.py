@@ -138,6 +138,7 @@ class InventoryMixin:
         parsed_quantity = parse_optional_int(quantity, fallback=existing.get('quantity', 1))
         if parsed_quantity is None or parsed_quantity <= 0:
             self.store.go_delete_it('inventory', {'id': inventory_id, 'character_id': character_id})
+            self._remove_buff_targets_for('inventory', inventory_id)
             return {'deleted': True}
 
         clean_name = sanitize_optional_str(name, max_len=255)

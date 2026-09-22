@@ -98,3 +98,4 @@ class FeatsMixin:
         if not existing:
             return
         self.store.go_delete_it('feat_and_trait', {'id': feat_id, 'character_id': character_id})
+        self._remove_buff_targets_for('feat_and_trait', feat_id)

@@ -40,6 +40,7 @@ def register_inventory_fragment_routes(app, db, limiter):
         db.go_delete_it('inventory', {'id': inventory_id, 'character_id': character_id})
 
         sheet = CharacterSheet(character_id=character_id)
+        sheet._remove_buff_targets_for('inventory', inventory_id)
         inventory = sheet.fetch_inventory_data()
         purse = sheet.fetch_purse_data()
         custom_buffs = sheet.fetch_custom_buffs_data()

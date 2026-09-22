@@ -1,0 +1,36 @@
+<div id="spell-row-{{ spell.id }}" class="card-item-row card-item-saved-row spell-row collapsed{% if spell.id in known_spell_ids %} known-active{% endif %}{% if spell.id in prepared_spell_ids %} prepared-active{% endif %}" data-spell-id="{{ spell.id }}" data-character-id="{{ character_id }}">
+    <div class="card-item-field card-item-name-field card-item-name-wrapper">
+        {# Two real sibling buttons rather than a role="button" nested in another:
+           nested interactive roles are invalid, and an aria-label on the wrapper
+           replaced its subtree, so the spell name never reached the accessibility
+           tree. Every label now carries the name, since a screen reader's element
+           list is otherwise 581 identical entries. .spell-row-top stays the flex
+           container all the existing CSS targets. #}
+        <div class="field-input card-item-input spell-row-top">
+            <button type="button" class="spell-prepared-toggle"
+                    aria-pressed="{% if spell.id in prepared_spell_ids %}true{% else %}false{% endif %}"
+                    aria-disabled="true"
+                    aria-label="{{ spell.name }}: prepared">
+                <span class="spell-name-text">{{ spell.name }}</span>
+            </button>
+            <button type="button" class="spell-known-square"
+                    aria-pressed="{% if spell.id in known_spell_ids %}true{% else %}false{% endif %}"
+                    aria-label="{{ spell.name }}: known"></button>
+        </div>
+        <button type="button" class="section-remove-x spell-row-toggle" aria-label="{{ spell.name }} details">
+            <i class="bi bi-chevron-up"></i>
+        </button>
+        <div class="spell-row-details">
+            <p class="spell-row-meta">{% if spell.level == 0 %}{{ spell.school }} Cantrip{% else %}Level {{ spell.level }} {{ spell.school }}{% endif %}</p>
+            <p class="spell-row-meta"><strong>Casting Time:</strong> {{ spell.casting_time }}</p>
+            <p class="spell-row-meta"><strong>Range:</strong> {{ spell.range }}</p>
+            <p class="spell-row-meta"><strong>Components:</strong> {{ spell.components }}</p>
+            <p class="spell-row-meta"><strong>Duration:</strong> {{ spell.duration }}</p>
+            <div class="card-item-footer spell-row-rune" aria-hidden="true">
+                {% include 'components/ui/rune_partition.html' %}
+            </div>
+            <div class="card-item-description-display spell-row-description">{{ spell.description }}</div>
+            <p class="spell-row-meta spell-row-classes"><strong>{{ spell.classes }}</strong></p>
+        </div>
+    </div>
+</div>
